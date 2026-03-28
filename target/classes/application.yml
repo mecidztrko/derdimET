@@ -1,14 +1,27 @@
+# Tek kaynak: web (Vite) ve mobil (Expo) aynı Spring Boot + MySQL örneğine bağlanır.
+# Ortam değişkenleri ile üstüne yazılabilir (Docker / sunucu).
+
 spring:
+  application:
+    name: derdimet
   datasource:
-    url: jdbc:mysql://localhost:3306/derdimET?useSSL=false&serverTimezone=UTC
-    username: root
-    password: 88888888
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/derdimET?useSSL=false&serverTimezone=UTC}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:88888888}
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
     open-in-view: false
+
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
+  # Emülatör / LAN / fiziksel cihazdan erişim (geliştirme)
+  address: ${SERVER_ADDRESS:0.0.0.0}
+
+derdimet:
+  jwt:
+    secret: ${DERDIMET_JWT_SECRET:derdimet-dev-jwt-secret-change-in-production-32chars}
+    expiration-ms: ${DERDIMET_JWT_EXPIRATION_MS:604800000}
