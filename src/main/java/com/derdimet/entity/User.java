@@ -59,9 +59,16 @@ public class User extends BaseEntity {
     @Column(name = "profile_image_url", length = 1024)
     private String profileImageUrl;
 
+    @Column(name = "email_verified")
+    private Boolean emailVerified;
+
     /** Eski satırlarda NULL olabilir; primitive boolean Hibernate'de hata verir. */
     @Column(name = "business_verified")
     private Boolean businessVerified;
+
+    public boolean isEmailVerified() {
+        return Boolean.TRUE.equals(emailVerified);
+    }
 
     public boolean isBusinessVerified() {
         return Boolean.TRUE.equals(businessVerified);
