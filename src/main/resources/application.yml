@@ -22,7 +22,7 @@ spring:
       max-request-size: ${DERDIMET_MAX_REQUEST_SIZE:60MB}
 
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${SERVER_PORT:8081}
   # Emülatör / LAN / fiziksel cihazdan erişim (geliştirme)
   address: ${SERVER_ADDRESS:0.0.0.0}
 
