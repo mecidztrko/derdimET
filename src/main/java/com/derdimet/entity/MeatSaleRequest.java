@@ -32,11 +32,34 @@ public class MeatSaleRequest extends BaseEntity {
     @Column(name = "meat_type")
     private String meatType;
 
+    /** Kaynak hayvan türü (büyükbaş/küçükbaş) bilgisi. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "animal_category", length = 32)
+    private AnimalCategory animalCategory;
+
+    /** Etin hayvanın hangi kısmı olduğu (örn. but, kuşbaşı). */
+    @Column(name = "cut", length = 128)
+    private String cut;
+
     @Column(name = "quantity")
     private BigDecimal quantity;
 
-    @Column(name = "description")
+    /** Kg başı fiyat (opsiyonel). */
+    @Column(name = "price_per_kg")
+    private BigDecimal pricePerKg;
+
+    /** Paketleme bilgisi (örn. vakumlu, parça vb.). */
+    @Column(name = "packaging", length = 128)
+    private String packaging;
+
+    @Column(name = "location", length = 256)
+    private String location;
+
+    @Column(name = "description", length = 2000)
     private String description;
+
+    @Column(name = "image_urls", length = 4000)
+    private String imageUrls;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")

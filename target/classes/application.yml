@@ -15,6 +15,11 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
     open-in-view: false
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: ${DERDIMET_MAX_FILE_SIZE:10MB}
+      max-request-size: ${DERDIMET_MAX_REQUEST_SIZE:60MB}
 
 server:
   port: ${SERVER_PORT:8080}
@@ -25,3 +30,7 @@ derdimet:
   jwt:
     secret: ${DERDIMET_JWT_SECRET:derdimet-dev-jwt-secret-change-in-production-32chars}
     expiration-ms: ${DERDIMET_JWT_EXPIRATION_MS:604800000}
+  media:
+    upload-dir: ${DERDIMET_UPLOAD_DIR:uploads}
+    public-url-prefix: ${DERDIMET_UPLOAD_PUBLIC_PREFIX:/uploads}
+    max-file-size: ${DERDIMET_UPLOAD_MAX_FILE_SIZE:8388608}
