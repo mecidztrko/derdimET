@@ -1,0 +1,36 @@
+# Yerel gizli / ortam (frontend ortak backend URL)
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+
+# Maven / Java build outputs
+target/
+**/target/
+
+# Gradle (if any)
+.gradle/
+**/.gradle/
+build/
+**/build/
+
+# IDE
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+
+# OS
+.DS_Store
+
+# Logs
+*.log
+
+# Node / frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+**/node_modules/
+
+# Figma export duplicate (keep source separately if needed)
+frontend/derdimet frontu 2/node_modules/

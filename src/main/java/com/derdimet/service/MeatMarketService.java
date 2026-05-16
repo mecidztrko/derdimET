@@ -1,0 +1,198 @@
+package com.derdimet.service;
+
+import com.derdimet.api.CreateMeatOfferRequest;
+import com.derdimet.api.CreateMeatSaleRequest;
+import com.derdimet.api.UpdateMeatSaleRequest;
+import com.derdimet.api.MeatOfferItemResponse;
+import com.derdimet.api.MeatSaleRequestResponse;
+import com.derdimet.api.SlaughterhouseMeatOfferResponse;
+import com.derdimet.entity.MeatOffer;
+import com.derdimet.entity.MeatSaleRequest;
+import com.derdimet.entity.OfferStatus;
+import com.derdimet.entity.Order;
+import com.derdimet.entity.OrderStatus;
+import com.derdimet.entity.RequestStatus;
+import com.derdimet.entity.User;
+import com.derdimet.repository.MeatOfferRepository;
+import com.derdimet.repository.MeatSaleRequestRepository;
+import com.derdimet.repository.OrderRepository;
+import java.math.BigDecimal;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
+@Service
+@RequiredArgsConstructor
+public class MeatMarketService {
+
+    private final MeatSaleRequestRepository saleRequestRepository;
+    private final MeatOfferRepository meatOfferRepository;
+    private final OrderRepository orderRepository;
+    private final AccountGuardService accountGuard;
+
+    @Transactional
+    public MeatSaleRequestResponse createSaleRequest(User slaughterhouse, CreateMeatSaleRequest body) {
+        accountGuard.requireEmailVerified(slaughterhouse);
+        MeatSaleRequest e = new MeatSaleRequest();
+        e.setSlaughterhouse(slaughterhouse);
+        e.setTitle(body.title().trim());
+        e.setMeatType(body.meatType().trim());
+        e.setAnimalCategory(body.animalCategory());
+        e.setCut(blankToNull(body.cut()));
+        e.setQuantity(body.quantity());
+        e.setPricePerKg(body.pricePerKg());
+        e.setPackaging(blankToNull(body.packaging()));
+        e.setLocation(blankToNull(body.location()));
+        e.setDescription(blankToNull(body.description()));
+        e.setImageUrls(joinImageUrls(body.imageUrls()));
+        e.setStatus(RequestStatus.OPEN);
+        return MeatSaleRequestResponse.fromEntity(saleRequestRepository.save(e));
+    }
+
+    private static String joinImageUrls(java.util.List<String> urls) {
+        if (urls == null || urls.isEmpty()) return null;
+        return String.join(
+                ",",
+                urls.stream().filter(u -> u != null && !u.isBlank()).map(String::trim).toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<MeatSaleRequestResponse> listOpenSaleRequests() {
+        return saleRequestRepository.findByStatusOrderByCreatedAtDesc(RequestStatus.OPEN).stream()
+                .map(MeatSaleRequestResponse::fromEntity)
+                .toList();
+    }
+
+    @Transactional
+    public MeatOfferItemResponse createOffer(User buyer, Long saleRequestId, CreateMeatOfferRequest body) {
+        accountGuard.requireEmailVerified(buyer);
+        MeatSaleRequest req =
+                saleRequestRepository
+                        .findById(saleRequestId)
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Et ilanı bulunamadı"));
+        if (req.getStatus() != RequestStatus.OPEN) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Bu ilan kapalı veya teklif almıyor");
+        }
+        if (meatOfferRepository.existsBySaleRequest_IdAndBuyer_Id(saleRequestId, buyer.getId())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Bu ilan için zaten teklif verdiniz");
+        }
+        MeatOffer o = new MeatOffer();
+        o.setSaleRequest(req);
+        o.setBuyer(buyer);
+        o.setPricePerKg(body.pricePerKg());
+        o.setQuantity(body.quantity());
+        o.setNote(blankToNull(body.note()));
+        o.setStatus(OfferStatus.PENDING);
+        return MeatOfferItemResponse.fromEntity(meatOfferRepository.save(o));
+    }
+
+    @Transactional(readOnly = true)
+    public List<MeatOfferItemResponse> listMyOffers(User buyer) {
+        return meatOfferRepository.findByBuyerOrderByCreatedAtDesc(buyer).stream()
+                .map(MeatOfferItemResponse::fromEntity)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<MeatSaleRequestResponse> listMySaleRequests(User slaughterhouse) {
+        return saleRequestRepository.findBySlaughterhouseOrderByCreatedAtDesc(slaughterhouse).stream()
+                .map(MeatSaleRequestResponse::fromEntity)
+                .toList();
+    }
+
+    @Transactional
+    public MeatSaleRequestResponse updateSaleRequest(User slaughterhouse, Long saleRequestId, UpdateMeatSaleRequest body) {
+        MeatSaleRequest req =
+                saleRequestRepository
+                        .findByIdAndSlaughterhouse_Id(saleRequestId, slaughterhouse.getId())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Et ilanı bulunamadı"));
+        if (req.getStatus() != RequestStatus.OPEN) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Kapalı ilan düzenlenemez");
+        }
+        if (body.title() != null && !body.title().isBlank()) req.setTitle(body.title().trim());
+        if (body.meatType() != null && !body.meatType().isBlank()) req.setMeatType(body.meatType().trim());
+        if (body.animalCategory() != null) req.setAnimalCategory(body.animalCategory());
+        if (body.cut() != null) req.setCut(blankToNull(body.cut()));
+        if (body.quantity() != null) req.setQuantity(body.quantity());
+        if (body.pricePerKg() != null) req.setPricePerKg(body.pricePerKg());
+        if (body.packaging() != null) req.setPackaging(blankToNull(body.packaging()));
+        if (body.location() != null) req.setLocation(blankToNull(body.location()));
+        if (body.description() != null) req.setDescription(blankToNull(body.description()));
+        if (body.imageUrls() != null) req.setImageUrls(joinImageUrls(body.imageUrls()));
+        return MeatSaleRequestResponse.fromEntity(saleRequestRepository.save(req));
+    }
+
+    @Transactional
+    public MeatSaleRequestResponse closeSaleRequest(User slaughterhouse, Long saleRequestId) {
+        accountGuard.requireEmailVerified(slaughterhouse);
+        MeatSaleRequest req =
+                saleRequestRepository
+                        .findByIdAndSlaughterhouse_Id(saleRequestId, slaughterhouse.getId())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Et ilanı bulunamadı"));
+        if (req.getStatus() == RequestStatus.CLOSED) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "İlan zaten kapalı");
+        }
+        req.setStatus(RequestStatus.CLOSED);
+        return MeatSaleRequestResponse.fromEntity(saleRequestRepository.save(req));
+    }
+
+    @Transactional(readOnly = true)
+    public List<SlaughterhouseMeatOfferResponse> listIncomingMeatOffers(User slaughterhouse) {
+        return meatOfferRepository.findBySaleRequest_SlaughterhouseOrderByCreatedAtDesc(slaughterhouse).stream()
+                .map(SlaughterhouseMeatOfferResponse::fromEntity)
+                .toList();
+    }
+
+    @Transactional
+    public SlaughterhouseMeatOfferResponse respondToMeatOffer(User slaughterhouse, Long offerId, boolean accept) {
+        accountGuard.requireEmailVerified(slaughterhouse);
+        MeatOffer offer =
+                meatOfferRepository
+                        .findByIdAndSaleRequest_Slaughterhouse_Id(offerId, slaughterhouse.getId())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Teklif bulunamadı"));
+        if (offer.getStatus() != OfferStatus.PENDING) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Teklif zaten işlenmiş");
+        }
+        if (accept) {
+            offer.setStatus(OfferStatus.ACCEPTED);
+            meatOfferRepository.save(offer);
+            Long saleRequestId = offer.getSaleRequest().getId();
+            for (MeatOffer other : meatOfferRepository.findBySaleRequest_IdAndStatus(saleRequestId, OfferStatus.PENDING)) {
+                if (!other.getId().equals(offerId)) {
+                    other.setStatus(OfferStatus.REJECTED);
+                    meatOfferRepository.save(other);
+                }
+            }
+            MeatSaleRequest sale = offer.getSaleRequest();
+            if (sale.getStatus() == RequestStatus.OPEN) {
+                sale.setStatus(RequestStatus.CLOSED);
+                saleRequestRepository.save(sale);
+            }
+            if (!orderRepository.existsByMeatOffer_Id(offerId)) {
+                Order order = new Order();
+                order.setMeatOffer(offer);
+                order.setBuyer(offer.getBuyer());
+                BigDecimal qty = offer.getQuantity() != null ? offer.getQuantity() : BigDecimal.ZERO;
+                BigDecimal price = offer.getPricePerKg() != null ? offer.getPricePerKg() : BigDecimal.ZERO;
+                order.setTotalPrice(price.multiply(qty));
+                order.setStatus(OrderStatus.COMPLETED);
+                orderRepository.save(order);
+            }
+        } else {
+            offer.setStatus(OfferStatus.REJECTED);
+            meatOfferRepository.save(offer);
+        }
+        return SlaughterhouseMeatOfferResponse.fromEntity(offer);
+    }
+
+    private static String blankToNull(String s) {
+        if (s == null || s.isBlank()) {
+            return null;
+        }
+        return s.trim();
+    }
+}
+

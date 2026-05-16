@@ -1,0 +1,241 @@
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Font families */
+  --font-heading: 'Fraunces', serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --font-size: 16px;
+
+  /* derdimET Color Palette - Blue Theme */
+  --background: #F5F8FA; /* Light Blue-Gray */
+  --foreground: #1A2332; /* Dark Blue-Gray */
+  --card: #FFFFFF; /* Pure White */
+  --card-foreground: #1A2332;
+  --card-alt: #EFF4F7; /* Very Light Blue */
+  --popover: #FFFFFF;
+  --popover-foreground: #1A2332;
+  --primary: #2563EB; /* Bright Blue */
+  --primary-foreground: #FFFFFF;
+  --primary-soft: #DBEAFE; /* Light Blue - chip & badge backgrounds */
+  --secondary: #0EA5E9; /* Sky Blue - success, "OPEN" status */
+  --secondary-foreground: #FFFFFF;
+  --accent: #3B82F6; /* Medium Blue - accents */
+  --accent-foreground: #FFFFFF;
+  --muted: #F1F5F9;
+  --muted-foreground: #64748B; /* Slate Gray */
+  --destructive: #DC2626; /* Red */
+  --destructive-foreground: #FFFFFF;
+  --border: #E2E8F0;
+  --input: transparent;
+  --input-background: #FFFFFF;
+  --switch-background: #CBD5E1;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: #2563EB;
+  --chart-1: #2563EB;
+  --chart-2: #0EA5E9;
+  --chart-3: #3B82F6;
+  --chart-4: #60A5FA;
+  --chart-5: #DBEAFE;
+  --radius: 0.625rem;
+  --radius-button: 0.875rem; /* 14px for buttons */
+  --radius-card: 1.25rem; /* 20px for cards */
+  --radius-input: 0.75rem; /* 12px for inputs */
+  --radius-chip: 999px; /* pill shape */
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #1A2332;
+  --sidebar-primary: #2563EB;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #DBEAFE;
+  --sidebar-accent-foreground: #1A2332;
+  --sidebar-border: #E2E8F0;
+  --sidebar-ring: #2563EB;
+
+  /* Shadows - soft blue-gray */
+  --shadow-soft: 0 8px 24px rgba(15, 23, 42, 0.06);
+  --shadow-hover: 0 12px 32px rgba(15, 23, 42, 0.10);
+}
+
+.dark {
+  /* Dark mode: Dark blue theme */
+  --background: #0F172A; /* Dark Slate */
+  --foreground: #F1F5F9;
+  --card: #1E293B; /* Slate 800 */
+  --card-foreground: #F1F5F9;
+  --card-alt: #334155; /* Slate 700 */
+  --popover: #1E293B;
+  --popover-foreground: #F1F5F9;
+  --primary: #3B82F6; /* Blue 500 */
+  --primary-foreground: #FFFFFF;
+  --primary-soft: #1E3A8A; /* Blue 900 */
+  --secondary: #0EA5E9;
+  --secondary-foreground: #FFFFFF;
+  --accent: #60A5FA;
+  --accent-foreground: #FFFFFF;
+  --muted: #334155;
+  --muted-foreground: #94A3B8;
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+  --border: #334155;
+  --input: transparent;
+  --input-background: #1E293B;
+  --switch-background: #475569;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: #3B82F6;
+  --chart-1: #3B82F6;
+  --chart-2: #0EA5E9;
+  --chart-3: #60A5FA;
+  --chart-4: #93C5FD;
+  --chart-5: #1E3A8A;
+  --sidebar: #1E293B;
+  --sidebar-foreground: #F1F5F9;
+  --sidebar-primary: #3B82F6;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #334155;
+  --sidebar-accent-foreground: #F1F5F9;
+  --sidebar-border: #334155;
+  --sidebar-ring: #3B82F6;
+
+  --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.3);
+  --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-card-alt: var(--card-alt);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-button: var(--radius-button);
+  --radius-card: var(--radius-card);
+  --radius-input: var(--radius-input);
+  --radius-chip: var(--radius-chip);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-body);
+  }
+
+  /**
+  * derdimET Typography
+  * Heading: Fraunces (display, slightly soft serif)
+  * Body & UI: Plus Jakarta Sans
+  * Mono (prices, IDs): JetBrains Mono
+  * Scale: H1 40/48, H2 32/40, H3 24/32, H4 20/28, Body 15/24, Small 13/20, Caption 12/18
+  */
+
+  html {
+    font-size: var(--font-size);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+
+  h1 {
+    font-size: 2.5rem; /* 40px */
+    font-weight: 600;
+    line-height: 3rem; /* 48px */
+  }
+
+  h2 {
+    font-size: 2rem; /* 32px */
+    font-weight: 600;
+    line-height: 2.5rem; /* 40px */
+  }
+
+  h3 {
+    font-size: 1.5rem; /* 24px */
+    font-weight: 500;
+    line-height: 2rem; /* 32px */
+  }
+
+  h4 {
+    font-size: 1.25rem; /* 20px */
+    font-weight: 500;
+    line-height: 1.75rem; /* 28px */
+  }
+
+  p {
+    font-size: 0.9375rem; /* 15px */
+    line-height: 1.5rem; /* 24px */
+    font-weight: 400;
+  }
+
+  label {
+    font-size: 0.9375rem; /* 15px */
+    font-weight: 500;
+    line-height: 1.5rem;
+  }
+
+  button {
+    font-size: 0.9375rem; /* 15px */
+    font-weight: 500;
+    line-height: 1.5rem;
+  }
+
+  input, textarea, select {
+    font-size: 0.9375rem; /* 15px */
+    font-weight: 400;
+    line-height: 1.5rem;
+    font-family: var(--font-body);
+  }
+
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+
+  .text-small {
+    font-size: 0.8125rem; /* 13px */
+    line-height: 1.25rem; /* 20px */
+  }
+
+  .text-caption {
+    font-size: 0.75rem; /* 12px */
+    line-height: 1.125rem; /* 18px */
+  }
+}
