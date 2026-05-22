@@ -62,17 +62,36 @@ export function formatRelativeTr(iso: string | null | undefined): string {
 }
 
 export function requestStatusLabel(status: string): string {
-  return status === 'OPEN' ? 'AÇIK' : 'KAPALI'
+  return status === 'OPEN' ? 'Açık' : 'Kapalı'
+}
+
+export function listingCardStatusLabel(status: 'open' | 'closed' | 'pending'): string {
+  if (status === 'open') return 'Açık'
+  if (status === 'closed') return 'Kapalı'
+  return 'Beklemede'
+}
+
+export function orderStatusLabel(status: string): string {
+  switch (status) {
+    case 'COMPLETED':
+      return 'Tamamlandı'
+    case 'PENDING':
+      return 'Beklemede'
+    case 'CANCELLED':
+      return 'İptal edildi'
+    default:
+      return status
+  }
 }
 
 export function offerStatusLabel(status: string): string {
   switch (status) {
     case 'PENDING':
-      return 'BEKLEMEDE'
+      return 'Beklemede'
     case 'ACCEPTED':
-      return 'KABUL EDİLDİ'
+      return 'Kabul edildi'
     case 'REJECTED':
-      return 'REDDEDİLDİ'
+      return 'Reddedildi'
     default:
       return status
   }

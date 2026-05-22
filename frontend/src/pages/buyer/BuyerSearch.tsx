@@ -27,7 +27,10 @@ export function BuyerSearch() {
   const [offerTarget, setOfferTarget] = useState<MeatSaleRequestDto | null>(null)
   const { toggle: toggleFavorite, error: favoriteError, blocked: favoriteBlocked } = useToggleFavorite()
 
-  const { data, loading, error, reload } = useApi(() => buyerApi.listMeatSaleRequests(), [])
+  const { data, loading, error, reload } = useApi(
+    () => buyerApi.listMeatSaleRequests({ q: searchQuery }),
+    [searchQuery],
+  )
 
   const cities = useMemo(() => {
     const set = new Set<string>()
@@ -40,11 +43,10 @@ export function BuyerSearch() {
   const filtered = useMemo(
     () =>
       filterMeatListings(data ?? [], {
-        search: searchQuery,
         meatType: selectedMeatType,
         city: selectedCity,
       }),
-    [data, searchQuery, selectedMeatType, selectedCity],
+    [data, selectedMeatType, selectedCity],
   )
 
   async function handleFavorite(userId: number, isFavorited: boolean) {
@@ -140,6 +142,11 @@ export function BuyerSearch() {
         onRetry={reload}
         empty={filtered.length === 0}
         emptyMessage="Aramanıza uygun ilan bulunamadı."
+        emptyAction={
+          <Button variant="secondary" type="button" onClick={() => setSearchQuery('')}>
+            Aramayı temizle
+          </Button>
+        }
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((item) => {

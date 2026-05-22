@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { XCircle } from 'lucide-react'
+import { RotateCcw, XCircle } from 'lucide-react'
 import { Card, CardContent } from '../../components/role-app/Card'
 import { Button } from '../../components/role-app/Button'
 import { Badge } from '../../components/role-app/Badge'
@@ -13,7 +13,7 @@ import { useEmailVerificationGate } from '../../hooks/useEmailVerificationGate'
 import * as sellerApi from '../../api/seller'
 import { EMAIL_VERIFICATION_REQUIRED } from '../../lib/emailVerification'
 import { animalCategoryLabel } from '../../api/mappers'
-import { formatDateTr, formatHeadCount, formatKg, formatTry, resolveMediaUrl } from '../../api/format'
+import { formatDateTr, formatHeadCount, formatKg, formatTry, requestStatusLabel, resolveMediaUrl } from '../../api/format'
 import type { SellerAnimalListingDto } from '../../api/types'
 
 export function SellerListings() {
@@ -21,6 +21,7 @@ export function SellerListings() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [editListing, setEditListing] = useState<SellerAnimalListingDto | null>(null)
   const [closingId, setClosingId] = useState<number | null>(null)
+  const [reopeningId, setReopeningId] = useState<number | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
   const { blocked } = useEmailVerificationGate()
 
@@ -68,6 +69,21 @@ export function SellerListings() {
     }
   }
 
+  async function handleReopen(listingId: number) {
+    if (!window.confirm('Bu ilanı yeniden açmak istediğinize emin misiniz?')) return
+    setReopeningId(listingId)
+    setActionError(null)
+    try {
+      await sellerApi.reopenAnimalListing(listingId)
+      listingsQuery.reload()
+      incomingQuery.reload()
+    } catch (e) {
+      setActionError(e instanceof ApiError ? e.message : 'İlan açılamadı')
+    } finally {
+      setReopeningId(null)
+    }
+  }
+
   return (
     <div className="max-w-[1440px] mx-auto px-6 py-8">
       <div className="mb-8 flex items-center justify-between gap-4 flex-wrap">
@@ -105,7 +121,18 @@ export function SellerListings() {
             error={listingsQuery.error}
             onRetry={listingsQuery.reload}
             empty={filteredListings.length === 0}
-            emptyMessage="Bu filtrede ilan bulunamadı."
+            emptyMessage={
+              stats.all === 0
+                ? 'Henüz hayvan ilanınız yok. İlk ilanınızı oluşturarak kesimhanelerin teklif vermesini sağlayın.'
+                : 'Bu filtrede ilan bulunamadı.'
+            }
+            emptyAction={
+              stats.all === 0 ? (
+                <Button variant="primary" type="button" onClick={() => setShowCreateModal(true)}>
+                  İlk ilanınızı oluşturun
+                </Button>
+              ) : undefined
+            }
           >
             <div className="space-y-4">
               {filteredListings.map((listing) => (
@@ -115,7 +142,10 @@ export function SellerListings() {
                   offerCount={offerCountByListing.get(listing.id) ?? 0}
                   closing={closingId === listing.id}
                   closeBlocked={blocked}
+                  reopening={reopeningId === listing.id}
+                  reopenBlocked={blocked}
                   onClose={() => void handleClose(listing.id)}
+                  onReopen={() => void handleReopen(listing.id)}
                   onEdit={() => setEditListing(listing)}
                 />
               ))}
@@ -156,14 +186,20 @@ function ListingRow({
   offerCount,
   closing,
   closeBlocked,
+  reopening,
+  reopenBlocked,
   onClose,
+  onReopen,
   onEdit,
 }: {
   listing: SellerAnimalListingDto
   offerCount: number
   closing: boolean
   closeBlocked: boolean
+  reopening: boolean
+  reopenBlocked: boolean
   onClose: () => void
+  onReopen: () => void
   onEdit: () => void
 }) {
   const title = [listing.type, listing.breed].filter(Boolean).join(' · ') || 'Hayvan ilanı'
@@ -183,8 +219,8 @@ function ListingRow({
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <h3 className="truncate">{title}</h3>
-                  <Badge variant={isOpen ? 'success' : 'default'}>
-                    {isOpen ? 'Açık' : 'Kapalı'}
+                  <Badge variant={isOpen ? 'open' : 'closed'}>
+                    {requestStatusLabel(listing.status)}
                   </Badge>
                 </div>
                 <p className="text-small text-muted-foreground flex items-center gap-1">
@@ -217,7 +253,7 @@ function ListingRow({
             </div>
             <div className="flex flex-wrap items-center justify-between gap-3 mt-3 pt-3 border-t border-border">
               <p className="text-small text-muted-foreground">{offerCount} kesimhane teklifi</p>
-              {isOpen && (
+              {isOpen ? (
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" onClick={onEdit}>
                     <Pencil className="size-4 mr-1" />
@@ -234,6 +270,17 @@ function ListingRow({
                     {closing ? 'Kapatılıyor…' : 'Kapat'}
                   </Button>
                 </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={reopening || reopenBlocked}
+                  title={reopenBlocked ? EMAIL_VERIFICATION_REQUIRED : undefined}
+                  onClick={onReopen}
+                >
+                  <RotateCcw className="size-4 mr-1" />
+                  {reopening ? 'Açılıyor…' : 'Yeniden aç'}
+                </Button>
               )}
             </div>
           </div>

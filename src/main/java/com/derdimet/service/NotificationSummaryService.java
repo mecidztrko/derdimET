@@ -52,14 +52,23 @@ public class NotificationSummaryService {
                 meatOfferRepository.findBySaleRequest_SlaughterhouseOrderByCreatedAtDesc(slaughterhouse).stream()
                         .filter(o -> o.getStatus() == OfferStatus.PENDING)
                         .count();
+        long animalListingPending =
+                listingOfferRepository
+                        .findBySlaughterhouseAndStatusOrderByCreatedAtDesc(slaughterhouse, OfferStatus.PENDING)
+                        .size();
         long purchasePending =
                 animalOfferRepository
                         .findByRequest_CreatedByAndStatusOrderByCreatedAtDesc(slaughterhouse, OfferStatus.PENDING)
                         .size();
         int meat = (int) meatPending;
+        int animalListing = (int) animalListingPending;
         int purchase = (int) purchasePending;
-        int total = meat + purchase;
-        String link = meat > 0 ? "/slaughterhouse/sell-meat" : "/slaughterhouse/purchase-requests";
-        return new NotificationSummaryResponse(meat, 0, purchase, link);
+        String link =
+                meat > 0
+                        ? "/slaughterhouse/sell-meat"
+                        : purchase > 0
+                                ? "/slaughterhouse/purchase-requests"
+                                : animalListing > 0 ? "/slaughterhouse/offers" : "/slaughterhouse";
+        return new NotificationSummaryResponse(meat, animalListing, purchase, link);
     }
 }

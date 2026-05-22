@@ -4,12 +4,20 @@ import { Button } from '../../components/role-app/Button'
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/role-app/Card'
 import { StatCard } from '../../components/role-app/StatCard'
 import { Badge } from '../../components/role-app/Badge'
+import { OfferStatusBadge } from '../../components/role-app/OfferStatusBadge'
 import { PageState } from '../../components/role-app/PageState'
 import { useMe } from '../../hooks/useMe'
 import { useApi } from '../../hooks/useApi'
 import * as shApi from '../../api/slaughterhouse'
 import { animalCategoryLabel, sellerListingToListingCard } from '../../api/mappers'
-import { formatDateTr, formatHeadCount, formatKg, formatTry } from '../../api/format'
+import {
+  formatDateTr,
+  formatHeadCount,
+  formatKg,
+  formatTry,
+  listingCardStatusLabel,
+  requestStatusLabel,
+} from '../../api/format'
 import { SlaughterhouseRecentTradesCard } from '../../components/role-app/SlaughterhouseRecentTradesCard'
 import { MessageUserButton } from '../../components/role-app/MessageUserButton'
 
@@ -98,6 +106,13 @@ export function SlaughterhouseDashboard() {
               onRetry={animalListings.reload}
               empty={recentAnimals.length === 0}
               emptyMessage="Açık satıcı ilanı yok."
+              emptyAction={
+                <Link to="/slaughterhouse/buy-animals">
+                  <Button variant="primary" type="button">
+                    Hayvan ilanlarına git
+                  </Button>
+                </Link>
+              }
             >
               <div className="space-y-3">
                 {recentAnimals.map((item) => {
@@ -106,7 +121,7 @@ export function SlaughterhouseDashboard() {
                     <div key={item.id} className="p-3 rounded-lg bg-card-alt border border-border">
                       <div className="flex justify-between gap-2 mb-1">
                         <p className="font-medium text-small">{card.seller.name}</p>
-                        <Badge variant="open">AÇIK</Badge>
+                        <Badge variant="open">{listingCardStatusLabel('open')}</Badge>
                       </div>
                       <p className="text-small">{card.title}</p>
                       <p className="text-caption text-muted-foreground mt-1">
@@ -139,23 +154,20 @@ export function SlaughterhouseDashboard() {
               onRetry={myOffers.reload}
               empty={recentOffers.length === 0}
               emptyMessage="Henüz teklif vermediniz."
+              emptyAction={
+                <Link to="/slaughterhouse/buy-animals">
+                  <Button variant="primary" type="button">
+                    İlanlara göz at
+                  </Button>
+                </Link>
+              }
             >
               <div className="space-y-3">
                 {recentOffers.map((o) => (
                   <div key={o.offerId} className="p-3 rounded-lg border border-border">
                     <div className="flex justify-between gap-2 mb-1">
                       <p className="font-medium text-small">{o.sellerName || 'Satıcı'}</p>
-                      <Badge
-                        variant={
-                          o.status === 'PENDING'
-                            ? 'pending'
-                            : o.status === 'ACCEPTED'
-                              ? 'accepted'
-                              : 'rejected'
-                        }
-                      >
-                        {o.status}
-                      </Badge>
+                      <OfferStatusBadge status={o.status} />
                     </div>
                     <p className="text-caption text-muted-foreground">
                       {o.listingType} · {formatTry(o.pricePerKg)} / kg ·{' '}
@@ -189,13 +201,20 @@ export function SlaughterhouseDashboard() {
               onRetry={meatListings.reload}
               empty={recentMeat.length === 0}
               emptyMessage="Açık et ilanınız yok."
+              emptyAction={
+                <Link to="/slaughterhouse/sell-meat">
+                  <Button variant="primary" type="button">
+                    Et ilanı oluştur
+                  </Button>
+                </Link>
+              }
             >
               <div className="space-y-3">
                 {recentMeat.map((m) => (
                   <div key={m.id} className="p-3 rounded-lg border border-border">
                     <div className="flex justify-between gap-2">
                       <p className="font-medium text-small">{m.title}</p>
-                      <Badge variant="open">AÇIK</Badge>
+                      <Badge variant="open">{listingCardStatusLabel('open')}</Badge>
                     </div>
                     <p className="text-caption text-muted-foreground mt-1">
                       {formatKg(m.quantity)} · {formatTry(m.pricePerKg)} / kg
@@ -225,6 +244,13 @@ export function SlaughterhouseDashboard() {
               onRetry={purchaseReqs.reload}
               empty={(purchaseReqs.data ?? []).length === 0}
               emptyMessage="Henüz alış talebi yok."
+              emptyAction={
+                <Link to="/slaughterhouse/purchase-requests">
+                  <Button variant="primary" type="button">
+                    Alış talebi oluştur
+                  </Button>
+                </Link>
+              }
             >
               <div className="space-y-3">
                 {(purchaseReqs.data ?? []).slice(0, 3).map((r) => (
@@ -232,7 +258,7 @@ export function SlaughterhouseDashboard() {
                     <div className="flex justify-between gap-2 mb-1">
                       <p className="font-medium text-small">{r.title}</p>
                       <Badge variant={r.status === 'OPEN' ? 'open' : 'closed'}>
-                        {r.status === 'OPEN' ? 'AÇIK' : 'KAPALI'}
+                        {requestStatusLabel(r.status)}
                       </Badge>
                     </div>
                     <p className="text-caption text-muted-foreground">
@@ -264,13 +290,20 @@ export function SlaughterhouseDashboard() {
               onRetry={incomingMeatOffers.reload}
               empty={recentIncomingMeat.length === 0}
               emptyMessage="Bekleyen alıcı teklifi yok."
+              emptyAction={
+                <Link to="/slaughterhouse/sell-meat">
+                  <Button variant="primary" type="button">
+                    Et ilanlarına git
+                  </Button>
+                </Link>
+              }
             >
               <div className="space-y-3">
                 {recentIncomingMeat.map((o) => (
                   <div key={o.offerId} className="p-3 rounded-lg border border-border">
                     <div className="flex justify-between gap-2 mb-1">
                       <p className="font-medium text-small">{o.buyerName || 'Alıcı'}</p>
-                      <Badge variant="pending">BEKLEMEDE</Badge>
+                      <OfferStatusBadge status="PENDING" />
                     </div>
                     <p className="text-caption text-muted-foreground">{o.saleRequestTitle}</p>
                     <p className="text-caption text-muted-foreground mt-1">

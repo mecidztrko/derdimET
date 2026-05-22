@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -27,9 +28,10 @@ public class AdminAnimalPurchaseController {
     private final AnimalPurchaseAdminService adminService;
 
     @GetMapping
-    public List<AnimalPurchaseRequestResponse> list(@AuthenticationPrincipal UserDetails principal) {
+    public List<AnimalPurchaseRequestResponse> list(
+            @AuthenticationPrincipal UserDetails principal, @RequestParam(required = false) String q) {
         User slaughterhouse = userRepository.findByEmail(principal.getUsername()).orElseThrow();
-        return adminService.listMyRequests(slaughterhouse);
+        return adminService.listMyRequests(slaughterhouse, q);
     }
 
     @PostMapping
@@ -53,6 +55,13 @@ public class AdminAnimalPurchaseController {
             @AuthenticationPrincipal UserDetails principal, @PathVariable Long requestId) {
         User slaughterhouse = userRepository.findByEmail(principal.getUsername()).orElseThrow();
         return ResponseEntity.ok(adminService.close(slaughterhouse, requestId));
+    }
+
+    @PostMapping("/{requestId}/reopen")
+    public ResponseEntity<AnimalPurchaseRequestResponse> reopen(
+            @AuthenticationPrincipal UserDetails principal, @PathVariable Long requestId) {
+        User slaughterhouse = userRepository.findByEmail(principal.getUsername()).orElseThrow();
+        return ResponseEntity.ok(adminService.reopen(slaughterhouse, requestId));
     }
 
     @GetMapping("/{requestId}/offers")

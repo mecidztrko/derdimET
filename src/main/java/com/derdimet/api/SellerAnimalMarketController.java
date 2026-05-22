@@ -42,10 +42,11 @@ public class SellerAnimalMarketController {
             @RequestParam(required = false) Integer quantityMax,
             @RequestParam(required = false) BigDecimal priceMin,
             @RequestParam(required = false) BigDecimal priceMax,
-            @RequestParam(required = false, defaultValue = "newest") String sort) {
+            @RequestParam(required = false, defaultValue = "newest") String sort,
+            @RequestParam(required = false) String q) {
         User seller = userRepository.findByEmail(principal.getUsername()).orElseThrow();
         return listingMarketService.browseMarketExcludingSeller(
-                seller, category, type, ageMin, ageMax, quantityMin, quantityMax, priceMin, priceMax, sort);
+                seller, category, type, ageMin, ageMax, quantityMin, quantityMax, priceMin, priceMax, sort, q);
     }
 
     /** Admin tarafından açılmış hayvan alış ilanları (açık olanlar). */

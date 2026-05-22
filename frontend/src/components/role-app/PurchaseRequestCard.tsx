@@ -5,6 +5,7 @@ import { Card } from './Card'
 import { Badge } from './Badge'
 import { Button } from './Button'
 import { cn } from '../../lib/cn'
+import { listingCardStatusLabel } from '../../api/format'
 
 interface PurchaseRequestCardProps {
   id: string
@@ -92,7 +93,7 @@ export function PurchaseRequestCard({
                 <span className="ml-1.5 text-secondary font-bold">✓</span>
               )}
             </h4>
-            <Badge variant={status}>{status === 'open' ? 'AÇIK' : 'KAPALI'}</Badge>
+            <Badge variant={status}>{listingCardStatusLabel(status)}</Badge>
           </div>
           <p className="text-caption text-muted-foreground">Kesimhane</p>
         </div>

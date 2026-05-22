@@ -48,7 +48,12 @@ public class AnimalSellerMarketService {
         }
         if (q != null && !q.isBlank()) {
             String like = "%" + q.trim().toLowerCase() + "%";
-            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("title")), like));
+            spec =
+                    spec.and(
+                            (root, query, cb) ->
+                                    cb.or(
+                                            cb.like(cb.lower(root.get("title")), like),
+                                            cb.like(cb.lower(cb.coalesce(root.get("description"), "")), like)));
         }
         if (quantityMin != null) {
             spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("quantity"), quantityMin));

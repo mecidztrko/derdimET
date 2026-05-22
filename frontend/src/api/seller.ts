@@ -1,4 +1,5 @@
 import { apiFetch, apiFetchVoid } from './client'
+import { withSearchQuery } from '../lib/searchQueryParams'
 import type {
   AnimalPurchaseRequestDto,
   ListingOfferDto,
@@ -30,18 +31,23 @@ export function listMyAnimalListings(): Promise<SellerAnimalListingDto[]> {
 export function listMarketListings(params?: {
   category?: AnimalCategory
   sort?: 'newest' | 'priceAsc' | 'priceDesc'
+  q?: string
 }): Promise<SellerAnimalListingDto[]> {
-  const q = new URLSearchParams()
-  if (params?.category) q.set('category', params.category)
-  if (params?.sort === 'priceAsc') q.set('sort', 'priceasc')
-  if (params?.sort === 'priceDesc') q.set('sort', 'pricedesc')
-  if (params?.sort === 'newest') q.set('sort', 'newest')
-  const suffix = q.toString() ? `?${q}` : ''
-  return apiFetch(`/api/seller/market-listings${suffix}`)
+  const search = new URLSearchParams()
+  if (params?.category) search.set('category', params.category)
+  if (params?.sort === 'priceAsc') search.set('sort', 'priceasc')
+  if (params?.sort === 'priceDesc') search.set('sort', 'pricedesc')
+  if (params?.sort === 'newest') search.set('sort', 'newest')
+  const base = search.toString() ? `/api/seller/market-listings?${search}` : '/api/seller/market-listings'
+  return apiFetch(withSearchQuery(base, params?.q))
 }
 
 export function closeAnimalListing(listingId: number): Promise<SellerAnimalListingDto> {
   return apiFetch(`/api/seller/animal-listings/${listingId}/close`, { method: 'POST' })
+}
+
+export function reopenAnimalListing(listingId: number): Promise<SellerAnimalListingDto> {
+  return apiFetch(`/api/seller/animal-listings/${listingId}/reopen`, { method: 'POST' })
 }
 
 export function updateAnimalListing(
@@ -83,8 +89,8 @@ export function createAnimalListing(body: {
   })
 }
 
-export function listAnimalPurchaseRequests(): Promise<AnimalPurchaseRequestDto[]> {
-  return apiFetch('/api/seller/animal-purchase-requests')
+export function listAnimalPurchaseRequests(params?: { q?: string }): Promise<AnimalPurchaseRequestDto[]> {
+  return apiFetch(withSearchQuery('/api/seller/animal-purchase-requests', params?.q))
 }
 
 export function listMyAnimalOffers(): Promise<SellerAnimalOfferItemDto[]> {

@@ -1,24 +1,24 @@
 import { Link } from 'react-router-dom'
-import { Factory, X } from 'lucide-react'
+import { User, X } from 'lucide-react'
 import { Card, CardContent } from './Card'
 import { Button } from './Button'
 import { PageState } from './PageState'
 import { useApi } from '../../hooks/useApi'
 import { useToggleFavorite } from '../../hooks/useToggleFavorite'
-import { listFavoriteSlaughterhouses } from '../../api/seller'
+import { listFavoriteSellers } from '../../api/slaughterhouse'
 import { formatDateTr } from '../../api/format'
 
-export function SellerFavoriteSlaughterhouses() {
-  const { data, loading, error, reload } = useApi(() => listFavoriteSlaughterhouses(), [])
+export function SlaughterhouseFavoriteSellers() {
+  const { data, loading, error, reload } = useApi(() => listFavoriteSellers(), [])
   const { toggle: toggleFavorite, error: favoriteError } = useToggleFavorite()
   const items = data ?? []
 
   return (
     <Card className="mt-8">
       <CardContent className="p-6">
-        <h3 className="mb-2">Favori kesimhaneler</h3>
+        <h3 className="mb-2">Favori satıcılar</h3>
         <p className="text-small text-muted-foreground mb-4">
-          Pazar ekranındaki alış taleplerinde kalp ikonuna basarak ekleyebilirsiniz.
+          Hayvan al sayfasındaki ilan kartlarından kalp ikonu ile ekleyebilirsiniz.
         </p>
         {favoriteError ? (
           <p className="mb-4 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
@@ -30,42 +30,44 @@ export function SellerFavoriteSlaughterhouses() {
           error={error}
           onRetry={reload}
           empty={items.length === 0}
-          emptyMessage="Henüz favori kesimhaneniz yok."
+          emptyMessage="Henüz favori satıcınız yok."
           emptyAction={
-            <Link to="/seller">
+            <Link to="/slaughterhouse/buy-animals">
               <Button variant="primary" type="button">
-                Kesimhane taleplerine git
+                Hayvan ilanlarına git
               </Button>
             </Link>
           }
         >
           <div className="space-y-3">
-            {items.map((sh) => (
+            {items.map((seller) => (
               <div
-                key={sh.buyerId}
+                key={seller.sellerId}
                 className="flex items-start gap-3 p-4 rounded-lg border border-border"
               >
                 <div className="size-10 rounded-full bg-primary-soft flex items-center justify-center shrink-0">
-                  <Factory className="size-5 text-primary" />
+                  <User className="size-5 text-primary" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium text-small">{sh.buyerName || 'Kesimhane'}</p>
-                  {sh.buyerEmail ? (
-                    <p className="text-caption text-muted-foreground mt-1">{sh.buyerEmail}</p>
+                  <p className="font-medium text-small">{seller.sellerName || 'Satıcı'}</p>
+                  {seller.sellerEmail ? (
+                    <p className="text-caption text-muted-foreground mt-1">{seller.sellerEmail}</p>
                   ) : null}
                   <p className="text-caption text-muted-foreground mt-1">
-                    Favorilendi: {formatDateTr(sh.createdAt)}
+                    Favorilendi: {formatDateTr(seller.createdAt)}
                   </p>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  type="button"
-                  aria-label="Favoriden çıkar"
-                  onClick={() => void toggleFavorite(sh.buyerId, true).then(() => reload())}
-                >
-                  <X className="size-5 text-muted-foreground" />
-                </Button>
+                {seller.sellerId != null ? (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    type="button"
+                    aria-label="Favoriden çıkar"
+                    onClick={() => void toggleFavorite(seller.sellerId!, true).then(() => reload())}
+                  >
+                    <X className="size-5 text-muted-foreground" />
+                  </Button>
+                ) : null}
               </div>
             ))}
           </div>

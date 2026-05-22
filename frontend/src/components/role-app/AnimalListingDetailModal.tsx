@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react'
-import { X, MapPin } from 'lucide-react'
+import { X, MapPin, Heart } from 'lucide-react'
 import { getAnimalListing } from '../../api/listings'
 import { ApiError } from '../../api/client'
+import { useToggleFavorite } from '../../hooks/useToggleFavorite'
+import { useEmailVerificationGate } from '../../hooks/useEmailVerificationGate'
+import { EMAIL_VERIFICATION_REQUIRED } from '../../lib/emailVerification'
 import type { SellerAnimalListingDto } from '../../api/types'
 import { animalCategoryLabel } from '../../api/mappers'
-import { formatDateTr, formatHeadCount, formatKg, formatTry, resolveMediaUrl } from '../../api/format'
+import { formatDateTr, formatHeadCount, formatKg, formatTry, requestStatusLabel, resolveMediaUrl } from '../../api/format'
 import { Button } from './Button'
 import { Badge } from './Badge'
 import { Card, CardContent } from './Card'
@@ -29,6 +32,9 @@ export function AnimalListingDetailModal({
   const [item, setItem] = useState<SellerAnimalListingDto | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [favoriteError, setFavoriteError] = useState<string | null>(null)
+  const { toggle: toggleFavorite } = useToggleFavorite()
+  const { blocked: favoriteBlocked } = useEmailVerificationGate()
 
   useEffect(() => {
     if (!open || listingId == null) {
@@ -49,6 +55,23 @@ export function AnimalListingDetailModal({
   const images = item?.imageUrls?.map(resolveMediaUrl).filter(Boolean) ?? []
   const isOpen = item?.status === 'OPEN'
   const title = item ? [item.type, item.breed].filter(Boolean).join(' · ') || 'Hayvan ilanı' : ''
+
+  async function handleFavorite() {
+    if (!item?.sellerId) return
+    const wasFavorited = !!item.isFavoritedByMe
+    if (!wasFavorited && favoriteBlocked) {
+      setFavoriteError(EMAIL_VERIFICATION_REQUIRED)
+      return
+    }
+    setFavoriteError(null)
+    const next = !wasFavorited
+    setItem({ ...item, isFavoritedByMe: next })
+    try {
+      await toggleFavorite(item.sellerId, wasFavorited)
+    } catch {
+      setItem({ ...item, isFavoritedByMe: wasFavorited })
+    }
+  }
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
@@ -76,7 +99,7 @@ export function AnimalListingDetailModal({
                     {item.sellerCompanyName || item.sellerName || 'Satıcı'}
                   </p>
                 </div>
-                <Badge variant={isOpen ? 'success' : 'default'}>{isOpen ? 'Açık' : 'Kapalı'}</Badge>
+                <Badge variant={isOpen ? 'open' : 'closed'}>{requestStatusLabel(item.status)}</Badge>
               </div>
 
               <p className="text-small text-muted-foreground flex items-center gap-1 mb-4">
@@ -120,14 +143,40 @@ export function AnimalListingDetailModal({
                 </p>
               ) : null}
 
+              {favoriteError ? <p className="text-sm text-destructive mb-2">{favoriteError}</p> : null}
               <div className="flex flex-col gap-2">
                 {item.sellerId != null && !readOnly ? (
                   <MessageUserButton otherUserId={item.sellerId} contextLabel={title} />
                 ) : null}
-                {!readOnly && isOpen && onOffer ? (
-                  <Button variant="primary" className="w-full" type="button" onClick={() => onOffer(item)}>
-                    Teklif ver
-                  </Button>
+                {!readOnly && onOffer ? (
+                  <div className="flex gap-2">
+                    {item.sellerId != null ? (
+                      <Button
+                        variant="outline"
+                        className="flex-1"
+                        type="button"
+                        disabled={!item.isFavoritedByMe && favoriteBlocked}
+                        title={!item.isFavoritedByMe && favoriteBlocked ? EMAIL_VERIFICATION_REQUIRED : undefined}
+                        onClick={() => void handleFavorite()}
+                      >
+                        <Heart
+                          className={`size-4 mr-2 ${item.isFavoritedByMe ? 'fill-current text-destructive' : ''}`}
+                        />
+                        {item.isFavoritedByMe ? 'Favoriden çıkar' : 'Satıcıyı favorile'}
+                      </Button>
+                    ) : null}
+                    {isOpen ? (
+                      item.hasOfferFromMe ? (
+                        <p className="text-small text-muted-foreground text-center py-2 border border-border rounded-lg flex-1">
+                          Teklif verildi
+                        </p>
+                      ) : (
+                        <Button variant="primary" className="flex-1" type="button" onClick={() => onOffer(item)}>
+                          Teklif ver
+                        </Button>
+                      )
+                    ) : null}
+                  </div>
                 ) : null}
               </div>
             </>

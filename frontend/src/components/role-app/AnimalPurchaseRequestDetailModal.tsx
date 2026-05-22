@@ -1,7 +1,7 @@
 import { Factory, MapPin, X } from 'lucide-react'
 import type { AnimalPurchaseRequestDto } from '../../api/types'
 import { animalCategoryLabel } from '../../api/mappers'
-import { formatDateTr, formatHeadCount, formatKg } from '../../api/format'
+import { formatDateTr, formatHeadCount, formatKg, requestStatusLabel } from '../../api/format'
 import { Button } from './Button'
 import { Badge } from './Badge'
 import { Card, CardContent } from './Card'
@@ -53,7 +53,7 @@ export function AnimalPurchaseRequestDetailModal({
                     {location}
                   </p>
                 </div>
-                <Badge variant={isOpen ? 'open' : 'closed'}>{isOpen ? 'AÇIK' : 'KAPALI'}</Badge>
+                <Badge variant={isOpen ? 'open' : 'closed'}>{requestStatusLabel(request.status)}</Badge>
               </div>
             </div>
           </div>

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -27,9 +28,10 @@ public class SlaughterhouseMeatController {
     private final MeatMarketService meatMarketService;
 
     @GetMapping
-    public List<MeatSaleRequestResponse> myListings(@AuthenticationPrincipal UserDetails principal) {
+    public List<MeatSaleRequestResponse> myListings(
+            @AuthenticationPrincipal UserDetails principal, @RequestParam(required = false) String q) {
         User slaughterhouse = userRepository.findByEmail(principal.getUsername()).orElseThrow();
-        return meatMarketService.listMySaleRequests(slaughterhouse);
+        return meatMarketService.listMySaleRequests(slaughterhouse, q);
     }
 
     @PostMapping
@@ -54,6 +56,13 @@ public class SlaughterhouseMeatController {
             @AuthenticationPrincipal UserDetails principal, @PathVariable Long saleRequestId) {
         User slaughterhouse = userRepository.findByEmail(principal.getUsername()).orElseThrow();
         return ResponseEntity.ok(meatMarketService.closeSaleRequest(slaughterhouse, saleRequestId));
+    }
+
+    @PostMapping("/{saleRequestId}/reopen")
+    public ResponseEntity<MeatSaleRequestResponse> reopen(
+            @AuthenticationPrincipal UserDetails principal, @PathVariable Long saleRequestId) {
+        User slaughterhouse = userRepository.findByEmail(principal.getUsername()).orElseThrow();
+        return ResponseEntity.ok(meatMarketService.reopenSaleRequest(slaughterhouse, saleRequestId));
     }
 }
 

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Eye, Info } from 'lucide-react'
+import { Button } from '../../components/role-app/Button'
 import { Card, CardContent } from '../../components/role-app/Card'
 import { Chip } from '../../components/role-app/Chip'
 import { ListingCard } from '../../components/role-app/ListingCard'
@@ -8,7 +9,6 @@ import { useApi } from '../../hooks/useApi'
 import { useSyncedSearchQuery } from '../../hooks/useSyncedSearchQuery'
 import * as sellerApi from '../../api/seller'
 import { sellerListingToListingCard } from '../../api/mappers'
-import { filterAnimalListings } from '../../lib/animalListingFilters'
 import { AnimalListingDetailModal } from '../../components/role-app/AnimalListingDetailModal'
 import type { AnimalCategory } from '../../api/types'
 
@@ -30,16 +30,18 @@ export function SellerBrowse() {
   const [sort, setSort] = useState<'newest' | 'priceAsc' | 'priceDesc'>('newest')
   const [detailId, setDetailId] = useState<number | null>(null)
 
-  const queryKey = `${category ?? ''}-${sort}`
+  const queryKey = `${category ?? ''}-${sort}-${searchQuery}`
   const listingsQuery = useApi(
-    () => sellerApi.listMarketListings({ category: category ?? undefined, sort }),
+    () =>
+      sellerApi.listMarketListings({
+        category: category ?? undefined,
+        sort,
+        q: searchQuery,
+      }),
     [queryKey],
   )
 
-  const filteredItems = useMemo(
-    () => filterAnimalListings(listingsQuery.data ?? [], { search: searchQuery }),
-    [listingsQuery.data, searchQuery],
-  )
+  const filteredItems = listingsQuery.data ?? []
 
   return (
     <div className="max-w-[1440px] mx-auto px-6 py-8">
@@ -114,7 +116,18 @@ export function SellerBrowse() {
         error={listingsQuery.error}
         onRetry={listingsQuery.reload}
         empty={filteredItems.length === 0}
-        emptyMessage="Diğer satıcılardan açık ilan bulunamadı."
+        emptyMessage={
+          searchQuery.trim()
+            ? 'Aramanıza uygun ilan bulunamadı.'
+            : 'Diğer satıcılardan açık ilan bulunamadı.'
+        }
+        emptyAction={
+          searchQuery.trim() ? (
+            <Button variant="secondary" type="button" onClick={() => setSearchQuery('')}>
+              Aramayı temizle
+            </Button>
+          ) : undefined
+        }
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredItems.map((item) => {

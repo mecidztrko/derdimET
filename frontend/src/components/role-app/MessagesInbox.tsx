@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { Card, CardContent } from './Card'
 import { Input } from './Input'
 import { Button } from './Button'
@@ -36,10 +36,18 @@ export function MessagesInbox() {
 
   const convQuery = useApi(() => messagingApi.listConversations(), [])
   const conversations = convQuery.data ?? []
+  const searchLower = searchQuery.trim().toLowerCase()
   const filtered = conversations.filter((c) =>
-    (c.otherUserName ?? c.otherUserEmail ?? '').toLowerCase().includes(searchQuery.toLowerCase()),
+    (c.otherUserName ?? c.otherUserEmail ?? '').toLowerCase().includes(searchLower),
   )
   const selected = conversations.find((c) => c.conversationId === selectedId) ?? filtered[0] ?? null
+  const hasConversations = conversations.length > 0
+  const listEmpty = !convQuery.loading && !convQuery.error && filtered.length === 0
+  const browseHref = location.pathname.startsWith('/seller')
+    ? '/seller/browse'
+    : location.pathname.startsWith('/slaughterhouse')
+      ? '/slaughterhouse/buy-animals'
+      : '/buyer/search'
 
   useEffect(() => {
     if (!selectedId && filtered[0]?.conversationId) setSelectedId(filtered[0].conversationId)
@@ -104,7 +112,20 @@ export function MessagesInbox() {
   return (
     <Card className="h-[calc(100vh-280px)] min-h-[600px]">
       <CardContent className="p-0 h-full">
-        <PageState loading={convQuery.loading} error={convQuery.error} onRetry={convQuery.reload}>
+        <PageState
+          loading={convQuery.loading}
+          error={convQuery.error}
+          onRetry={convQuery.reload}
+          empty={!convQuery.loading && !convQuery.error && !hasConversations}
+          emptyMessage="Henüz mesajınız yok. Bir ilan veya teklif üzerinden «Mesaj gönder» ile sohbet başlatabilirsiniz."
+          emptyAction={
+            <Link to={browseHref}>
+              <Button variant="secondary" type="button">
+                İlanlara göz at
+              </Button>
+            </Link>
+          }
+        >
           <div className="flex h-full">
             <div
               className={`w-full md:w-80 border-r border-border flex-col ${
@@ -121,30 +142,33 @@ export function MessagesInbox() {
                 />
               </div>
               <div className="flex-1 overflow-y-auto">
-                {filtered.length === 0 ? (
-                  <p className="p-4 text-sm text-muted-foreground">Konuşma yok</p>
-                ) : (
-                  filtered.map((c) => (
-                    <button
-                      key={c.conversationId}
-                      type="button"
-                      onClick={() => {
-                        setSelectedId(c.conversationId)
-                        setMobileShowChat(true)
-                      }}
-                      className={`w-full p-4 border-b border-border hover:bg-muted/50 text-left ${
-                        selected?.conversationId === c.conversationId ? 'bg-primary-soft' : ''
-                      }`}
-                    >
-                      <p className="font-medium truncate">
-                        {c.otherUserName || c.otherUserEmail || 'Kullanıcı'}
-                      </p>
-                      <p className="text-caption text-muted-foreground">
-                        {formatRelativeTr(c.lastMessageAt)}
-                      </p>
-                    </button>
-                  ))
-                )}
+                {listEmpty && hasConversations ? (
+                  <p className="p-4 text-sm text-muted-foreground text-center">
+                    &ldquo;{searchQuery.trim()}&rdquo; için konuşma bulunamadı.
+                  </p>
+                ) : null}
+                {!listEmpty
+                  ? filtered.map((c) => (
+                      <button
+                        key={c.conversationId}
+                        type="button"
+                        onClick={() => {
+                          setSelectedId(c.conversationId)
+                          setMobileShowChat(true)
+                        }}
+                        className={`w-full p-4 border-b border-border hover:bg-muted/50 text-left ${
+                          selected?.conversationId === c.conversationId ? 'bg-primary-soft' : ''
+                        }`}
+                      >
+                        <p className="font-medium truncate">
+                          {c.otherUserName || c.otherUserEmail || 'Kullanıcı'}
+                        </p>
+                        <p className="text-caption text-muted-foreground">
+                          {formatRelativeTr(c.lastMessageAt)}
+                        </p>
+                      </button>
+                    ))
+                  : null}
               </div>
             </div>
             <div className={`flex-1 flex-col ${mobileShowChat ? 'flex' : 'hidden md:flex'}`}>
@@ -173,6 +197,10 @@ export function MessagesInbox() {
                   <div className="flex-1 overflow-y-auto p-4 space-y-4">
                     {messagesLoading ? (
                       <p className="text-sm text-muted-foreground">Yükleniyor…</p>
+                    ) : messages.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-8">
+                        Henüz mesaj yok. Aşağıdan ilk mesajınızı yazın.
+                      </p>
                     ) : (
                       messages.map((m) => (
                         <div

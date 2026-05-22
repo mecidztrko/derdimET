@@ -25,13 +25,19 @@ public record SellerAnimalListingResponse(
         List<String> imageUrls,
         RequestStatus status,
         LocalDateTime createdAt,
-        Boolean isFavoritedByMe) {
+        Boolean isFavoritedByMe,
+        Boolean hasOfferFromMe) {
 
     public static SellerAnimalListingResponse fromEntity(SellerAnimalListing e) {
-        return fromEntity(e, null);
+        return fromEntity(e, null, null);
     }
 
     public static SellerAnimalListingResponse fromEntity(SellerAnimalListing e, Boolean isFavoritedByMe) {
+        return fromEntity(e, isFavoritedByMe, null);
+    }
+
+    public static SellerAnimalListingResponse fromEntity(
+            SellerAnimalListing e, Boolean isFavoritedByMe, Boolean hasOfferFromMe) {
         var s = e.getSeller();
         return new SellerAnimalListingResponse(
                 e.getId(),
@@ -51,7 +57,8 @@ public record SellerAnimalListingResponse(
                 splitImageUrls(e.getImageUrls()),
                 e.getStatus(),
                 e.getCreatedAt(),
-                isFavoritedByMe);
+                isFavoritedByMe,
+                hasOfferFromMe);
     }
 
     static List<String> splitImageUrls(String raw) {

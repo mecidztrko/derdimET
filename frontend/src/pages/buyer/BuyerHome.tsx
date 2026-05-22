@@ -10,6 +10,7 @@ import { Button } from '../../components/role-app/Button'
 import { PageState } from '../../components/role-app/PageState'
 import { useMe } from '../../hooks/useMe'
 import { useApi } from '../../hooks/useApi'
+import { useSyncedSearchQuery } from '../../hooks/useSyncedSearchQuery'
 import * as buyerApi from '../../api/buyer'
 import { meatSaleToListingCard } from '../../api/mappers'
 import { filterMeatListings } from '../../lib/meatListingFilters'
@@ -31,7 +32,11 @@ export function BuyerHome() {
   const [offerTarget, setOfferTarget] = useState<MeatSaleRequestDto | null>(null)
   const { toggle: toggleFavorite, error: favoriteError, blocked: favoriteBlocked } = useToggleFavorite()
 
-  const listingsQuery = useApi(() => buyerApi.listMeatSaleRequests(), [])
+  const [searchQuery, setSearchQuery] = useSyncedSearchQuery()
+  const listingsQuery = useApi(
+    () => buyerApi.listMeatSaleRequests({ q: searchQuery }),
+    [searchQuery],
+  )
   const offersQuery = useApi(() => buyerApi.listMyMeatOffers(), [])
   const purchasesQuery = useApi(() => buyerApi.listPurchases(50), [])
   const favQuery = useApi(() => buyerApi.listFavoriteSlaughterhouses(), [])
@@ -66,6 +71,11 @@ export function BuyerHome() {
       <div className="mb-8">
         <h1 className="mb-2">Hoş geldiniz{user?.name ? `, ${user.name.split(' ')[0]}` : ''}</h1>
         <p className="text-muted-foreground">Kesimhanelerden taze et satış ilanları</p>
+        {searchQuery.trim() ? (
+          <p className="text-small text-muted-foreground mt-2">
+            &ldquo;{searchQuery.trim()}&rdquo; için {filteredWithCity.length} ilan
+          </p>
+        ) : null}
       </div>
       {favoriteError ? (
         <p className="mb-4 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
@@ -160,7 +170,24 @@ export function BuyerHome() {
             error={listingsQuery.error}
             onRetry={listingsQuery.reload}
             empty={filteredWithCity.length === 0}
-            emptyMessage="Filtrelere uygun ilan bulunamadı."
+            emptyMessage={
+              searchQuery.trim()
+                ? 'Aramanıza uygun ilan bulunamadı.'
+                : 'Filtrelere uygun ilan bulunamadı.'
+            }
+            emptyAction={
+              searchQuery.trim() ? (
+                <Button variant="secondary" type="button" onClick={() => setSearchQuery('')}>
+                  Aramayı temizle
+                </Button>
+              ) : (
+                <Link to="/buyer/search">
+                  <Button variant="primary" type="button">
+                    Tüm ilanları ara
+                  </Button>
+                </Link>
+              )
+            }
           >
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredWithCity.map((item) => {
@@ -189,6 +216,13 @@ export function BuyerHome() {
             onRetry={favQuery.reload}
             empty={(favQuery.data?.length ?? 0) === 0}
             emptyMessage="Henüz favori kesimhane eklemediniz."
+            emptyAction={
+              <Link to="/buyer/search">
+                <Button variant="primary" type="button">
+                  İlanları keşfet
+                </Button>
+              </Link>
+            }
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {(favQuery.data ?? []).map((sh) => (
@@ -210,13 +244,6 @@ export function BuyerHome() {
               ))}
             </div>
           </PageState>
-          {(favQuery.data?.length ?? 0) === 0 && !favQuery.loading ? (
-            <div className="mt-4 text-center">
-              <Link to="/buyer/search">
-                <Button variant="secondary">Kesimhane ve ilan ara</Button>
-              </Link>
-            </div>
-          ) : null}
         </TabsContent>
       </Tabs>
 

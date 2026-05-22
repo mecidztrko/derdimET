@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Card, CardContent } from '../../components/role-app/Card'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/role-app/Tabs'
 import { Button } from '../../components/role-app/Button'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/role-app/Tabs'
 import { ListingCard } from '../../components/role-app/ListingCard'
 import { PageState } from '../../components/role-app/PageState'
-import { Heart, Building2, MapPin } from 'lucide-react'
+import { Heart, Building2, MapPin, X } from 'lucide-react'
 import { useApi } from '../../hooks/useApi'
+import { useToggleFavorite } from '../../hooks/useToggleFavorite'
 import * as buyerApi from '../../api/buyer'
 import { meatSaleToListingCard } from '../../api/mappers'
 import { filterMeatListings } from '../../lib/meatListingFilters'
@@ -18,6 +19,7 @@ export function BuyerFavorites() {
   const [activeTab, setActiveTab] = useState('listings')
   const [detailId, setDetailId] = useState<number | null>(null)
   const [offerTarget, setOfferTarget] = useState<MeatSaleRequestDto | null>(null)
+  const { toggle: toggleFavorite, error: favoriteError, blocked: favoriteBlocked } = useToggleFavorite()
 
   const listingsQuery = useApi(() => buyerApi.listMeatSaleRequests(), [])
   const favShQuery = useApi(() => buyerApi.listFavoriteSlaughterhouses(), [])
@@ -34,6 +36,11 @@ export function BuyerFavorites() {
       <div className="mb-8">
         <h1 className="mb-2">Favorilerim</h1>
         <p className="text-muted-foreground">Favori kesimhaneler ve ilgili ilanlar</p>
+        {favoriteError ? (
+          <p className="mt-2 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+            {favoriteError}
+          </p>
+        ) : null}
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -55,6 +62,13 @@ export function BuyerFavorites() {
             onRetry={listingsQuery.reload}
             empty={favoriteItems.length === 0}
             emptyMessage="Favori kesimhaneye ait açık ilan bulunamadı. İlan kartından kesimhaneyi favorileyebilirsiniz."
+            emptyAction={
+              <Link to="/buyer/search">
+                <Button variant="primary" type="button">
+                  İlanları keşfet
+                </Button>
+              </Link>
+            }
           >
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {favoriteItems.map((item) => {
@@ -65,19 +79,17 @@ export function BuyerFavorites() {
                     {...listing}
                     showSlaughterhouseLabel
                     isFavorite
+                    favoriteUserId={item.slaughterhouseId}
+                    favoriteAddBlocked={favoriteBlocked}
+                    onFavoriteToggle={(id, next) => {
+                      void toggleFavorite(id, !next).then(() => listingsQuery.reload())
+                    }}
                     onClick={() => setDetailId(item.id)}
                   />
                 )
               })}
             </div>
           </PageState>
-          {favoriteItems.length === 0 && !listingsQuery.loading ? (
-            <div className="mt-6 text-center">
-              <Link to="/buyer/search">
-                <Button variant="primary">İlanları keşfet</Button>
-              </Link>
-            </div>
-          ) : null}
         </TabsContent>
 
         <TabsContent value="slaughterhouses">
@@ -87,20 +99,45 @@ export function BuyerFavorites() {
             onRetry={favShQuery.reload}
             empty={slaughterhouses.length === 0}
             emptyMessage="Henüz favori kesimhane eklemediniz."
+            emptyAction={
+              <Link to="/buyer/search">
+                <Button variant="primary" type="button">
+                  İlanları keşfet
+                </Button>
+              </Link>
+            }
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {slaughterhouses.map((sh) => (
                 <Card key={sh.slaughterhouseId}>
-                  <CardContent className="p-5">
-                    <h3 className="font-medium">
-                      {sh.slaughterhouseCompanyName || sh.slaughterhouseName || 'Kesimhane'}
-                    </h3>
-                    <p className="text-small text-muted-foreground flex items-center gap-1 mt-1">
-                      <MapPin className="size-3" />
-                      {sh.slaughterhouseCity || 'Konum belirtilmedi'}
-                    </p>
-                    {sh.slaughterhouseEmail ? (
-                      <p className="text-caption text-muted-foreground mt-2">{sh.slaughterhouseEmail}</p>
+                  <CardContent className="p-5 flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <h3 className="font-medium">
+                        {sh.slaughterhouseCompanyName || sh.slaughterhouseName || 'Kesimhane'}
+                      </h3>
+                      <p className="text-small text-muted-foreground flex items-center gap-1 mt-1">
+                        <MapPin className="size-3" />
+                        {sh.slaughterhouseCity || 'Konum belirtilmedi'}
+                      </p>
+                      {sh.slaughterhouseEmail ? (
+                        <p className="text-caption text-muted-foreground mt-2">{sh.slaughterhouseEmail}</p>
+                      ) : null}
+                    </div>
+                    {sh.slaughterhouseId != null ? (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        type="button"
+                        aria-label="Favoriden çıkar"
+                        onClick={() => {
+                          void toggleFavorite(sh.slaughterhouseId!, true).then(() => {
+                            favShQuery.reload()
+                            listingsQuery.reload()
+                          })
+                        }}
+                      >
+                        <X className="size-5 text-muted-foreground" />
+                      </Button>
                     ) : null}
                   </CardContent>
                 </Card>

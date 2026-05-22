@@ -39,9 +39,11 @@ public class SlaughterhouseAnimalListingController {
             @RequestParam(required = false) Integer quantityMax,
             @RequestParam(required = false) java.math.BigDecimal priceMin,
             @RequestParam(required = false) java.math.BigDecimal priceMax,
-            @RequestParam(required = false, defaultValue = "newest") String sort) {
-        userRepository.findByEmail(principal.getUsername()).orElseThrow();
-        return marketService.searchListings(category, type, ageMin, ageMax, quantityMin, quantityMax, priceMin, priceMax, sort);
+            @RequestParam(required = false, defaultValue = "newest") String sort,
+            @RequestParam(required = false) String q) {
+        User slaughterhouse = userRepository.findByEmail(principal.getUsername()).orElseThrow();
+        return marketService.searchListings(
+                slaughterhouse, category, type, ageMin, ageMax, quantityMin, quantityMax, priceMin, priceMax, sort, q);
     }
 
     @PostMapping("/animal-listings/{listingId}/offers")

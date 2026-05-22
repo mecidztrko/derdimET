@@ -13,6 +13,8 @@ import com.derdimet.repository.AnimalOfferRepository;
 import com.derdimet.repository.AnimalPurchaseRequestRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,8 +44,21 @@ public class AnimalPurchaseAdminService {
     }
 
     @Transactional(readOnly = true)
-    public List<AnimalPurchaseRequestResponse> listMyRequests(User slaughterhouse) {
-        return requestRepository.findByCreatedByOrderByCreatedAtDesc(slaughterhouse).stream()
+    public List<AnimalPurchaseRequestResponse> listMyRequests(User slaughterhouse, String q) {
+        Specification<AnimalPurchaseRequest> spec =
+                (root, query, cb) -> cb.equal(root.get("createdBy"), slaughterhouse);
+        if (q != null && !q.isBlank()) {
+            String like = "%" + q.trim().toLowerCase() + "%";
+            spec =
+                    spec.and(
+                            (root, query, cb) ->
+                                    cb.or(
+                                            cb.like(cb.lower(root.get("title")), like),
+                                            cb.like(cb.lower(cb.coalesce(root.get("description"), "")), like)));
+        }
+        return requestRepository
+                .findAll(spec, Sort.by(Sort.Direction.DESC, "createdAt"))
+                .stream()
                 .map(r -> toResponse(r, null))
                 .toList();
     }
@@ -85,6 +100,27 @@ public class AnimalPurchaseAdminService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Talep zaten kapalı");
         }
         req.setStatus(RequestStatus.CLOSED);
+        return toResponse(requestRepository.save(req), null);
+    }
+
+    @Transactional
+    public AnimalPurchaseRequestResponse reopen(User slaughterhouse, Long requestId) {
+        accountGuard.requireEmailVerified(slaughterhouse);
+        AnimalPurchaseRequest req = requestRepository
+                .findByIdAndCreatedBy_Id(requestId, slaughterhouse.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Talep bulunamadı"));
+        if (req.getStatus() != RequestStatus.CLOSED) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Yalnızca kapalı talepler yeniden açılabilir");
+        }
+        boolean hasAccepted =
+                offerRepository.findByRequest_IdAndStatus(requestId, OfferStatus.ACCEPTED).stream()
+                        .findAny()
+                        .isPresent();
+        if (hasAccepted) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT, "Kabul edilmiş teklifi olan talep yeniden açılamaz");
+        }
+        req.setStatus(RequestStatus.OPEN);
         return toResponse(requestRepository.save(req), null);
     }
 

@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Card, CardContent } from '../../components/role-app/Card'
-import { Badge } from '../../components/role-app/Badge'
+import { Button } from '../../components/role-app/Button'
+import { OfferStatusBadge } from '../../components/role-app/OfferStatusBadge'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/role-app/Tabs'
 import { PageState } from '../../components/role-app/PageState'
 import { useApi } from '../../hooks/useApi'
@@ -36,6 +38,13 @@ export function SlaughterhouseOffers() {
             onRetry={reload}
             empty={shown.length === 0}
             emptyMessage={tab === 'pending' ? 'Bekleyen teklif yok.' : 'Henüz teklif vermediniz.'}
+            emptyAction={
+              <Link to="/slaughterhouse/buy-animals">
+                <Button variant="primary" type="button">
+                  {tab === 'pending' ? 'Yeni teklif ver' : 'Hayvan ilanlarına git'}
+                </Button>
+              </Link>
+            }
           >
             <div className="space-y-4">
               {shown.map((offer) => (
@@ -50,9 +59,6 @@ export function SlaughterhouseOffers() {
 }
 
 function OfferCard({ offer }: { offer: ListingOfferDto }) {
-  const status =
-    offer.status === 'ACCEPTED' ? 'success' : offer.status === 'REJECTED' ? 'destructive' : 'warning'
-
   return (
     <Card>
       <CardContent className="p-5 flex flex-wrap items-start justify-between gap-4">
@@ -77,7 +83,7 @@ function OfferCard({ offer }: { offer: ListingOfferDto }) {
             />
           </div>
         </div>
-        <Badge variant={status}>{offer.status}</Badge>
+        <OfferStatusBadge status={offer.status} />
       </CardContent>
     </Card>
   )

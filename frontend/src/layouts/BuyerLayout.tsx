@@ -59,7 +59,13 @@ export function BuyerLayout() {
             </NavLink>
           </div>
 
-          <LayoutSearchBar searchPath="/buyer/search" placeholder="Et ürünleri ara..." />
+          <LayoutSearchBar
+            targets={[
+              { path: '/buyer/search', placeholder: 'Et ürünleri ara...' },
+              { path: '/buyer', placeholder: 'Ana sayfada ilan ara...', exact: true },
+            ]}
+            fallback={{ path: '/buyer/search', placeholder: 'Et ürünleri ara...' }}
+          />
 
           <div className="flex items-center gap-2 flex-shrink-0">
             <NotificationBell />

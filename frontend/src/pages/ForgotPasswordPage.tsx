@@ -57,7 +57,7 @@ export default function ForgotPasswordPage() {
         setError(await parseErrorMessage(res))
         return
       }
-      navigate('/login', { replace: true, state: { registeredEmail: email } })
+      navigate('/login', { replace: true, state: { registeredEmail: email, passwordReset: true } })
     } catch {
       setError('Bağlantı hatası')
     } finally {

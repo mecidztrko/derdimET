@@ -47,6 +47,13 @@ export function SlaughterhouseRecentTradesCard() {
               onRetry={purchases.reload}
               empty={purchaseItems.length === 0}
               emptyMessage="Henüz tamamlanmış hayvan alımı yok."
+              emptyAction={
+                <Link to="/slaughterhouse/buy-animals">
+                  <Button variant="primary" type="button">
+                    Hayvan ilanlarına git
+                  </Button>
+                </Link>
+              }
             >
               <div className="space-y-3">
                 {purchaseItems.map((p) => {
@@ -92,6 +99,13 @@ export function SlaughterhouseRecentTradesCard() {
               onRetry={sales.reload}
               empty={saleItems.length === 0}
               emptyMessage="Henüz tamamlanmış et satışı yok."
+              emptyAction={
+                <Link to="/slaughterhouse/sell-meat">
+                  <Button variant="primary" type="button">
+                    Et ilanlarına git
+                  </Button>
+                </Link>
+              }
             >
               <div className="space-y-3">
                 {saleItems.map((o) => (

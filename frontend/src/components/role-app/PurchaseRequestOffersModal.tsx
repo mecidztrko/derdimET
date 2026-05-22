@@ -8,6 +8,7 @@ import {
 import { ApiError } from '../../api/client'
 import type { AnimalPurchaseRequestDto, PurchaseRequestIncomingOfferDto } from '../../api/types'
 import { formatDateTr, formatHeadCount, formatTry } from '../../api/format'
+import { OfferStatusBadge } from './OfferStatusBadge'
 import { Button } from './Button'
 import { MessageUserButton } from './MessageUserButton'
 import { RespondToOfferButtons } from './RespondToOfferButtons'
@@ -92,7 +93,12 @@ export function PurchaseRequestOffersModal({
                 .finally(() => setLoading(false))
             }}
             empty={offers.length === 0}
-            emptyMessage="Bu talebe henüz satıcı teklifi gelmedi."
+            emptyMessage="Bu talebe henüz satıcı teklifi gelmedi. Açık talepler satıcı panelinde görünür."
+            emptyAction={
+              <Button variant="secondary" type="button" onClick={onClose}>
+                Kapat
+              </Button>
+            }
           >
             <div className="space-y-3 mt-4">
               {offers.map((o) => (
@@ -101,17 +107,7 @@ export function PurchaseRequestOffersModal({
                     <p className="font-medium text-small">
                       {o.sellerCompanyName || o.sellerName || 'Satıcı'}
                     </p>
-                    <Badge
-                      variant={
-                        o.status === 'PENDING'
-                          ? 'pending'
-                          : o.status === 'ACCEPTED'
-                            ? 'accepted'
-                            : 'rejected'
-                      }
-                    >
-                      {o.status}
-                    </Badge>
+                    <OfferStatusBadge status={o.status} />
                   </div>
                   <p className="text-small">
                     {formatTry(o.pricePerKg)} / kg

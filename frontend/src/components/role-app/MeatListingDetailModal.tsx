@@ -7,7 +7,7 @@ import { useEmailVerificationGate } from '../../hooks/useEmailVerificationGate'
 import { EMAIL_VERIFICATION_REQUIRED } from '../../lib/emailVerification'
 import type { MeatSaleRequestDto } from '../../api/types'
 import { animalCategoryLabel } from '../../api/mappers'
-import { formatDateTr, formatKg, formatTry, resolveMediaUrl } from '../../api/format'
+import { formatDateTr, formatKg, formatTry, requestStatusLabel, resolveMediaUrl } from '../../api/format'
 import { Button } from './Button'
 import { Badge } from './Badge'
 import { Card, CardContent } from './Card'
@@ -91,7 +91,7 @@ export function MeatListingDetailModal({ listingId, open, onClose, onOffer }: Me
                     {item.slaughterhouseCompanyName || item.slaughterhouseName || 'Kesimhane'}
                   </p>
                 </div>
-                <Badge variant={isOpen ? 'success' : 'default'}>{isOpen ? 'Açık' : 'Kapalı'}</Badge>
+                <Badge variant={isOpen ? 'open' : 'closed'}>{requestStatusLabel(isOpen ? 'OPEN' : 'CLOSED')}</Badge>
               </div>
 
               <p className="text-small text-muted-foreground flex items-center gap-1 mb-4">

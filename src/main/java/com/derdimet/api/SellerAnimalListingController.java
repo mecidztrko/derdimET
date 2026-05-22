@@ -55,5 +55,12 @@ public class SellerAnimalListingController {
         User seller = userRepository.findByEmail(principal.getUsername()).orElseThrow();
         return ResponseEntity.ok(sellerListingService.closeListing(seller, listingId));
     }
+
+    @PostMapping("/{listingId}/reopen")
+    public ResponseEntity<SellerAnimalListingResponse> reopen(
+            @AuthenticationPrincipal UserDetails principal, @PathVariable Long listingId) {
+        User seller = userRepository.findByEmail(principal.getUsername()).orElseThrow();
+        return ResponseEntity.ok(sellerListingService.reopenListing(seller, listingId));
+    }
 }
 

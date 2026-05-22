@@ -3,6 +3,7 @@ import { ChevronRight, TrendingUp } from 'lucide-react'
 import { Button } from './Button'
 import { Card, CardContent } from './Card'
 import { Badge } from './Badge'
+import { OfferStatusBadge } from './OfferStatusBadge'
 import { PageState } from './PageState'
 import { useApi } from '../../hooks/useApi'
 import { listSales } from '../../api/seller'
@@ -49,6 +50,13 @@ export function SellerSalesCard({ limit = 20, compact = false }: SellerSalesCard
           onRetry={reload}
           empty={items.length === 0}
           emptyMessage="Henüz kabul edilmiş teklifiniz yok."
+          emptyAction={
+            <Link to="/seller">
+              <Button variant="primary" type="button">
+                Kesimhane taleplerine git
+              </Button>
+            </Link>
+          }
         >
           <div className="space-y-3">
             {items.map((s) => {
@@ -63,7 +71,7 @@ export function SellerSalesCard({ limit = 20, compact = false }: SellerSalesCard
                     <p className="font-medium text-small">{title}</p>
                     <div className="flex gap-2">
                       <Badge variant="default">{typeLabel}</Badge>
-                      <Badge variant="accepted">{s.status}</Badge>
+                      <OfferStatusBadge status={s.status} />
                     </div>
                   </div>
                   <p className="text-caption text-muted-foreground">

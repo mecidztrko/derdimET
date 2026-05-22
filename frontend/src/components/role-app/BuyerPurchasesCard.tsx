@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { ChevronRight, ShoppingBag } from 'lucide-react'
 import { Button } from './Button'
 import { Card, CardContent } from './Card'
-import { Badge } from './Badge'
+import { OrderStatusBadge } from './OrderStatusBadge'
 import { PageState } from './PageState'
 import { MessageUserButton } from './MessageUserButton'
 import { useApi } from '../../hooks/useApi'
@@ -49,6 +49,13 @@ export function BuyerPurchasesCard({ limit = 20, compact = false }: BuyerPurchas
           onRetry={reload}
           empty={items.length === 0}
           emptyMessage="Henüz tamamlanmış siparişiniz yok. Kabul edilen teklifler burada görünür."
+          emptyAction={
+            <Link to="/buyer/offers">
+              <Button variant="primary" type="button">
+                Tekliflerime git
+              </Button>
+            </Link>
+          }
         >
           <div className="space-y-3">
             {items.map((o) => (
@@ -61,7 +68,7 @@ export function BuyerPurchasesCard({ limit = 20, compact = false }: BuyerPurchas
                       {o.meatType ? ` · ${o.meatType}` : ''}
                     </p>
                   </div>
-                  <Badge variant="success">{o.status}</Badge>
+                  <OrderStatusBadge status={o.status ?? 'COMPLETED'} />
                 </div>
                 <p className="text-small">
                   {formatTry(o.pricePerKg)} / kg · {formatKg(o.quantity)} · Toplam{' '}

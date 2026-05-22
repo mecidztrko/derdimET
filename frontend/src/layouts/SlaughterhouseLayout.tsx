@@ -82,7 +82,14 @@ export function SlaughterhouseLayout() {
             </NavLink>
           </div>
 
-          <LayoutSearchBar searchPath="/slaughterhouse/buy-animals" placeholder="Satıcı ilanları ara..." />
+          <LayoutSearchBar
+            targets={[
+              { path: '/slaughterhouse/buy-animals', placeholder: 'Satıcı ilanları ara...' },
+              { path: '/slaughterhouse/purchase-requests', placeholder: 'Alış taleplerimde ara...' },
+              { path: '/slaughterhouse/sell-meat', placeholder: 'Et ilanlarımda ara...' },
+            ]}
+            fallback={{ path: '/slaughterhouse/buy-animals', placeholder: 'Satıcı ilanları ara...' }}
+          />
 
           <div className="flex items-center gap-2 flex-shrink-0">
             <NotificationBell />

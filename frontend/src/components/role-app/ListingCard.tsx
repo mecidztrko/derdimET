@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { Card } from './Card'
 import { Badge } from './Badge'
 import { cn } from '../../lib/cn'
+import { listingCardStatusLabel } from '../../api/format'
 
 interface ListingCardProps {
   id: string
@@ -91,7 +92,7 @@ export function ListingCard({
           <Heart className={cn('size-5', isFavorite && 'fill-current')} />
         </button>
         <div className="absolute top-3 left-3">
-          <Badge variant={status}>{status === 'open' ? 'AÇIK' : 'KAPALI'}</Badge>
+          <Badge variant={status}>{listingCardStatusLabel(status)}</Badge>
         </div>
       </div>
 

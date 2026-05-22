@@ -1,4 +1,5 @@
 import { ProfileSettingsForm } from '../../components/role-app/ProfileSettingsForm'
+import { SlaughterhouseFavoriteSellers } from '../../components/role-app/SlaughterhouseFavoriteSellers'
 import { SlaughterhouseTradeHistory } from '../../components/role-app/SlaughterhouseTradeHistory'
 
 export function SlaughterhouseSettings() {
@@ -9,6 +10,7 @@ export function SlaughterhouseSettings() {
         <p className="text-muted-foreground">Profil ve hesap bilgilerinizi güncelleyin</p>
       </div>
       <ProfileSettingsForm />
+      <SlaughterhouseFavoriteSellers />
       <SlaughterhouseTradeHistory />
     </div>
   )

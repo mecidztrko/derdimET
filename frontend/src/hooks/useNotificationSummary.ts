@@ -13,7 +13,9 @@ export function useNotificationSummary() {
     if (!s || !user) return 0
     if (isBuyer(user.role)) return s.pendingOffers
     if (isSeller(user.role)) return s.pendingIncoming
-    if (isSlaughterhouse(user.role)) return s.pendingOffers + s.pendingPurchaseOffers
+    if (isSlaughterhouse(user.role)) {
+      return s.pendingOffers + s.pendingIncoming + s.pendingPurchaseOffers
+    }
     return 0
   }, [query.data, user])
 

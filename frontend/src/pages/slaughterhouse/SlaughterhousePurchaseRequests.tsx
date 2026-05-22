@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Plus, XCircle, Users, Pencil } from 'lucide-react'
+import { Plus, RotateCcw, XCircle, Users, Pencil } from 'lucide-react'
 import { Button } from '../../components/role-app/Button'
 import { Badge } from '../../components/role-app/Badge'
 import { Card, CardContent } from '../../components/role-app/Card'
@@ -9,11 +9,12 @@ import { CreateAnimalPurchaseRequestModal } from '../../components/role-app/Crea
 import { PurchaseRequestOffersModal } from '../../components/role-app/PurchaseRequestOffersModal'
 import { ApiError } from '../../api/client'
 import { useApi } from '../../hooks/useApi'
+import { useSyncedSearchQuery } from '../../hooks/useSyncedSearchQuery'
 import { useEmailVerificationGate } from '../../hooks/useEmailVerificationGate'
 import * as shApi from '../../api/slaughterhouse'
 import { EMAIL_VERIFICATION_REQUIRED } from '../../lib/emailVerification'
 import { animalCategoryLabel } from '../../api/mappers'
-import { formatDateTr, formatHeadCount, formatKg } from '../../api/format'
+import { formatDateTr, formatHeadCount, formatKg, requestStatusLabel } from '../../api/format'
 import type { AnimalPurchaseRequestDto } from '../../api/types'
 
 export function SlaughterhousePurchaseRequests() {
@@ -22,9 +23,14 @@ export function SlaughterhousePurchaseRequests() {
   const [offersTarget, setOffersTarget] = useState<AnimalPurchaseRequestDto | null>(null)
   const [editTarget, setEditTarget] = useState<AnimalPurchaseRequestDto | null>(null)
   const [closingId, setClosingId] = useState<number | null>(null)
+  const [reopeningId, setReopeningId] = useState<number | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
   const { blocked } = useEmailVerificationGate()
-  const { data, loading, error, reload } = useApi(() => shApi.listMyAnimalPurchaseRequests(), [])
+  const [searchQuery, setSearchQuery] = useSyncedSearchQuery()
+  const { data, loading, error, reload } = useApi(
+    () => shApi.listMyAnimalPurchaseRequests({ q: searchQuery }),
+    [searchQuery],
+  )
 
   const filtered = useMemo(() => {
     const items = data ?? []
@@ -56,6 +62,20 @@ export function SlaughterhousePurchaseRequests() {
     }
   }
 
+  async function handleReopen(requestId: number) {
+    if (!window.confirm('Bu alış talebini yeniden açmak istediğinize emin misiniz?')) return
+    setReopeningId(requestId)
+    setActionError(null)
+    try {
+      await shApi.reopenAnimalPurchaseRequest(requestId)
+      reload()
+    } catch (e) {
+      setActionError(e instanceof ApiError ? e.message : 'Talep açılamadı')
+    } finally {
+      setReopeningId(null)
+    }
+  }
+
   return (
     <div className="max-w-[1440px] mx-auto px-6 py-8">
       <div className="mb-8 flex items-center justify-between gap-4 flex-wrap">
@@ -64,8 +84,13 @@ export function SlaughterhousePurchaseRequests() {
           <p className="text-muted-foreground">
             Satıcıların teklif verebileceği alım taleplerinizi yönetin
           </p>
+          {searchQuery.trim() ? (
+            <p className="text-small text-muted-foreground mt-2 w-full">
+              &ldquo;{searchQuery.trim()}&rdquo; için {filtered.length} talep
+            </p>
+          ) : null}
         </div>
-        <Button variant="primary" onClick={() => setShowCreate(true)}>
+        <Button variant="primary" type="button" onClick={() => setShowCreate(true)}>
           <Plus className="size-4 mr-2" />
           Yeni talep
         </Button>
@@ -96,9 +121,22 @@ export function SlaughterhousePurchaseRequests() {
             onRetry={reload}
             empty={filtered.length === 0}
             emptyMessage={
-              tab === 'open'
-                ? 'Açık alış talebiniz yok. Yeni talep oluşturarak satıcılara ulaşın.'
-                : 'Bu filtrede talep bulunamadı.'
+              searchQuery.trim()
+                ? 'Aramanıza uygun talep bulunamadı.'
+                : tab === 'open'
+                  ? 'Açık alış talebiniz yok. Yeni talep oluşturarak satıcılara ulaşın.'
+                  : 'Bu filtrede talep bulunamadı.'
+            }
+            emptyAction={
+              searchQuery.trim() ? (
+                <Button variant="secondary" type="button" onClick={() => setSearchQuery('')}>
+                  Aramayı temizle
+                </Button>
+              ) : tab === 'open' ? (
+                <Button variant="primary" type="button" onClick={() => setShowCreate(true)}>
+                  İlk talebinizi oluşturun
+                </Button>
+              ) : undefined
             }
           >
             <div className="space-y-4">
@@ -108,20 +146,16 @@ export function SlaughterhousePurchaseRequests() {
                   request={req}
                   closing={closingId === req.id}
                   closeBlocked={blocked}
+                  reopening={reopeningId === req.id}
+                  reopenBlocked={blocked}
                   onViewOffers={() => setOffersTarget(req)}
                   onEdit={() => setEditTarget(req)}
                   onClose={() => void handleClose(req.id)}
+                  onReopen={() => void handleReopen(req.id)}
                 />
               ))}
             </div>
           </PageState>
-          {filtered.length === 0 && !loading && tab === 'open' ? (
-            <div className="mt-6 text-center">
-              <Button variant="primary" onClick={() => setShowCreate(true)}>
-                İlk talebinizi oluşturun
-              </Button>
-            </div>
-          ) : null}
         </TabsContent>
       </Tabs>
 
@@ -153,16 +187,22 @@ function RequestRow({
   request,
   closing,
   closeBlocked,
+  reopening,
+  reopenBlocked,
   onViewOffers,
   onEdit,
   onClose,
+  onReopen,
 }: {
   request: AnimalPurchaseRequestDto
   closing: boolean
   closeBlocked: boolean
+  reopening: boolean
+  reopenBlocked: boolean
   onViewOffers: () => void
   onEdit: () => void
   onClose: () => void
+  onReopen: () => void
 }) {
   const isOpen = request.status === 'OPEN'
   const pending = request.pendingOfferCount ?? 0
@@ -174,7 +214,7 @@ function RequestRow({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <h3 className="font-medium">{request.title}</h3>
-            <Badge variant={isOpen ? 'open' : 'closed'}>{isOpen ? 'AÇIK' : 'KAPALI'}</Badge>
+            <Badge variant={isOpen ? 'open' : 'closed'}>{requestStatusLabel(request.status)}</Badge>
             {total > 0 ? (
               <Badge variant="secondary" className="gap-1">
                 <Users className="size-3" />
@@ -212,7 +252,18 @@ function RequestRow({
                 {closing ? 'Kapatılıyor…' : 'Kapat'}
               </Button>
             </>
-          ) : null}
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={reopening || reopenBlocked}
+              title={reopenBlocked ? EMAIL_VERIFICATION_REQUIRED : undefined}
+              onClick={onReopen}
+            >
+              <RotateCcw className="size-4 mr-1" />
+              {reopening ? 'Açılıyor…' : 'Yeniden aç'}
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

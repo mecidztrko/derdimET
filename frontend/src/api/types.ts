@@ -57,6 +57,7 @@ export type SellerAnimalListingDto = {
   status: RequestStatus
   createdAt: string
   isFavoritedByMe: boolean | null
+  hasOfferFromMe?: boolean | null
 }
 
 export type AnimalPurchaseRequestDto = {

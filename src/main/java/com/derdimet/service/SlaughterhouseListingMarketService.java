@@ -8,11 +8,13 @@ import com.derdimet.entity.RequestStatus;
 import com.derdimet.entity.SellerAnimalListing;
 import com.derdimet.entity.User;
 import com.derdimet.entity.AnimalCategory;
+import com.derdimet.entity.UserRole;
 import java.math.BigDecimal;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import com.derdimet.repository.SellerAnimalListingRepository;
 import com.derdimet.repository.SlaughterhouseListingOfferRepository;
+import com.derdimet.util.ListingSearchSupport;
 import com.derdimet.entity.SlaughterhouseListingOffer;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -29,9 +31,11 @@ public class SlaughterhouseListingMarketService {
     private final SlaughterhouseListingOfferRepository offerRepository;
     private final AnimalDealService animalDealService;
     private final AccountGuardService accountGuard;
+    private final FavoriteService favoriteService;
 
     @Transactional(readOnly = true)
     public List<SellerAnimalListingResponse> searchListings(
+            User slaughterhouse,
             AnimalCategory category,
             String typeQ,
             Integer ageMin,
@@ -40,47 +44,21 @@ public class SlaughterhouseListingMarketService {
             Integer quantityMax,
             BigDecimal priceMin,
             BigDecimal priceMax,
-            String sort) {
-        Specification<SellerAnimalListing> spec =
-                Specification.where((root, query, cb) -> cb.equal(root.get("status"), com.derdimet.entity.RequestStatus.OPEN));
-
-        if (category != null) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("category"), category));
-        }
-        if (typeQ != null && !typeQ.isBlank()) {
-            String like = "%" + typeQ.trim().toLowerCase() + "%";
-            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("type")), like));
-        }
-        if (ageMin != null) {
-            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("ageMonths"), ageMin));
-        }
-        if (ageMax != null) {
-            spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("ageMonths"), ageMax));
-        }
-        if (quantityMin != null) {
-            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("quantity"), quantityMin));
-        }
-        if (quantityMax != null) {
-            spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("quantity"), quantityMax));
-        }
-        if (priceMin != null) {
-            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("price"), priceMin));
-        }
-        if (priceMax != null) {
-            spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("price"), priceMax));
-        }
-
-        Sort s =
-                switch (sort == null ? "" : sort.trim().toLowerCase()) {
-                    case "priceasc" -> Sort.by(Sort.Direction.ASC, "price").and(Sort.by(Sort.Direction.DESC, "createdAt"));
-                    case "pricedesc" -> Sort.by(Sort.Direction.DESC, "price").and(Sort.by(Sort.Direction.DESC, "createdAt"));
-                    case "newest", "" -> Sort.by(Sort.Direction.DESC, "createdAt");
-                    default -> Sort.by(Sort.Direction.DESC, "createdAt");
-                };
-
-        return listingRepository.findAll(spec, s).stream()
-                .map(SellerAnimalListingResponse::fromEntity)
-                .toList();
+            String sort,
+            String q) {
+        return searchListingsInternal(
+                slaughterhouse,
+                category,
+                typeQ,
+                ageMin,
+                ageMax,
+                quantityMin,
+                quantityMax,
+                priceMin,
+                priceMax,
+                sort,
+                q,
+                null);
     }
 
     /** Satıcı: diğer satıcıların açık ilanları (kendi ilanları hariç, salt okunur). */
@@ -95,10 +73,42 @@ public class SlaughterhouseListingMarketService {
             Integer quantityMax,
             BigDecimal priceMin,
             BigDecimal priceMax,
-            String sort) {
+            String sort,
+            String q) {
+        return searchListingsInternal(
+                viewer,
+                category,
+                typeQ,
+                ageMin,
+                ageMax,
+                quantityMin,
+                quantityMax,
+                priceMin,
+                priceMax,
+                sort,
+                q,
+                viewer.getId());
+    }
+
+    private List<SellerAnimalListingResponse> searchListingsInternal(
+            User viewer,
+            AnimalCategory category,
+            String typeQ,
+            Integer ageMin,
+            Integer ageMax,
+            Integer quantityMin,
+            Integer quantityMax,
+            BigDecimal priceMin,
+            BigDecimal priceMax,
+            String sort,
+            String q,
+            Long excludeSellerId) {
         Specification<SellerAnimalListing> spec =
                 Specification.where((root, query, cb) -> cb.equal(root.get("status"), com.derdimet.entity.RequestStatus.OPEN));
-        spec = spec.and((root, query, cb) -> cb.notEqual(root.get("seller").get("id"), viewer.getId()));
+
+        if (excludeSellerId != null) {
+            spec = spec.and((root, query, cb) -> cb.notEqual(root.get("seller").get("id"), excludeSellerId));
+        }
 
         if (category != null) {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("category"), category));
@@ -134,8 +144,26 @@ public class SlaughterhouseListingMarketService {
                     default -> Sort.by(Sort.Direction.DESC, "createdAt");
                 };
 
+        Long viewerId = viewer != null ? viewer.getId() : null;
+        UserRole viewerRole = viewer != null ? viewer.getRole() : null;
         return listingRepository.findAll(spec, s).stream()
-                .map(SellerAnimalListingResponse::fromEntity)
+                .filter(l -> ListingSearchSupport.matchesAnimalListing(l, q))
+                .map(
+                        l -> {
+                            Boolean favorited =
+                                    viewer != null
+                                            && viewerRole == UserRole.SLAUGHTERHOUSE
+                                            && l.getSeller() != null
+                                            ? favoriteService.isFavoritedByMe(viewer, l.getSeller().getId())
+                                            : null;
+                            Boolean offered =
+                                    viewerId != null
+                                            && viewerRole == UserRole.SLAUGHTERHOUSE
+                                            && offerRepository.existsByListing_IdAndSlaughterhouse_Id(l.getId(), viewerId)
+                                            ? true
+                                            : null;
+                            return SellerAnimalListingResponse.fromEntity(l, favorited, offered);
+                        })
                 .toList();
     }
 

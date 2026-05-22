@@ -3,10 +3,12 @@ package com.derdimet.service;
 import com.derdimet.api.CreateSellerAnimalListingRequest;
 import com.derdimet.api.SellerAnimalListingResponse;
 import com.derdimet.api.UpdateSellerAnimalListingRequest;
+import com.derdimet.entity.OfferStatus;
 import com.derdimet.entity.RequestStatus;
 import com.derdimet.entity.SellerAnimalListing;
 import com.derdimet.entity.User;
 import com.derdimet.repository.SellerAnimalListingRepository;
+import com.derdimet.repository.SlaughterhouseListingOfferRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,6 +21,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class SellerListingService {
 
     private final SellerAnimalListingRepository listingRepository;
+    private final SlaughterhouseListingOfferRepository listingOfferRepository;
     private final AccountGuardService accountGuard;
 
     @Transactional
@@ -79,6 +82,28 @@ public class SellerListingService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "İlan zaten kapalı");
         }
         listing.setStatus(RequestStatus.CLOSED);
+        return SellerAnimalListingResponse.fromEntity(listingRepository.save(listing));
+    }
+
+    @Transactional
+    public SellerAnimalListingResponse reopenListing(User seller, Long listingId) {
+        accountGuard.requireEmailVerified(seller);
+        SellerAnimalListing listing =
+                listingRepository
+                        .findByIdAndSeller_Id(listingId, seller.getId())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "İlan bulunamadı"));
+        if (listing.getStatus() != RequestStatus.CLOSED) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Yalnızca kapalı ilanlar yeniden açılabilir");
+        }
+        boolean hasAccepted =
+                listingOfferRepository.findByListing_IdAndStatus(listingId, OfferStatus.ACCEPTED).stream()
+                        .findAny()
+                        .isPresent();
+        if (hasAccepted) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT, "Kabul edilmiş teklifi olan ilan yeniden açılamaz");
+        }
+        listing.setStatus(RequestStatus.OPEN);
         return SellerAnimalListingResponse.fromEntity(listingRepository.save(listing));
     }
 

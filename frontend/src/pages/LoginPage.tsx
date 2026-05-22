@@ -5,8 +5,11 @@ import { Button } from '../components/role-app/Button'
 export default function LoginPage() {
   const location = useLocation()
   const [searchParams] = useSearchParams()
-  const navState = (location.state as { registeredEmail?: string; verifyAccessError?: string } | null) ?? null
+  const navState =
+    (location.state as { registeredEmail?: string; verifyAccessError?: string; passwordReset?: boolean } | null) ??
+    null
   const registeredEmail = navState?.registeredEmail
+  const passwordReset = navState?.passwordReset
   const verifyAccessError = navState?.verifyAccessError
   const authError = searchParams.has('error')
 
@@ -24,7 +27,15 @@ export default function LoginPage() {
       ) : null}
       {registeredEmail ? (
         <p className="mb-4 rounded-lg border border-success/20 bg-success/10 px-3 py-2 text-sm text-success" role="status">
-          Kayıt tamamlandı. <span className="font-medium">{registeredEmail}</span> ile giriş yapabilirsiniz.
+          {passwordReset ? (
+            <>
+              Şifreniz güncellendi. <span className="font-medium">{registeredEmail}</span> ile giriş yapabilirsiniz.
+            </>
+          ) : (
+            <>
+              Kayıt tamamlandı. <span className="font-medium">{registeredEmail}</span> ile giriş yapabilirsiniz.
+            </>
+          )}
         </p>
       ) : null}
       <form action="/perform_login" method="post" className="space-y-4">

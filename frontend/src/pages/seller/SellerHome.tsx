@@ -15,9 +15,11 @@ import { AnimalPurchaseRequestDetailModal } from '../../components/role-app/Anim
 import { useMe } from '../../hooks/useMe'
 import { useEmailVerificationGate } from '../../hooks/useEmailVerificationGate'
 import { useApi } from '../../hooks/useApi'
+import { useSyncedSearchQuery } from '../../hooks/useSyncedSearchQuery'
 import * as sellerApi from '../../api/seller'
 import { purchaseRequestCardProps, sellerListingToListingCard } from '../../api/mappers'
 import { SellerSalesCard } from '../../components/role-app/SellerSalesCard'
+import { offerStatusLabel } from '../../api/format'
 import type { AnimalPurchaseRequestDto } from '../../api/types'
 
 const categories = ['Tümü', 'Küçükbaş', 'Büyükbaş']
@@ -25,13 +27,17 @@ const categories = ['Tümü', 'Küçükbaş', 'Büyükbaş']
 export function SellerHome() {
   const { user } = useMe()
   const { blocked: favoriteBlocked } = useEmailVerificationGate()
+  const [searchQuery, setSearchQuery] = useSyncedSearchQuery()
   const [selectedCategory, setSelectedCategory] = useState('Tümü')
   const [showCreate, setShowCreate] = useState(false)
   const [detailTarget, setDetailTarget] = useState<AnimalPurchaseRequestDto | null>(null)
   const [offerTarget, setOfferTarget] = useState<AnimalPurchaseRequestDto | null>(null)
 
   const listingsQuery = useApi(() => sellerApi.listMyAnimalListings(), [])
-  const requestsQuery = useApi(() => sellerApi.listAnimalPurchaseRequests(), [])
+  const requestsQuery = useApi(
+    () => sellerApi.listAnimalPurchaseRequests({ q: searchQuery }),
+    [searchQuery],
+  )
   const incomingQuery = useApi(() => sellerApi.listIncomingListingOffers(), [])
   const outgoingQuery = useApi(() => sellerApi.listMyAnimalOffers(), [])
   const salesQuery = useApi(() => sellerApi.listSales(50), [])
@@ -64,6 +70,11 @@ export function SellerHome() {
       <div className="mb-8">
         <h1 className="mb-2">Hoş geldiniz{user?.name ? `, ${user.name.split(' ')[0]}` : ''}</h1>
         <p className="text-muted-foreground">Kesimhane talepleri ve ilanlarınız</p>
+        {searchQuery.trim() ? (
+          <p className="text-small text-muted-foreground mt-2">
+            &ldquo;{searchQuery.trim()}&rdquo; için {filteredRequests.length} açık talep
+          </p>
+        ) : null}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -130,7 +141,22 @@ export function SellerHome() {
             error={requestsQuery.error}
             onRetry={requestsQuery.reload}
             empty={filteredRequests.length === 0}
-            emptyMessage="Açık kesimhane alış talebi yok."
+            emptyMessage={
+              searchQuery.trim()
+                ? 'Aramanıza uygun açık alış talebi bulunamadı.'
+                : 'Açık kesimhane alış talebi yok.'
+            }
+            emptyAction={
+              searchQuery.trim() ? (
+                <Button variant="secondary" type="button" onClick={() => setSearchQuery('')}>
+                  Aramayı temizle
+                </Button>
+              ) : (
+                <Button variant="secondary" type="button" onClick={() => setSelectedCategory('Tümü')}>
+                  Filtreleri sıfırla
+                </Button>
+              )
+            }
           >
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredRequests.map((req) => (
@@ -157,6 +183,11 @@ export function SellerHome() {
             onRetry={listingsQuery.reload}
             empty={myCards.length === 0}
             emptyMessage="Henüz hayvan ilanınız yok."
+            emptyAction={
+              <Button variant="primary" type="button" onClick={() => setShowCreate(true)}>
+                İlk ilanınızı oluşturun
+              </Button>
+            }
           >
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {myCards.map((listing) => (
@@ -164,13 +195,6 @@ export function SellerHome() {
               ))}
             </div>
           </PageState>
-          {myCards.length === 0 && !listingsQuery.loading ? (
-            <div className="mt-4 text-center">
-              <Button variant="primary" onClick={() => setShowCreate(true)}>
-                İlk ilanınızı oluşturun
-              </Button>
-            </div>
-          ) : null}
         </TabsContent>
 
         <TabsContent value="offers">
@@ -180,6 +204,13 @@ export function SellerHome() {
             onRetry={incomingQuery.reload}
             empty={incoming.length === 0}
             emptyMessage="İlanlarınıza henüz teklif gelmedi."
+            emptyAction={
+              <Link to="/seller/listings">
+                <Button variant="primary" type="button">
+                  İlanlarımı yönet
+                </Button>
+              </Link>
+            }
           >
             <div className="space-y-3">
               {incoming.slice(0, 5).map((o) => (
@@ -188,7 +219,7 @@ export function SellerHome() {
                     <div>
                       <p className="font-medium">{o.slaughterhouseName || 'Kesimhane'}</p>
                       <p className="text-small text-muted-foreground">
-                        {o.listingType} · {o.status}
+                        {o.listingType} · {offerStatusLabel(o.status)}
                       </p>
                     </div>
                     <Link to="/seller/offers">

@@ -1,9 +1,11 @@
 package com.derdimet.api;
 
 import com.derdimet.entity.User;
+import com.derdimet.entity.UserRole;
 import com.derdimet.repository.AnimalPurchaseRequestRepository;
 import com.derdimet.repository.MeatSaleRequestRepository;
 import com.derdimet.repository.SellerAnimalListingRepository;
+import com.derdimet.repository.SlaughterhouseListingOfferRepository;
 import com.derdimet.repository.UserRepository;
 import com.derdimet.service.FavoriteService;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +33,7 @@ public class ListingDetailController {
     private final MeatSaleRequestRepository meatSaleRequestRepository;
     private final AnimalPurchaseRequestRepository animalPurchaseRequestRepository;
     private final FavoriteService favoriteService;
+    private final SlaughterhouseListingOfferRepository listingOfferRepository;
 
     @GetMapping("/animal/{id}")
     public ResponseEntity<SellerAnimalListingResponse> animalListing(
@@ -39,7 +42,8 @@ public class ListingDetailController {
                 .findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "İlan bulunamadı"));
         Boolean fav = checkFavoriteForSeller(principal, listing.getSeller());
-        return ResponseEntity.ok(SellerAnimalListingResponse.fromEntity(listing, fav));
+        Boolean hasOffer = checkHasOfferFromMe(principal, id);
+        return ResponseEntity.ok(SellerAnimalListingResponse.fromEntity(listing, fav, hasOffer));
     }
 
     @GetMapping("/meat/{id}")
@@ -67,6 +71,19 @@ public class ListingDetailController {
         return userRepository
                 .findByEmail(principal.getUsername())
                 .map(me -> favoriteService.isFavoritedByMe(me, owner.getId()))
+                .orElse(null);
+    }
+
+    private Boolean checkHasOfferFromMe(UserDetails principal, Long listingId) {
+        if (principal == null) return null;
+        return userRepository
+                .findByEmail(principal.getUsername())
+                .map(
+                        me -> {
+                            if (me.getRole() != UserRole.SLAUGHTERHOUSE) return null;
+                            return listingOfferRepository.existsByListing_IdAndSlaughterhouse_Id(
+                                    listingId, me.getId());
+                        })
                 .orElse(null);
     }
 }

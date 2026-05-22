@@ -1,6 +1,10 @@
 import { Package, ShoppingCart } from 'lucide-react'
 import { Card, CardContent } from './Card'
 import { Badge } from './Badge'
+import { Link } from 'react-router-dom'
+import { Button } from './Button'
+import { OfferStatusBadge } from './OfferStatusBadge'
+import { OrderStatusBadge } from './OrderStatusBadge'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from './Tabs'
 import { PageState } from './PageState'
 import { MessageUserButton } from './MessageUserButton'
@@ -35,13 +39,20 @@ export function SlaughterhouseTradeHistory() {
               onRetry={sales.reload}
               empty={(sales.data?.length ?? 0) === 0}
               emptyMessage="Henüz tamamlanmış et satışı yok. Alıcı teklifini kabul edince sipariş oluşur."
+              emptyAction={
+                <Link to="/slaughterhouse/sell-meat">
+                  <Button variant="primary" type="button">
+                    Et ilanlarına git
+                  </Button>
+                </Link>
+              }
             >
               <div className="space-y-3">
                 {(sales.data ?? []).map((o) => (
                   <div key={o.orderId} className="p-4 rounded-lg border border-border">
                     <div className="flex flex-wrap justify-between gap-2 mb-1">
                       <p className="font-medium text-small">{o.saleTitle || 'Et satışı'}</p>
-                      <Badge variant="success">{o.status ?? 'COMPLETED'}</Badge>
+                      <OrderStatusBadge status={o.status ?? 'COMPLETED'} />
                     </div>
                     <p className="text-caption text-muted-foreground">
                       Alıcı: {o.buyerName || '—'}
@@ -70,6 +81,13 @@ export function SlaughterhouseTradeHistory() {
               onRetry={purchases.reload}
               empty={(purchases.data?.length ?? 0) === 0}
               emptyMessage="Henüz kabul edilmiş hayvan alımı yok."
+              emptyAction={
+                <Link to="/slaughterhouse/buy-animals">
+                  <Button variant="primary" type="button">
+                    Hayvan ilanlarına git
+                  </Button>
+                </Link>
+              }
             >
               <div className="space-y-3">
                 {(purchases.data ?? []).map((p) => {
@@ -85,7 +103,7 @@ export function SlaughterhouseTradeHistory() {
                       <p className="font-medium text-small">{title}</p>
                       <div className="flex gap-2">
                         <Badge variant="default">{typeLabel}</Badge>
-                        <Badge variant="accepted">{p.status}</Badge>
+                        <OfferStatusBadge status={p.status} />
                       </div>
                     </div>
                     <p className="text-caption text-muted-foreground">

@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Card, CardContent } from '../../components/role-app/Card'
+import { Button } from '../../components/role-app/Button'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/role-app/Tabs'
 import { Badge } from '../../components/role-app/Badge'
 import { PageState } from '../../components/role-app/PageState'
@@ -72,6 +74,15 @@ export function BuyerOffers() {
             onRetry={reload}
             empty={filteredOffers.length === 0}
             emptyMessage="Bu kategoride teklif bulunmuyor."
+            emptyAction={
+              stats.all === 0 ? (
+                <Link to="/buyer/search">
+                  <Button variant="primary" type="button">
+                    İlanları keşfet
+                  </Button>
+                </Link>
+              ) : undefined
+            }
           >
             <div className="space-y-4">
               {filteredOffers.map((offer) => (

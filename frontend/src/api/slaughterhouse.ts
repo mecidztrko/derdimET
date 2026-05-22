@@ -1,4 +1,5 @@
 import { apiFetch, apiFetchVoid } from './client'
+import { withSearchQuery } from '../lib/searchQueryParams'
 import type {
   AnimalCategory,
   AnimalPurchaseRequestDto,
@@ -8,8 +9,8 @@ import type {
   SellerAnimalListingDto,
 } from './types'
 
-export function listAnimalListings(): Promise<SellerAnimalListingDto[]> {
-  return apiFetch('/api/slaughterhouse/animal-listings')
+export function listAnimalListings(params?: { q?: string }): Promise<SellerAnimalListingDto[]> {
+  return apiFetch(withSearchQuery('/api/slaughterhouse/animal-listings', params?.q))
 }
 
 export function listAnimalOffers(): Promise<ListingOfferDto[]> {
@@ -26,12 +27,16 @@ export function createAnimalListingOffer(
   })
 }
 
-export function listMyMeatSaleRequests(): Promise<MeatSaleRequestDto[]> {
-  return apiFetch('/api/slaughterhouse/meat-sale-requests')
+export function listMyMeatSaleRequests(params?: { q?: string }): Promise<MeatSaleRequestDto[]> {
+  return apiFetch(withSearchQuery('/api/slaughterhouse/meat-sale-requests', params?.q))
 }
 
 export function closeMeatSaleRequest(saleRequestId: number): Promise<MeatSaleRequestDto> {
   return apiFetch(`/api/slaughterhouse/meat-sale-requests/${saleRequestId}/close`, { method: 'POST' })
+}
+
+export function reopenMeatSaleRequest(saleRequestId: number): Promise<MeatSaleRequestDto> {
+  return apiFetch(`/api/slaughterhouse/meat-sale-requests/${saleRequestId}/reopen`, { method: 'POST' })
 }
 
 export function updateMeatSaleRequest(
@@ -73,12 +78,16 @@ export function createMeatSaleRequest(body: {
   })
 }
 
-export function listMyAnimalPurchaseRequests(): Promise<AnimalPurchaseRequestDto[]> {
-  return apiFetch('/api/slaughterhouse/animal-purchase-requests')
+export function listMyAnimalPurchaseRequests(params?: { q?: string }): Promise<AnimalPurchaseRequestDto[]> {
+  return apiFetch(withSearchQuery('/api/slaughterhouse/animal-purchase-requests', params?.q))
 }
 
 export function closeAnimalPurchaseRequest(requestId: number): Promise<AnimalPurchaseRequestDto> {
   return apiFetch(`/api/slaughterhouse/animal-purchase-requests/${requestId}/close`, { method: 'POST' })
+}
+
+export function reopenAnimalPurchaseRequest(requestId: number): Promise<AnimalPurchaseRequestDto> {
+  return apiFetch(`/api/slaughterhouse/animal-purchase-requests/${requestId}/reopen`, { method: 'POST' })
 }
 
 export function listPurchaseRequestOffers(
@@ -138,6 +147,17 @@ export function updateAnimalPurchaseRequest(
     method: 'PATCH',
     body: JSON.stringify(body),
   })
+}
+
+export type FavoriteSellerDto = {
+  sellerId: number | null
+  sellerName: string | null
+  sellerEmail: string | null
+  createdAt: string
+}
+
+export function listFavoriteSellers(): Promise<FavoriteSellerDto[]> {
+  return apiFetch('/api/slaughterhouse/profile/favorites/sellers')
 }
 
 export function listProfilePurchases(

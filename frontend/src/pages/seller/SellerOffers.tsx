@@ -1,6 +1,7 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Card, CardContent } from '../../components/role-app/Card'
-import { Badge } from '../../components/role-app/Badge'
+import { OfferStatusBadge } from '../../components/role-app/OfferStatusBadge'
 import { Button } from '../../components/role-app/Button'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/role-app/Tabs'
 import { PageState } from '../../components/role-app/PageState'
@@ -60,6 +61,13 @@ export function SellerOffers() {
             reload={incoming.reload}
             empty={(incoming.data?.length ?? 0) === 0}
             emptyMessage="İlanlarınıza henüz teklif gelmedi."
+            emptyAction={
+              <Link to="/seller/listings">
+                <Button variant="primary" type="button">
+                  İlan oluştur veya yönet
+                </Button>
+              </Link>
+            }
           >
             {(incoming.data ?? []).map((o) => (
               <IncomingOfferCard
@@ -80,6 +88,13 @@ export function SellerOffers() {
             reload={outgoing.reload}
             empty={(outgoing.data?.length ?? 0) === 0}
             emptyMessage="Henüz kesimhane alış talebine teklif vermediniz."
+            emptyAction={
+              <Link to="/seller">
+                <Button variant="primary" type="button">
+                  Kesimhane taleplerine git
+                </Button>
+              </Link>
+            }
           >
             {(outgoing.data ?? []).map((o) => (
               <OutgoingOfferCard key={o.offerId} offer={o} />
@@ -97,6 +112,7 @@ function OffersList({
   reload,
   empty,
   emptyMessage,
+  emptyAction,
   children,
 }: {
   loading: boolean
@@ -104,10 +120,18 @@ function OffersList({
   reload: () => void
   empty: boolean
   emptyMessage: string
+  emptyAction?: React.ReactNode
   children: React.ReactNode
 }) {
   return (
-    <PageState loading={loading} error={error} onRetry={reload} empty={empty} emptyMessage={emptyMessage}>
+    <PageState
+      loading={loading}
+      error={error}
+      onRetry={reload}
+      empty={empty}
+      emptyMessage={emptyMessage}
+      emptyAction={emptyAction}
+    >
       <div className="space-y-4">{children}</div>
     </PageState>
   )
@@ -124,13 +148,6 @@ function IncomingOfferCard({
   onAccept: () => void
   onReject: () => void
 }) {
-  const statusVariant =
-    offer.status === 'PENDING'
-      ? 'warning'
-      : offer.status === 'ACCEPTED'
-        ? 'success'
-        : 'destructive'
-
   return (
     <Card>
       <CardContent className="p-5">
@@ -148,7 +165,7 @@ function IncomingOfferCard({
             {offer.note ? <p className="text-caption text-muted-foreground mt-2">{offer.note}</p> : null}
             <p className="text-caption text-muted-foreground mt-2">{formatDateTr(offer.createdAt)}</p>
           </div>
-          <Badge variant={statusVariant}>{offer.status}</Badge>
+          <OfferStatusBadge status={offer.status} />
         </div>
         <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-border">
           <MessageUserButton
@@ -175,13 +192,7 @@ function OutgoingOfferCard({ offer }: { offer: SellerAnimalOfferItemDto }) {
           </p>
           <p className="text-caption text-muted-foreground mt-2">{formatDateTr(offer.createdAt)}</p>
         </div>
-        <Badge
-          variant={
-            offer.status === 'PENDING' ? 'warning' : offer.status === 'ACCEPTED' ? 'success' : 'destructive'
-          }
-        >
-          {offer.status}
-        </Badge>
+        <OfferStatusBadge status={offer.status} />
       </CardContent>
       <div className="px-5 pb-5">
         <MessageUserButton

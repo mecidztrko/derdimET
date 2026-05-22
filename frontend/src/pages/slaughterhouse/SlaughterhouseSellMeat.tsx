@@ -1,13 +1,15 @@
 import { useState } from 'react'
-import { Plus, XCircle, Pencil } from 'lucide-react'
+import { Plus, RotateCcw, XCircle, Pencil } from 'lucide-react'
 import { Button } from '../../components/role-app/Button'
 import { Card, CardContent } from '../../components/role-app/Card'
 import { Badge } from '../../components/role-app/Badge'
+import { OfferStatusBadge } from '../../components/role-app/OfferStatusBadge'
 import { ListingCard } from '../../components/role-app/ListingCard'
 import { PageState } from '../../components/role-app/PageState'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/role-app/Tabs'
 import { CreateMeatSaleModal } from '../../components/role-app/CreateMeatSaleModal'
 import { useApi } from '../../hooks/useApi'
+import { useSyncedSearchQuery } from '../../hooks/useSyncedSearchQuery'
 import { useEmailVerificationGate } from '../../hooks/useEmailVerificationGate'
 import * as shApi from '../../api/slaughterhouse'
 import { EMAIL_VERIFICATION_REQUIRED } from '../../lib/emailVerification'
@@ -25,10 +27,15 @@ export function SlaughterhouseSellMeat() {
   const [editListing, setEditListing] = useState<MeatSaleRequestDto | null>(null)
   const [actingId, setActingId] = useState<number | null>(null)
   const [closingId, setClosingId] = useState<number | null>(null)
+  const [reopeningId, setReopeningId] = useState<number | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
   const { blocked } = useEmailVerificationGate()
+  const [searchQuery, setSearchQuery] = useSyncedSearchQuery()
 
-  const listingsQuery = useApi(() => shApi.listMyMeatSaleRequests(), [])
+  const listingsQuery = useApi(
+    () => shApi.listMyMeatSaleRequests({ q: searchQuery }),
+    [searchQuery],
+  )
   const offersQuery = useApi(() => shApi.listIncomingMeatOffers(), [])
 
   const rawListings = listingsQuery.data ?? []
@@ -65,14 +72,34 @@ export function SlaughterhouseSellMeat() {
     }
   }
 
+  async function handleReopen(saleRequestId: number) {
+    if (!window.confirm('Bu et ilanını yeniden açmak istediğinize emin misiniz?')) return
+    setReopeningId(saleRequestId)
+    setActionError(null)
+    try {
+      await shApi.reopenMeatSaleRequest(saleRequestId)
+      listingsQuery.reload()
+      offersQuery.reload()
+    } catch (e) {
+      setActionError(e instanceof ApiError ? e.message : 'İlan açılamadı')
+    } finally {
+      setReopeningId(null)
+    }
+  }
+
   return (
     <div className="max-w-[1440px] mx-auto px-6 py-8">
       <div className="mb-8 flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="mb-2">Et satış</h1>
           <p className="text-muted-foreground">İlanlarınız ve alıcı teklifleri</p>
+          {searchQuery.trim() ? (
+            <p className="text-small text-muted-foreground mt-2">
+              &ldquo;{searchQuery.trim()}&rdquo; için {cards.length} ilan
+            </p>
+          ) : null}
         </div>
-        <Button variant="primary" onClick={() => setShowCreate(true)}>
+        <Button variant="primary" type="button" onClick={() => setShowCreate(true)}>
           <Plus className="size-4 mr-2" />
           Yeni et ilanı
         </Button>
@@ -95,7 +122,22 @@ export function SlaughterhouseSellMeat() {
             error={listingsQuery.error}
             onRetry={listingsQuery.reload}
             empty={cards.length === 0}
-            emptyMessage="Henüz et satış ilanınız yok."
+            emptyMessage={
+              searchQuery.trim()
+                ? 'Aramanıza uygun et ilanı bulunamadı.'
+                : 'Henüz et satış ilanınız yok.'
+            }
+            emptyAction={
+              searchQuery.trim() ? (
+                <Button variant="secondary" type="button" onClick={() => setSearchQuery('')}>
+                  Aramayı temizle
+                </Button>
+              ) : (
+                <Button variant="primary" type="button" onClick={() => setShowCreate(true)}>
+                  İlk et ilanınızı oluşturun
+                </Button>
+              )
+            }
           >
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {rawListings.map((item) => {
@@ -104,7 +146,7 @@ export function SlaughterhouseSellMeat() {
                 return (
                   <div key={item.id} className="space-y-2">
                     <ListingCard {...card} showSlaughterhouseLabel />
-                    {isOpen && (
+                    {isOpen ? (
                       <div className="flex gap-2">
                         <Button variant="outline" size="sm" className="flex-1" onClick={() => setEditListing(item)}>
                           <Pencil className="size-4 mr-1" />
@@ -122,6 +164,18 @@ export function SlaughterhouseSellMeat() {
                           {closingId === item.id ? 'Kapatılıyor…' : 'Kapat'}
                         </Button>
                       </div>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                        disabled={reopeningId === item.id || blocked}
+                        title={blocked ? EMAIL_VERIFICATION_REQUIRED : undefined}
+                        onClick={() => void handleReopen(item.id)}
+                      >
+                        <RotateCcw className="size-4 mr-1" />
+                        {reopeningId === item.id ? 'Açılıyor…' : 'Yeniden aç'}
+                      </Button>
                     )}
                   </div>
                 )
@@ -137,6 +191,11 @@ export function SlaughterhouseSellMeat() {
             onRetry={offersQuery.reload}
             empty={(offersQuery.data?.length ?? 0) === 0}
             emptyMessage="Henüz alıcı teklifi yok."
+            emptyAction={
+              <Button variant="secondary" type="button" onClick={() => setTab('listings')}>
+                İlanlarıma git
+              </Button>
+            }
           >
             <div className="space-y-4">
               {(offersQuery.data ?? []).map((offer) => (
@@ -180,13 +239,6 @@ function MeatOfferRow({
   onAccept: () => void
   onReject: () => void
 }) {
-  const statusVariant =
-    offer.status === 'PENDING'
-      ? 'warning'
-      : offer.status === 'ACCEPTED'
-        ? 'success'
-        : 'destructive'
-
   return (
     <Card>
       <CardContent className="p-5">
@@ -200,7 +252,7 @@ function MeatOfferRow({
             {offer.note ? <p className="text-caption text-muted-foreground mt-2">{offer.note}</p> : null}
             <p className="text-caption text-muted-foreground mt-2">{formatDateTr(offer.createdAt)}</p>
           </div>
-          <Badge variant={statusVariant}>{offer.status}</Badge>
+          <OfferStatusBadge status={offer.status} />
         </div>
         <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-border">
           <MessageUserButton

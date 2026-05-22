@@ -16,6 +16,7 @@ import com.derdimet.entity.User;
 import com.derdimet.repository.MeatOfferRepository;
 import com.derdimet.repository.MeatSaleRequestRepository;
 import com.derdimet.repository.OrderRepository;
+import com.derdimet.util.ListingSearchSupport;
 import java.math.BigDecimal;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ public class MeatMarketService {
     private final MeatOfferRepository meatOfferRepository;
     private final OrderRepository orderRepository;
     private final AccountGuardService accountGuard;
+    private final FavoriteService favoriteService;
 
     @Transactional
     public MeatSaleRequestResponse createSaleRequest(User slaughterhouse, CreateMeatSaleRequest body) {
@@ -60,9 +62,17 @@ public class MeatMarketService {
     }
 
     @Transactional(readOnly = true)
-    public List<MeatSaleRequestResponse> listOpenSaleRequests() {
+    public List<MeatSaleRequestResponse> listOpenSaleRequests(User buyer, String q) {
         return saleRequestRepository.findByStatusOrderByCreatedAtDesc(RequestStatus.OPEN).stream()
-                .map(MeatSaleRequestResponse::fromEntity)
+                .filter(m -> ListingSearchSupport.matchesMeatSale(m, q))
+                .map(
+                        m -> {
+                            Boolean fav =
+                                    buyer != null && m.getSlaughterhouse() != null
+                                            ? favoriteService.isFavoritedByMe(buyer, m.getSlaughterhouse().getId())
+                                            : null;
+                            return MeatSaleRequestResponse.fromEntity(m, fav);
+                        })
                 .toList();
     }
 
@@ -97,8 +107,9 @@ public class MeatMarketService {
     }
 
     @Transactional(readOnly = true)
-    public List<MeatSaleRequestResponse> listMySaleRequests(User slaughterhouse) {
+    public List<MeatSaleRequestResponse> listMySaleRequests(User slaughterhouse, String q) {
         return saleRequestRepository.findBySlaughterhouseOrderByCreatedAtDesc(slaughterhouse).stream()
+                .filter(r -> ListingSearchSupport.matchesMeatSale(r, q))
                 .map(MeatSaleRequestResponse::fromEntity)
                 .toList();
     }
@@ -136,6 +147,28 @@ public class MeatMarketService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "İlan zaten kapalı");
         }
         req.setStatus(RequestStatus.CLOSED);
+        return MeatSaleRequestResponse.fromEntity(saleRequestRepository.save(req));
+    }
+
+    @Transactional
+    public MeatSaleRequestResponse reopenSaleRequest(User slaughterhouse, Long saleRequestId) {
+        accountGuard.requireEmailVerified(slaughterhouse);
+        MeatSaleRequest req =
+                saleRequestRepository
+                        .findByIdAndSlaughterhouse_Id(saleRequestId, slaughterhouse.getId())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Et ilanı bulunamadı"));
+        if (req.getStatus() != RequestStatus.CLOSED) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Yalnızca kapalı ilanlar yeniden açılabilir");
+        }
+        boolean hasAccepted =
+                meatOfferRepository.findBySaleRequest_IdAndStatus(saleRequestId, OfferStatus.ACCEPTED).stream()
+                        .findAny()
+                        .isPresent();
+        if (hasAccepted) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT, "Kabul edilmiş teklifi olan ilan yeniden açılamaz");
+        }
+        req.setStatus(RequestStatus.OPEN);
         return MeatSaleRequestResponse.fromEntity(saleRequestRepository.save(req));
     }
 

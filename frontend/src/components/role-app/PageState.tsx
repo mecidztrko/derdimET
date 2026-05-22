@@ -5,6 +5,7 @@ type PageStateProps = {
   error?: string | null
   empty?: boolean
   emptyMessage?: string
+  emptyAction?: React.ReactNode
   onRetry?: () => void
   children: React.ReactNode
 }
@@ -14,6 +15,7 @@ export function PageState({
   error,
   empty,
   emptyMessage = 'Kayıt bulunamadı.',
+  emptyAction,
   onRetry,
   children,
 }: PageStateProps) {
@@ -38,8 +40,11 @@ export function PageState({
   }
   if (empty) {
     return (
-      <div className="rounded-xl border border-dashed border-[var(--border)] bg-[var(--card)] p-10 text-center text-sm text-[var(--muted-foreground)]">
-        {emptyMessage}
+      <div className="space-y-4">
+        <div className="rounded-xl border border-dashed border-[var(--border)] bg-[var(--card)] p-10 text-center text-sm text-[var(--muted-foreground)]">
+          {emptyMessage}
+        </div>
+        {emptyAction ? <div className="text-center">{emptyAction}</div> : null}
       </div>
     )
   }

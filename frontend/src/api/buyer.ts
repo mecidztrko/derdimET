@@ -1,4 +1,5 @@
 import { apiFetch, apiFetchVoid } from './client'
+import { withSearchQuery } from '../lib/searchQueryParams'
 import type {
   BuyerPurchaseDto,
   FavoriteSlaughterhouseDto,
@@ -6,8 +7,8 @@ import type {
   MeatSaleRequestDto,
 } from './types'
 
-export function listMeatSaleRequests(): Promise<MeatSaleRequestDto[]> {
-  return apiFetch('/api/buyer/meat-sale-requests')
+export function listMeatSaleRequests(params?: { q?: string }): Promise<MeatSaleRequestDto[]> {
+  return apiFetch(withSearchQuery('/api/buyer/meat-sale-requests', params?.q))
 }
 
 export function listMyMeatOffers(): Promise<MeatOfferItemDto[]> {

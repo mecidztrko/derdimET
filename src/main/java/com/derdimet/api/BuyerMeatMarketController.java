@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -25,9 +26,11 @@ public class BuyerMeatMarketController {
 
     /** Et alıcılarının gördüğü: kesimhanelerin açtığı açık et ilanları. */
     @GetMapping("/api/buyer/meat-sale-requests")
-    public List<MeatSaleRequestResponse> listOpenSaleRequests(@AuthenticationPrincipal UserDetails principal) {
-        userRepository.findByEmail(principal.getUsername()).orElseThrow();
-        return meatMarketService.listOpenSaleRequests();
+    public List<MeatSaleRequestResponse> listOpenSaleRequests(
+            @AuthenticationPrincipal UserDetails principal,
+            @RequestParam(required = false) String q) {
+        User buyer = userRepository.findByEmail(principal.getUsername()).orElseThrow();
+        return meatMarketService.listOpenSaleRequests(buyer, q);
     }
 
     @PostMapping("/api/buyer/meat-sale-requests/{saleRequestId}/offers")

@@ -40,6 +40,11 @@ export function NotificationBell() {
       return [
         { label: 'Alıcı et teklifleri', count: data.pendingOffers, href: '/slaughterhouse/sell-meat' },
         {
+          label: 'Satıcı ilanı tekliflerim (bekleyen)',
+          count: data.pendingIncoming,
+          href: '/slaughterhouse/offers',
+        },
+        {
           label: 'Alış talebi satıcı teklifleri',
           count: data.pendingPurchaseOffers,
           href: '/slaughterhouse/purchase-requests',
@@ -78,7 +83,7 @@ export function NotificationBell() {
               {rows
                 .filter((r) => r.count > 0)
                 .map((r) => (
-                  <li key={r.href}>
+                  <li key={`${r.href}-${r.label}`}>
                     <Link
                       to={r.href}
                       className="flex items-center justify-between gap-2 px-4 py-2.5 text-small hover:bg-muted/60"
