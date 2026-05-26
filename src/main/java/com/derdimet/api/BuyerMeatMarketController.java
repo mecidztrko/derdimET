@@ -43,9 +43,10 @@ public class BuyerMeatMarketController {
     }
 
     @GetMapping("/api/buyer/meat-offers")
-    public List<MeatOfferItemResponse> listMyOffers(@AuthenticationPrincipal UserDetails principal) {
+    public List<MeatOfferItemResponse> listMyOffers(
+            @AuthenticationPrincipal UserDetails principal, @RequestParam(required = false) String q) {
         User buyer = userRepository.findByEmail(principal.getUsername()).orElseThrow();
-        return meatMarketService.listMyOffers(buyer);
+        return meatMarketService.listMyOffers(buyer, q);
     }
 }
 

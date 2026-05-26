@@ -36,9 +36,10 @@ export function RoleAppSidebar({
 
       <aside
         className={cn(
-          'w-64 border-r border-border bg-card z-40 p-4',
-          'fixed left-0 top-16 bottom-0 transition-transform duration-200 lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] lg:translate-x-0',
-          mobileOpen ? 'translate-x-0' : '-translate-x-full',
+          'z-40 w-64 shrink-0 border-r border-border bg-card p-4',
+          'fixed left-0 top-16 bottom-0 transition-transform duration-200',
+          'lg:relative lg:top-auto lg:bottom-auto lg:left-auto lg:h-auto lg:max-h-full lg:overflow-y-auto lg:translate-x-0',
+          mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
         )}
       >
         <nav className="space-y-1">

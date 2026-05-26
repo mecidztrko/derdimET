@@ -9,12 +9,14 @@ import { CreateAnimalListingModal } from '../../components/role-app/CreateAnimal
 import { Plus, MapPin, Calendar, Pencil } from 'lucide-react'
 import { ApiError } from '../../api/client'
 import { useApi } from '../../hooks/useApi'
+import { useSyncedSearchQuery } from '../../hooks/useSyncedSearchQuery'
 import { useEmailVerificationGate } from '../../hooks/useEmailVerificationGate'
 import * as sellerApi from '../../api/seller'
 import { EMAIL_VERIFICATION_REQUIRED } from '../../lib/emailVerification'
 import { animalCategoryLabel } from '../../api/mappers'
 import { formatDateTr, formatHeadCount, formatKg, formatTry, requestStatusLabel, resolveMediaUrl } from '../../api/format'
 import type { SellerAnimalListingDto } from '../../api/types'
+import { RoleAppPage } from '../../components/role-app/RoleAppPage'
 
 export function SellerListings() {
   const [activeTab, setActiveTab] = useState<'all' | 'open' | 'closed'>('all')
@@ -24,8 +26,12 @@ export function SellerListings() {
   const [reopeningId, setReopeningId] = useState<number | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
   const { blocked } = useEmailVerificationGate()
+  const [searchQuery, setSearchQuery] = useSyncedSearchQuery()
 
-  const listingsQuery = useApi(() => sellerApi.listMyAnimalListings(), [])
+  const listingsQuery = useApi(
+    () => sellerApi.listMyAnimalListings({ q: searchQuery }),
+    [searchQuery],
+  )
   const incomingQuery = useApi(() => sellerApi.listIncomingListingOffers(), [])
 
   const listings = listingsQuery.data ?? []
@@ -85,13 +91,18 @@ export function SellerListings() {
   }
 
   return (
-    <div className="max-w-[1440px] mx-auto px-6 py-8">
+    <RoleAppPage>
       <div className="mb-8 flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="mb-2">Hayvan ilanlarım</h1>
           <p className="text-muted-foreground">İlanlarınızı oluşturun ve yönetin</p>
+          {searchQuery.trim() ? (
+            <p className="text-small text-muted-foreground mt-2">
+              &ldquo;{searchQuery.trim()}&rdquo; için {filteredListings.length} ilan
+            </p>
+          ) : null}
         </div>
-        <Button variant="primary" onClick={() => setShowCreateModal(true)}>
+        <Button variant="primary" type="button" onClick={() => setShowCreateModal(true)}>
           <Plus className="size-4 mr-2" />
           Yeni ilan
         </Button>
@@ -122,12 +133,18 @@ export function SellerListings() {
             onRetry={listingsQuery.reload}
             empty={filteredListings.length === 0}
             emptyMessage={
-              stats.all === 0
-                ? 'Henüz hayvan ilanınız yok. İlk ilanınızı oluşturarak kesimhanelerin teklif vermesini sağlayın.'
-                : 'Bu filtrede ilan bulunamadı.'
+              searchQuery.trim()
+                ? 'Aramanıza uygun ilan bulunamadı.'
+                : stats.all === 0
+                  ? 'Henüz hayvan ilanınız yok. İlk ilanınızı oluşturarak kesimhanelerin teklif vermesini sağlayın.'
+                  : 'Bu filtrede ilan bulunamadı.'
             }
             emptyAction={
-              stats.all === 0 ? (
+              searchQuery.trim() ? (
+                <Button variant="secondary" type="button" onClick={() => setSearchQuery('')}>
+                  Aramayı temizle
+                </Button>
+              ) : stats.all === 0 ? (
                 <Button variant="primary" type="button" onClick={() => setShowCreateModal(true)}>
                   İlk ilanınızı oluşturun
                 </Button>
@@ -166,7 +183,7 @@ export function SellerListings() {
           incomingQuery.reload()
         }}
       />
-    </div>
+    </RoleAppPage>
   )
 }
 

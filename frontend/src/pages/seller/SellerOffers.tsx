@@ -12,6 +12,7 @@ import { MessageUserButton } from '../../components/role-app/MessageUserButton'
 import { RespondToOfferButtons } from '../../components/role-app/RespondToOfferButtons'
 import { ApiError } from '../../api/client'
 import type { ListingOfferDto, SellerAnimalOfferItemDto } from '../../api/types'
+import { RoleAppPage } from '../../components/role-app/RoleAppPage'
 
 export function SellerOffers() {
   const [tab, setTab] = useState('incoming')
@@ -37,7 +38,7 @@ export function SellerOffers() {
   }
 
   return (
-    <div className="max-w-[1440px] mx-auto px-6 py-8">
+    <RoleAppPage>
       <div className="mb-8">
         <h1 className="mb-2">Teklifler</h1>
         <p className="text-muted-foreground">Gelen ve verdiğiniz teklifler</p>
@@ -102,7 +103,7 @@ export function SellerOffers() {
           </OffersList>
         </TabsContent>
       </Tabs>
-    </div>
+    </RoleAppPage>
   )
 }
 

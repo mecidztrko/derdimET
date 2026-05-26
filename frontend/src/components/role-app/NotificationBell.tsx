@@ -31,13 +31,20 @@ export function NotificationBell() {
   const rows: Row[] = (() => {
     if (!data || !user) return []
     if (isBuyer(user.role)) {
-      return [{ label: 'Bekleyen et teklifleri', count: data.pendingOffers, href: '/buyer/offers' }]
+      return [
+        { label: 'Okunmamış mesajlar', count: data.unreadMessages, href: '/buyer/messages' },
+        { label: 'Bekleyen et teklifleri', count: data.pendingOffers, href: '/buyer/offers' },
+      ]
     }
     if (isSeller(user.role)) {
-      return [{ label: 'İlanlarıma gelen teklifler', count: data.pendingIncoming, href: '/seller/offers' }]
+      return [
+        { label: 'Okunmamış mesajlar', count: data.unreadMessages, href: '/seller/messages' },
+        { label: 'İlanlarıma gelen teklifler', count: data.pendingIncoming, href: '/seller/offers' },
+      ]
     }
     if (isSlaughterhouse(user.role)) {
       return [
+        { label: 'Okunmamış mesajlar', count: data.unreadMessages, href: '/slaughterhouse/messages' },
         { label: 'Alıcı et teklifleri', count: data.pendingOffers, href: '/slaughterhouse/sell-meat' },
         {
           label: 'Satıcı ilanı tekliflerim (bekleyen)',

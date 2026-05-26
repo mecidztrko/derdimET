@@ -100,8 +100,9 @@ public class MeatMarketService {
     }
 
     @Transactional(readOnly = true)
-    public List<MeatOfferItemResponse> listMyOffers(User buyer) {
+    public List<MeatOfferItemResponse> listMyOffers(User buyer, String q) {
         return meatOfferRepository.findByBuyerOrderByCreatedAtDesc(buyer).stream()
+                .filter(o -> ListingSearchSupport.matchesMeatOffer(o, q))
                 .map(MeatOfferItemResponse::fromEntity)
                 .toList();
     }

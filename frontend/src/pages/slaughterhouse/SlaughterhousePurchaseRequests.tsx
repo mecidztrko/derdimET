@@ -16,6 +16,7 @@ import { EMAIL_VERIFICATION_REQUIRED } from '../../lib/emailVerification'
 import { animalCategoryLabel } from '../../api/mappers'
 import { formatDateTr, formatHeadCount, formatKg, requestStatusLabel } from '../../api/format'
 import type { AnimalPurchaseRequestDto } from '../../api/types'
+import { RoleAppPage } from '../../components/role-app/RoleAppPage'
 
 export function SlaughterhousePurchaseRequests() {
   const [tab, setTab] = useState<'open' | 'closed' | 'all'>('open')
@@ -77,7 +78,7 @@ export function SlaughterhousePurchaseRequests() {
   }
 
   return (
-    <div className="max-w-[1440px] mx-auto px-6 py-8">
+    <RoleAppPage>
       <div className="mb-8 flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="mb-2">Hayvan alış taleplerim</h1>
@@ -179,7 +180,7 @@ export function SlaughterhousePurchaseRequests() {
         onClose={() => setOffersTarget(null)}
         onUpdated={reload}
       />
-    </div>
+    </RoleAppPage>
   )
 }
 

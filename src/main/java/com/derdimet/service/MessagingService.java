@@ -29,7 +29,14 @@ public class MessagingService {
     @Transactional(readOnly = true)
     public List<ConversationItemResponse> listConversations(User current) {
         return conversationRepository.findByUser1_IdOrUser2_IdOrderByLastMessageAtDesc(current.getId(), current.getId()).stream()
-                .map(c -> ConversationItemResponse.fromEntity(c, current.getId()))
+                .map(
+                        c ->
+                                ConversationItemResponse.fromEntity(
+                                        c,
+                                        current.getId(),
+                                        (int)
+                                                messageRepository.countByConversation_IdAndSender_IdNotAndReadAtIsNull(
+                                                        c.getId(), current.getId())))
                 .toList();
     }
 
@@ -62,16 +69,17 @@ public class MessagingService {
                             n.setLastMessageAt(LocalDateTime.now());
                             return conversationRepository.save(n);
                         });
-        return ConversationItemResponse.fromEntity(c, current.getId());
+        return ConversationItemResponse.fromEntity(c, current.getId(), 0);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public List<ChatMessageResponse> listMessages(User current, Long conversationId) {
         Conversation c =
                 conversationRepository
                         .findById(conversationId)
                         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sohbet bulunamadı"));
         assertMember(current, c);
+        messageRepository.markAsReadForRecipient(conversationId, current.getId(), LocalDateTime.now());
         return messageRepository.findByConversation_IdOrderByCreatedAtAsc(conversationId).stream()
                 .map(ChatMessageResponse::fromEntity)
                 .toList();

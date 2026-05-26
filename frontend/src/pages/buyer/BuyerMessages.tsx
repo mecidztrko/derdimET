@@ -1,13 +1,14 @@
 import { MessagesInbox } from '../../components/role-app/MessagesInbox'
+import { RoleAppPage } from '../../components/role-app/RoleAppPage'
 
 export function BuyerMessages() {
   return (
-    <div className="max-w-[1440px] mx-auto px-6 py-8">
-      <div className="mb-8">
+    <RoleAppPage fill className="flex min-h-0 flex-col">
+      <div className="mb-6 shrink-0">
         <h1 className="mb-2">Mesajlar</h1>
         <p className="text-muted-foreground">İş ortaklarınızla iletişim kurun</p>
       </div>
-      <MessagesInbox />
-    </div>
+      <MessagesInbox className="min-h-0 flex-1" />
+    </RoleAppPage>
   )
 }

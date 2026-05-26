@@ -20,6 +20,7 @@ import { MeatListingDetailModal } from '../../components/role-app/MeatListingDet
 import { BuyerPurchasesCard } from '../../components/role-app/BuyerPurchasesCard'
 import { useToggleFavorite } from '../../hooks/useToggleFavorite'
 import type { MeatSaleRequestDto } from '../../api/types'
+import { RoleAppPage } from '../../components/role-app/RoleAppPage'
 
 const meatTypes = ['Tümü', 'Dana', 'Kuzu', 'Kıyma', 'Biftek', 'Pirzola', 'But', 'Antrikot']
 const animalCategories = ['Tüm Kategoriler', 'Küçükbaş', 'Büyükbaş']
@@ -67,7 +68,7 @@ export function BuyerHome() {
   }
 
   return (
-    <div className="max-w-[1440px] mx-auto px-6 py-8">
+    <RoleAppPage>
       <div className="mb-8">
         <h1 className="mb-2">Hoş geldiniz{user?.name ? `, ${user.name.split(' ')[0]}` : ''}</h1>
         <p className="text-muted-foreground">Kesimhanelerden taze et satış ilanları</p>
@@ -269,6 +270,6 @@ export function BuyerHome() {
       />
 
       <BuyerPurchasesCard limit={4} compact />
-    </div>
+    </RoleAppPage>
   )
 }

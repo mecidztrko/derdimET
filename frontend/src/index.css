@@ -60,6 +60,12 @@
   background-image: none;
 }
 
+/* Auth sayfaları hero arka planı (role-app sıfırlamasını geçersiz kılar) */
+.auth-bg {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: transparent;
+}
+
 .role-app h1,
 .role-app h2,
 .role-app h3,

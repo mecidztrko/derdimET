@@ -10,6 +10,7 @@ import { useSyncedSearchQuery } from '../../hooks/useSyncedSearchQuery'
 import * as shApi from '../../api/slaughterhouse'
 import { sellerListingToListingCard } from '../../api/mappers'
 import type { SellerAnimalListingDto } from '../../api/types'
+import { RoleAppPage } from '../../components/role-app/RoleAppPage'
 
 export function SlaughterhouseBuyAnimals() {
   const [searchQuery, setSearchQuery] = useSyncedSearchQuery()
@@ -24,7 +25,7 @@ export function SlaughterhouseBuyAnimals() {
   const items = data ?? []
 
   return (
-    <div className="max-w-[1440px] mx-auto px-6 py-8">
+    <RoleAppPage>
       <div className="mb-8">
         <h1 className="mb-2">Hayvan al</h1>
         <p className="text-muted-foreground">Satıcıların açık hayvan ilanları</p>
@@ -108,6 +109,6 @@ export function SlaughterhouseBuyAnimals() {
         onClose={() => setOfferTarget(null)}
         onCreated={reload}
       />
-    </div>
+    </RoleAppPage>
   )
 }

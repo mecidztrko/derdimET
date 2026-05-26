@@ -196,6 +196,7 @@ export type ConversationItemDto = {
   otherUserEmail: string | null
   otherUserRole: string | null
   lastMessageAt: string | null
+  unreadCount: number
 }
 
 export type ChatMessageDto = {

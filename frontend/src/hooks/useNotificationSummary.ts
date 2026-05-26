@@ -11,12 +11,13 @@ export function useNotificationSummary() {
   const total = useMemo(() => {
     const s = query.data
     if (!s || !user) return 0
-    if (isBuyer(user.role)) return s.pendingOffers
-    if (isSeller(user.role)) return s.pendingIncoming
+    const unread = s.unreadMessages ?? 0
+    if (isBuyer(user.role)) return s.pendingOffers + unread
+    if (isSeller(user.role)) return s.pendingIncoming + unread
     if (isSlaughterhouse(user.role)) {
-      return s.pendingOffers + s.pendingIncoming + s.pendingPurchaseOffers
+      return s.pendingOffers + s.pendingIncoming + s.pendingPurchaseOffers + unread
     }
-    return 0
+    return unread
   }, [query.data, user])
 
   const primaryLink = query.data?.primaryLink ?? '/role-selector'

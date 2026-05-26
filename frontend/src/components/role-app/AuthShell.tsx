@@ -6,18 +6,14 @@ type AuthShellProps = {
   children: ReactNode
 }
 
-/** Giriş / kayıt sayfaları için Figma role-app teması */
+/** Giriş / kayıt — tam ekran hero arka plan + cam kart */
 export function AuthShell({ title, subtitle, children }: AuthShellProps) {
   return (
-    <div className="role-app min-h-screen bg-background flex flex-col items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
-        <p className="text-center font-display text-2xl font-semibold text-primary mb-1">derdimET</p>
-        <p className="text-center text-caption text-muted-foreground mb-8">Et ve hayvan ticareti platformu</p>
-        <div className="rounded-[var(--radius-card)] border border-border bg-card p-8 shadow-[var(--shadow-card)]">
-          <h1 className="text-h3 font-semibold mb-1">{title}</h1>
-          {subtitle ? <p className="text-small text-muted-foreground mb-6">{subtitle}</p> : null}
-          {children}
-        </div>
+    <div className="auth-bg relative z-0 flex min-h-screen flex-col items-center justify-center px-4 py-10">
+      <div className="relative z-10 w-full max-w-md rounded-2xl border border-white/40 bg-white/72 p-8 shadow-card backdrop-blur-md">
+        <h1 className="font-display text-2xl font-semibold text-gray-900">{title}</h1>
+        {subtitle ? <p className="mt-1 mb-6 text-sm text-gray-500">{subtitle}</p> : <div className="mb-6" />}
+        {children}
       </div>
     </div>
   )

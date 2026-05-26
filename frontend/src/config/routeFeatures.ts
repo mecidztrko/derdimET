@@ -7,6 +7,7 @@ export const routeFeatures = {
     home: true,
     search: true,
     offers: true,
+    purchases: true,
     favorites: true,
     messages: true,
     settings: true,
@@ -51,6 +52,7 @@ export function defaultBuyerPath(): string {
   if (routeFeatures.buyer.home) return '/buyer'
   if (routeFeatures.buyer.search) return '/buyer/search'
   if (routeFeatures.buyer.offers) return '/buyer/offers'
+  if (routeFeatures.buyer.purchases) return '/buyer/purchases'
   if (routeFeatures.buyer.favorites) return '/buyer/favorites'
   if (routeFeatures.buyer.messages) return '/buyer/messages'
   return '/role-selector'

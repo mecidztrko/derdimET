@@ -20,6 +20,7 @@ import { RespondToOfferButtons } from '../../components/role-app/RespondToOfferB
 import { ApiError } from '../../api/client'
 import type { SlaughterhouseMeatOfferDto } from '../../api/slaughterhouse'
 import type { MeatSaleRequestDto } from '../../api/types'
+import { RoleAppPage } from '../../components/role-app/RoleAppPage'
 
 export function SlaughterhouseSellMeat() {
   const [tab, setTab] = useState('listings')
@@ -88,7 +89,7 @@ export function SlaughterhouseSellMeat() {
   }
 
   return (
-    <div className="max-w-[1440px] mx-auto px-6 py-8">
+    <RoleAppPage>
       <div className="mb-8 flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="mb-2">Et satış</h1>
@@ -224,7 +225,7 @@ export function SlaughterhouseSellMeat() {
           offersQuery.reload()
         }}
       />
-    </div>
+    </RoleAppPage>
   )
 }
 

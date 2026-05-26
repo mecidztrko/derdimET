@@ -4,6 +4,8 @@ import com.derdimet.entity.AccountType;
 import com.derdimet.entity.AnimalCategory;
 import com.derdimet.entity.AnimalOffer;
 import com.derdimet.entity.AnimalPurchaseRequest;
+import com.derdimet.entity.Conversation;
+import com.derdimet.entity.Message;
 import com.derdimet.entity.MeatOffer;
 import com.derdimet.entity.MeatSaleRequest;
 import com.derdimet.entity.OfferStatus;
@@ -17,6 +19,8 @@ import com.derdimet.entity.UserRole;
 import com.derdimet.repository.AnimalDealRepository;
 import com.derdimet.repository.AnimalOfferRepository;
 import com.derdimet.repository.AnimalPurchaseRequestRepository;
+import com.derdimet.repository.ConversationRepository;
+import com.derdimet.repository.MessageRepository;
 import com.derdimet.repository.MeatOfferRepository;
 import com.derdimet.repository.MeatSaleRequestRepository;
 import com.derdimet.repository.OrderRepository;
@@ -25,6 +29,7 @@ import com.derdimet.repository.SlaughterhouseListingOfferRepository;
 import com.derdimet.repository.UserRepository;
 import com.derdimet.service.AnimalDealService;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
@@ -58,6 +63,8 @@ public class DevSeedRunner implements CommandLineRunner {
     private final AnimalDealService animalDealService;
     private final MeatOfferRepository meatOfferRepository;
     private final OrderRepository orderRepository;
+    private final ConversationRepository conversationRepository;
+    private final MessageRepository messageRepository;
 
     @Override
     public void run(String... args) {
@@ -78,7 +85,18 @@ public class DevSeedRunner implements CommandLineRunner {
                         AccountType.INDIVIDUAL,
                         null,
                         null,
-                        "Ankara");
+                        "Ankara",
+                        true);
+
+        ensureUser(
+                "buyer-unverified@derdimet.local",
+                "Buyer Unverified",
+                UserRole.MEAT_BUYER,
+                AccountType.INDIVIDUAL,
+                null,
+                null,
+                "Ankara",
+                false);
 
         User seller =
                 ensureUser(
@@ -88,7 +106,8 @@ public class DevSeedRunner implements CommandLineRunner {
                         AccountType.INDIVIDUAL,
                         null,
                         null,
-                        "Konya");
+                        "Konya",
+                        true);
 
         User seller2 =
                 ensureUser(
@@ -98,7 +117,8 @@ public class DevSeedRunner implements CommandLineRunner {
                         AccountType.INDIVIDUAL,
                         null,
                         null,
-                        "Afyonkarahisar");
+                        "Afyonkarahisar",
+                        true);
 
         User slaughterhouse =
                 ensureUser(
@@ -108,7 +128,8 @@ public class DevSeedRunner implements CommandLineRunner {
                         AccountType.BUSINESS,
                         "Demo Kesimhane A.Ş.",
                         "1111111111",
-                        "Ankara");
+                        "Ankara",
+                        true);
 
         // Seller animal listings (SLAUGHTERHOUSE Arama)
         if (sellerAnimalListingRepository.findBySellerOrderByCreatedAtDesc(seller).isEmpty()) {
@@ -225,6 +246,37 @@ public class DevSeedRunner implements CommandLineRunner {
 
         seedDemoTransactions(buyer, seller, slaughterhouse);
         seedDemoPendingOffers(buyer, seller, slaughterhouse, seller2);
+        seedDemoMessages(buyer, slaughterhouse);
+    }
+
+    private void seedDemoMessages(User buyer, User slaughterhouse) {
+        Long low = Math.min(buyer.getId(), slaughterhouse.getId());
+        Long high = Math.max(buyer.getId(), slaughterhouse.getId());
+        Conversation conv =
+                conversationRepository
+                        .findByUser1_IdAndUser2_Id(low, high)
+                        .orElseGet(
+                                () -> {
+                                    Conversation c = new Conversation();
+                                    if (buyer.getId().equals(low)) {
+                                        c.setUser1(buyer);
+                                        c.setUser2(slaughterhouse);
+                                    } else {
+                                        c.setUser1(slaughterhouse);
+                                        c.setUser2(buyer);
+                                    }
+                                    c.setLastMessageAt(LocalDateTime.now());
+                                    return conversationRepository.save(c);
+                                });
+        if (messageRepository.countByConversation_Id(conv.getId()) == 0) {
+            Message msg = new Message();
+            msg.setConversation(conv);
+            msg.setSender(buyer);
+            msg.setText("Merhaba, et ilanınız hakkında bilgi alabilir miyim?");
+            Message saved = messageRepository.save(msg);
+            conv.setLastMessageAt(saved.getCreatedAt() != null ? saved.getCreatedAt() : LocalDateTime.now());
+            conversationRepository.save(conv);
+        }
     }
 
     private void seedDemoTransactions(User buyer, User seller, User slaughterhouse) {
@@ -350,10 +402,19 @@ public class DevSeedRunner implements CommandLineRunner {
             AccountType accountType,
             String companyName,
             String taxNumber,
-            String city) {
+            String city,
+            boolean emailVerified) {
         String normalized = email.trim().toLowerCase(Locale.ROOT);
         return userRepository
                 .findByEmail(normalized)
+                .map(
+                        existing -> {
+                            if (existing.isEmailVerified() != emailVerified) {
+                                existing.setEmailVerified(emailVerified);
+                                return userRepository.save(existing);
+                            }
+                            return existing;
+                        })
                 .orElseGet(
                         () -> {
                             User u = new User();
@@ -365,7 +426,7 @@ public class DevSeedRunner implements CommandLineRunner {
                             u.setCompanyName(companyName);
                             u.setTaxNumber(taxNumber);
                             u.setCity(city);
-                            u.setEmailVerified(true);
+                            u.setEmailVerified(emailVerified);
                             u.setBusinessVerified(true);
                             return userRepository.save(u);
                         });

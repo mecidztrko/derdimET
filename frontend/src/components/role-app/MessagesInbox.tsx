@@ -13,6 +13,7 @@ import { EMAIL_VERIFICATION_REQUIRED, requiresEmailVerification } from '../../li
 import { EmailVerificationNotice } from './EmailVerificationNotice'
 import type { ChatMessageDto } from '../../api/types'
 import { formatRelativeTr } from '../../api/format'
+import { cn } from '../../lib/cn'
 
 type MessagesLocationState = {
   conversationId?: number
@@ -20,7 +21,11 @@ type MessagesLocationState = {
   contextLabel?: string
 }
 
-export function MessagesInbox() {
+type MessagesInboxProps = {
+  className?: string
+}
+
+export function MessagesInbox({ className }: MessagesInboxProps) {
   const { user } = useMe()
   const location = useLocation()
   const [searchQuery, setSearchQuery] = useState('')
@@ -35,6 +40,7 @@ export function MessagesInbox() {
   const messagingBlocked = requiresEmailVerification(user)
 
   const convQuery = useApi(() => messagingApi.listConversations(), [])
+  const reloadConversations = convQuery.reload
   const conversations = convQuery.data ?? []
   const searchLower = searchQuery.trim().toLowerCase()
   const filtered = conversations.filter((c) =>
@@ -74,16 +80,20 @@ export function MessagesInbox() {
     }
   }, [location.state, messagingBlocked])
 
-  const loadMessages = useCallback(async (conversationId: number) => {
-    setMessagesLoading(true)
-    try {
-      setMessages(await messagingApi.listMessages(conversationId))
-    } catch {
-      setMessages([])
-    } finally {
-      setMessagesLoading(false)
-    }
-  }, [])
+  const loadMessages = useCallback(
+    async (conversationId: number) => {
+      setMessagesLoading(true)
+      try {
+        setMessages(await messagingApi.listMessages(conversationId))
+        reloadConversations()
+      } catch {
+        setMessages([])
+      } finally {
+        setMessagesLoading(false)
+      }
+    },
+    [reloadConversations],
+  )
 
   useEffect(() => {
     if (selected?.conversationId) loadMessages(selected.conversationId)
@@ -110,8 +120,8 @@ export function MessagesInbox() {
   }
 
   return (
-    <Card className="h-[calc(100vh-280px)] min-h-[600px]">
-      <CardContent className="p-0 h-full">
+    <Card className={cn('flex min-h-[28rem] flex-1 flex-col', className)}>
+      <CardContent className="flex h-full min-h-0 flex-1 flex-col p-0">
         <PageState
           loading={convQuery.loading}
           error={convQuery.error}
@@ -160,9 +170,16 @@ export function MessagesInbox() {
                           selected?.conversationId === c.conversationId ? 'bg-primary-soft' : ''
                         }`}
                       >
-                        <p className="font-medium truncate">
-                          {c.otherUserName || c.otherUserEmail || 'Kullanıcı'}
-                        </p>
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="font-medium truncate">
+                            {c.otherUserName || c.otherUserEmail || 'Kullanıcı'}
+                          </p>
+                          {(c.unreadCount ?? 0) > 0 ? (
+                            <span className="shrink-0 min-w-[1.25rem] h-5 px-1.5 rounded-full bg-primary text-white text-caption font-medium flex items-center justify-center">
+                              {c.unreadCount > 99 ? '99+' : c.unreadCount}
+                            </span>
+                          ) : null}
+                        </div>
                         <p className="text-caption text-muted-foreground">
                           {formatRelativeTr(c.lastMessageAt)}
                         </p>

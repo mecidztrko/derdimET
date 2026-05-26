@@ -11,8 +11,8 @@ export function listMeatSaleRequests(params?: { q?: string }): Promise<MeatSaleR
   return apiFetch(withSearchQuery('/api/buyer/meat-sale-requests', params?.q))
 }
 
-export function listMyMeatOffers(): Promise<MeatOfferItemDto[]> {
-  return apiFetch('/api/buyer/meat-offers')
+export function listMyMeatOffers(params?: { q?: string }): Promise<MeatOfferItemDto[]> {
+  return apiFetch(withSearchQuery('/api/buyer/meat-offers', params?.q))
 }
 
 export function createMeatOffer(

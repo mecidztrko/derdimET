@@ -15,6 +15,7 @@ import { CreateMeatOfferModal } from '../../components/role-app/CreateMeatOfferM
 import { MeatListingDetailModal } from '../../components/role-app/MeatListingDetailModal'
 import { useToggleFavorite } from '../../hooks/useToggleFavorite'
 import type { MeatSaleRequestDto } from '../../api/types'
+import { RoleAppPage } from '../../components/role-app/RoleAppPage'
 
 const meatTypes = ['Tümü', 'Dana', 'Kuzu', 'Kıyma', 'Biftek', 'Pirzola', 'But', 'Antrikot']
 
@@ -55,7 +56,7 @@ export function BuyerSearch() {
   }
 
   return (
-    <div className="max-w-[1440px] mx-auto px-6 py-8">
+    <RoleAppPage>
       <div className="mb-8">
         <h1 className="mb-2">Et Ürünleri Ara</h1>
         <p className="text-muted-foreground">Kesimhanelerden taze et ilanlarını keşfedin</p>
@@ -184,6 +185,6 @@ export function BuyerSearch() {
         onClose={() => setOfferTarget(null)}
         onCreated={reload}
       />
-    </div>
+    </RoleAppPage>
   )
 }

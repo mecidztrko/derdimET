@@ -20,6 +20,7 @@ import {
 } from '../../api/format'
 import { SlaughterhouseRecentTradesCard } from '../../components/role-app/SlaughterhouseRecentTradesCard'
 import { MessageUserButton } from '../../components/role-app/MessageUserButton'
+import { RoleAppPage } from '../../components/role-app/RoleAppPage'
 
 export function SlaughterhouseDashboard() {
   const { user } = useMe()
@@ -38,7 +39,7 @@ export function SlaughterhouseDashboard() {
   const recentIncomingMeat = pendingMeatOffers.slice(0, 3)
 
   return (
-    <div className="max-w-[1440px] mx-auto px-6 py-8">
+    <RoleAppPage>
       <div className="mb-8">
         <h1 className="mb-2">Kontrol paneli</h1>
         <p className="text-muted-foreground">
@@ -325,6 +326,6 @@ export function SlaughterhouseDashboard() {
       </div>
 
       <SlaughterhouseRecentTradesCard />
-    </div>
+    </RoleAppPage>
   )
 }

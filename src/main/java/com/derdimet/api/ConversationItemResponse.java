@@ -9,9 +9,10 @@ public record ConversationItemResponse(
         String otherUserName,
         String otherUserEmail,
         String otherUserRole,
-        LocalDateTime lastMessageAt) {
+        LocalDateTime lastMessageAt,
+        int unreadCount) {
 
-    public static ConversationItemResponse fromEntity(Conversation c, Long currentUserId) {
+    public static ConversationItemResponse fromEntity(Conversation c, Long currentUserId, int unreadCount) {
         var u1 = c.getUser1();
         var u2 = c.getUser2();
         var other = (u1 != null && u1.getId() != null && u1.getId().equals(currentUserId)) ? u2 : u1;
@@ -21,7 +22,8 @@ public record ConversationItemResponse(
                 other != null ? other.getName() : null,
                 other != null ? other.getEmail() : null,
                 other != null && other.getRole() != null ? other.getRole().name() : null,
-                c.getLastMessageAt());
+                c.getLastMessageAt(),
+                unreadCount);
     }
 }
 

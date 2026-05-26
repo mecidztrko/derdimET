@@ -9,6 +9,7 @@ import com.derdimet.entity.SellerAnimalListing;
 import com.derdimet.entity.User;
 import com.derdimet.repository.SellerAnimalListingRepository;
 import com.derdimet.repository.SlaughterhouseListingOfferRepository;
+import com.derdimet.util.ListingSearchSupport;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -43,8 +44,9 @@ public class SellerListingService {
     }
 
     @Transactional(readOnly = true)
-    public List<SellerAnimalListingResponse> myListings(User seller) {
+    public List<SellerAnimalListingResponse> myListings(User seller, String q) {
         return listingRepository.findBySellerOrderByCreatedAtDesc(seller).stream()
+                .filter(l -> ListingSearchSupport.matchesAnimalListing(l, q))
                 .map(SellerAnimalListingResponse::fromEntity)
                 .toList();
     }

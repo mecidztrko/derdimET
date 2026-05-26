@@ -10,6 +10,7 @@ import * as shApi from '../../api/slaughterhouse'
 import { formatDateTr, formatHeadCount, formatTry } from '../../api/format'
 import { MessageUserButton } from '../../components/role-app/MessageUserButton'
 import type { ListingOfferDto } from '../../api/types'
+import { RoleAppPage } from '../../components/role-app/RoleAppPage'
 
 export function SlaughterhouseOffers() {
   const [tab, setTab] = useState<'all' | 'pending'>('all')
@@ -19,7 +20,7 @@ export function SlaughterhouseOffers() {
   const shown = tab === 'pending' ? pending : offers
 
   return (
-    <div className="max-w-[1440px] mx-auto px-6 py-8">
+    <RoleAppPage>
       <div className="mb-8">
         <h1 className="mb-2">Tekliflerim</h1>
         <p className="text-muted-foreground">Satıcı ilanlarına verdiğiniz teklifler</p>
@@ -54,7 +55,7 @@ export function SlaughterhouseOffers() {
           </PageState>
         </TabsContent>
       </Tabs>
-    </div>
+    </RoleAppPage>
   )
 }
 

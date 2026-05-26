@@ -1,5 +1,6 @@
 package com.derdimet.util;
 
+import com.derdimet.entity.MeatOffer;
 import com.derdimet.entity.MeatSaleRequest;
 import com.derdimet.entity.SellerAnimalListing;
 import com.derdimet.entity.User;
@@ -24,6 +25,23 @@ public final class ListingSearchSupport {
                         seller != null ? seller.getName() : null,
                         seller != null ? seller.getCompanyName() : null,
                         seller != null ? seller.getCity() : null);
+        return hay.contains(needle);
+    }
+
+    public static boolean matchesMeatOffer(MeatOffer offer, String q) {
+        if (q == null || q.isBlank()) {
+            return true;
+        }
+        String needle = q.trim().toLowerCase();
+        MeatSaleRequest sale = offer.getSaleRequest();
+        User sh = sale != null ? sale.getSlaughterhouse() : null;
+        String hay =
+                join(
+                        sale != null ? sale.getTitle() : null,
+                        sale != null ? sale.getMeatType() : null,
+                        offer.getNote(),
+                        sh != null ? sh.getName() : null,
+                        sh != null ? sh.getCompanyName() : null);
         return hay.contains(needle);
     }
 

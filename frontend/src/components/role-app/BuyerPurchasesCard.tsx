@@ -27,7 +27,7 @@ export function BuyerPurchasesCard({ limit = 20, compact = false }: BuyerPurchas
             {compact ? 'Son siparişler' : 'Tamamlanan alımlarım'}
           </h3>
           {compact && items.length > 0 ? (
-            <Link to="/buyer/settings">
+            <Link to="/buyer/purchases">
               <Button variant="ghost" size="sm" type="button">
                 Tümü <ChevronRight className="size-4 ml-1" />
               </Button>

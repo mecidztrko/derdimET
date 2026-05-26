@@ -21,6 +21,7 @@ import { purchaseRequestCardProps, sellerListingToListingCard } from '../../api/
 import { SellerSalesCard } from '../../components/role-app/SellerSalesCard'
 import { offerStatusLabel } from '../../api/format'
 import type { AnimalPurchaseRequestDto } from '../../api/types'
+import { RoleAppPage } from '../../components/role-app/RoleAppPage'
 
 const categories = ['Tümü', 'Küçükbaş', 'Büyükbaş']
 
@@ -66,7 +67,7 @@ export function SellerHome() {
   }
 
   return (
-    <div className="max-w-[1440px] mx-auto px-6 py-8">
+    <RoleAppPage>
       <div className="mb-8">
         <h1 className="mb-2">Hoş geldiniz{user?.name ? `, ${user.name.split(' ')[0]}` : ''}</h1>
         <p className="text-muted-foreground">Kesimhane talepleri ve ilanlarınız</p>
@@ -265,6 +266,6 @@ export function SellerHome() {
       />
 
       <SellerSalesCard limit={4} compact />
-    </div>
+    </RoleAppPage>
   )
 }

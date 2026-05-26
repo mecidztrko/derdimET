@@ -4,6 +4,7 @@ export type NotificationSummaryDto = {
   pendingOffers: number
   pendingIncoming: number
   pendingPurchaseOffers: number
+  unreadMessages: number
   primaryLink: string
 }
 

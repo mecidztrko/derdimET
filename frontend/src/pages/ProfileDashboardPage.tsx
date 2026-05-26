@@ -11,6 +11,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/role-app
 import { useMe } from '../hooks/useMe'
 import { isAdmin, isBusiness } from '../types/me'
 import { apiUrl } from '../config/apiBase'
+import { RoleAppPage } from '../components/role-app/RoleAppPage'
 
 export default function ProfileDashboardPage() {
   const { user, loading } = useMe()
@@ -83,7 +84,7 @@ export default function ProfileDashboardPage() {
 
   return (
     <div className="role-app min-h-screen bg-background">
-      <div className="max-w-[1440px] mx-auto px-6 py-8">
+      <RoleAppPage>
         <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
           <div>
             <Link
@@ -179,7 +180,7 @@ export default function ProfileDashboardPage() {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
+      </RoleAppPage>
     </div>
   )
 }

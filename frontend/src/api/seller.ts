@@ -23,8 +23,8 @@ export function listSales(limit = 20): Promise<import('./types').SellerSaleDto[]
   return apiFetch(`/api/seller/profile/sales?limit=${limit}`)
 }
 
-export function listMyAnimalListings(): Promise<SellerAnimalListingDto[]> {
-  return apiFetch('/api/seller/animal-listings')
+export function listMyAnimalListings(params?: { q?: string }): Promise<SellerAnimalListingDto[]> {
+  return apiFetch(withSearchQuery('/api/seller/animal-listings', params?.q))
 }
 
 /** Diğer satıcıların açık ilanları (kendi ilanları hariç). */

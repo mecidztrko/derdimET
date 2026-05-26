@@ -7,10 +7,12 @@ import { Badge } from '../../components/role-app/Badge'
 import { PageState } from '../../components/role-app/PageState'
 import { Clock, CheckCircle2, XCircle, TrendingUp, Package } from 'lucide-react'
 import { useApi } from '../../hooks/useApi'
+import { useSyncedSearchQuery } from '../../hooks/useSyncedSearchQuery'
 import * as buyerApi from '../../api/buyer'
 import { formatDateTr, formatKg, formatTry, resolveMediaUrl } from '../../api/format'
 import { MessageUserButton } from '../../components/role-app/MessageUserButton'
 import type { MeatOfferItemDto } from '../../api/types'
+import { RoleAppPage } from '../../components/role-app/RoleAppPage'
 
 const statusConfig = {
   pending: { label: 'Beklemede', icon: Clock, color: 'warning' as const },
@@ -26,7 +28,11 @@ function mapStatus(s: string): keyof typeof statusConfig {
 
 export function BuyerOffers() {
   const [activeTab, setActiveTab] = useState('all')
-  const { data, loading, error, reload } = useApi(() => buyerApi.listMyMeatOffers(), [])
+  const [searchQuery, setSearchQuery] = useSyncedSearchQuery()
+  const { data, loading, error, reload } = useApi(
+    () => buyerApi.listMyMeatOffers({ q: searchQuery }),
+    [searchQuery],
+  )
 
   const offers = data ?? []
 
@@ -46,10 +52,15 @@ export function BuyerOffers() {
   )
 
   return (
-    <div className="max-w-[1440px] mx-auto px-6 py-8">
+    <RoleAppPage>
       <div className="mb-8">
         <h1 className="mb-2">Tekliflerim</h1>
         <p className="text-muted-foreground">Verdiğiniz tekliflerin durumunu takip edin</p>
+        {searchQuery.trim() ? (
+          <p className="text-small text-muted-foreground mt-2">
+            &ldquo;{searchQuery.trim()}&rdquo; için {filteredOffers.length} teklif
+          </p>
+        ) : null}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
@@ -73,9 +84,17 @@ export function BuyerOffers() {
             error={error}
             onRetry={reload}
             empty={filteredOffers.length === 0}
-            emptyMessage="Bu kategoride teklif bulunmuyor."
+            emptyMessage={
+              searchQuery.trim()
+                ? 'Aramanıza uygun teklif bulunamadı.'
+                : 'Bu kategoride teklif bulunmuyor.'
+            }
             emptyAction={
-              stats.all === 0 ? (
+              searchQuery.trim() ? (
+                <Button variant="secondary" type="button" onClick={() => setSearchQuery('')}>
+                  Aramayı temizle
+                </Button>
+              ) : stats.all === 0 ? (
                 <Link to="/buyer/search">
                   <Button variant="primary" type="button">
                     İlanları keşfet
@@ -92,7 +111,7 @@ export function BuyerOffers() {
           </PageState>
         </TabsContent>
       </Tabs>
-    </div>
+    </RoleAppPage>
   )
 }
 

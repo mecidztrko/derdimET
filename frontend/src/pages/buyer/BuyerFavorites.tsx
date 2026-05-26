@@ -14,6 +14,7 @@ import { filterMeatListings } from '../../lib/meatListingFilters'
 import { MeatListingDetailModal } from '../../components/role-app/MeatListingDetailModal'
 import { CreateMeatOfferModal } from '../../components/role-app/CreateMeatOfferModal'
 import type { MeatSaleRequestDto } from '../../api/types'
+import { RoleAppPage } from '../../components/role-app/RoleAppPage'
 
 export function BuyerFavorites() {
   const [activeTab, setActiveTab] = useState('listings')
@@ -32,7 +33,7 @@ export function BuyerFavorites() {
   const slaughterhouses = favShQuery.data ?? []
 
   return (
-    <div className="max-w-[1440px] mx-auto px-6 py-8">
+    <RoleAppPage>
       <div className="mb-8">
         <h1 className="mb-2">Favorilerim</h1>
         <p className="text-muted-foreground">Favori kesimhaneler ve ilgili ilanlar</p>
@@ -164,6 +165,6 @@ export function BuyerFavorites() {
         onClose={() => setOfferTarget(null)}
         onCreated={listingsQuery.reload}
       />
-    </div>
+    </RoleAppPage>
   )
 }

@@ -22,6 +22,7 @@ import { BuyerFavorites } from './pages/buyer/BuyerFavorites'
 import { BuyerHome } from './pages/buyer/BuyerHome'
 import { BuyerMessages } from './pages/buyer/BuyerMessages'
 import { BuyerOffers } from './pages/buyer/BuyerOffers'
+import { BuyerPurchases } from './pages/buyer/BuyerPurchases'
 import { BuyerSearch } from './pages/buyer/BuyerSearch'
 import { BuyerSettings } from './pages/buyer/BuyerSettings'
 import { SellerBrowse } from './pages/seller/SellerBrowse'
@@ -105,6 +106,17 @@ function AnimatedRoutes() {
             element={
               <FeatureRoute enabled={isBuyerRouteEnabled('offers')} fallbackTo={defaultBuyerPath()}>
                 <BuyerOffers />
+              </FeatureRoute>
+            }
+          />
+          <Route
+            path="purchases"
+            element={
+              <FeatureRoute
+                enabled={isBuyerRouteEnabled('purchases')}
+                fallbackTo={defaultBuyerPath()}
+              >
+                <BuyerPurchases />
               </FeatureRoute>
             }
           />

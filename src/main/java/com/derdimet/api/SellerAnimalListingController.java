@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -27,9 +28,10 @@ public class SellerAnimalListingController {
     private final SellerListingService sellerListingService;
 
     @GetMapping
-    public List<SellerAnimalListingResponse> myListings(@AuthenticationPrincipal UserDetails principal) {
+    public List<SellerAnimalListingResponse> myListings(
+            @AuthenticationPrincipal UserDetails principal, @RequestParam(required = false) String q) {
         User seller = userRepository.findByEmail(principal.getUsername()).orElseThrow();
-        return sellerListingService.myListings(seller);
+        return sellerListingService.myListings(seller, q);
     }
 
     @PostMapping

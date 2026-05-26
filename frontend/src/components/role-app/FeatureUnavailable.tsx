@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { Construction } from 'lucide-react'
 import { Card } from './Card'
 import { Button } from './Button'
+import { RoleAppPage } from './RoleAppPage'
 
 type FeatureUnavailableProps = {
   title?: string
@@ -17,8 +18,8 @@ export function FeatureUnavailable({
   backLabel = 'Panele dön',
 }: FeatureUnavailableProps) {
   return (
-    <div className="max-w-[1440px] mx-auto px-6 py-16">
-      <Card elevation="soft" className="max-w-lg mx-auto text-center">
+    <RoleAppPage className="py-16">
+      <Card elevation="soft" className="mx-auto max-w-lg text-center">
         <div className="flex flex-col items-center gap-4 py-8">
           <div className="size-16 rounded-full bg-muted flex items-center justify-center">
             <Construction className="size-8 text-muted-foreground" />
@@ -32,6 +33,6 @@ export function FeatureUnavailable({
           </Link>
         </div>
       </Card>
-    </div>
+    </RoleAppPage>
   )
 }

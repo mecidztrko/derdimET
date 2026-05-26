@@ -11,6 +11,7 @@ import * as sellerApi from '../../api/seller'
 import { sellerListingToListingCard } from '../../api/mappers'
 import { AnimalListingDetailModal } from '../../components/role-app/AnimalListingDetailModal'
 import type { AnimalCategory } from '../../api/types'
+import { RoleAppPage } from '../../components/role-app/RoleAppPage'
 
 const categories = [
   { label: 'Tümü', value: null as AnimalCategory | null },
@@ -44,7 +45,7 @@ export function SellerBrowse() {
   const filteredItems = listingsQuery.data ?? []
 
   return (
-    <div className="max-w-[1440px] mx-auto px-6 py-8">
+    <RoleAppPage>
       <div className="mb-8">
         <h1 className="mb-2">Pazar durumu</h1>
         <p className="text-muted-foreground">
@@ -154,6 +155,6 @@ export function SellerBrowse() {
         onClose={() => setDetailId(null)}
         readOnly
       />
-    </div>
+    </RoleAppPage>
   )
 }
