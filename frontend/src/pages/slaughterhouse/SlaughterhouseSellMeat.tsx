@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Plus, RotateCcw, XCircle, Pencil } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Plus, RotateCcw, XCircle, Pencil, Heart } from 'lucide-react'
 import { Button } from '../../components/role-app/Button'
 import { Card, CardContent } from '../../components/role-app/Card'
 import { Badge } from '../../components/role-app/Badge'
@@ -11,6 +11,7 @@ import { CreateMeatSaleModal } from '../../components/role-app/CreateMeatSaleMod
 import { useApi } from '../../hooks/useApi'
 import { useSyncedSearchQuery } from '../../hooks/useSyncedSearchQuery'
 import { useEmailVerificationGate } from '../../hooks/useEmailVerificationGate'
+import { useToggleFavorite } from '../../hooks/useToggleFavorite'
 import * as shApi from '../../api/slaughterhouse'
 import { EMAIL_VERIFICATION_REQUIRED } from '../../lib/emailVerification'
 import { meatSaleToListingCard } from '../../api/mappers'
@@ -38,6 +39,13 @@ export function SlaughterhouseSellMeat() {
     [searchQuery],
   )
   const offersQuery = useApi(() => shApi.listIncomingMeatOffers(), [])
+  const favBuyersQuery = useApi(() => shApi.listFavoriteBuyers(), [])
+  const { toggle: toggleFavorite, error: favoriteError, blocked: favoriteBlocked } = useToggleFavorite()
+
+  const favoriteBuyerIds = useMemo(
+    () => new Set((favBuyersQuery.data ?? []).map((b) => b.buyerId).filter((id) => id != null)),
+    [favBuyersQuery.data],
+  )
 
   const rawListings = listingsQuery.data ?? []
   const cards = rawListings.map(meatSaleToListingCard)
@@ -105,9 +113,9 @@ export function SlaughterhouseSellMeat() {
           Yeni et ilanı
         </Button>
       </div>
-      {actionError ? (
+      {actionError || favoriteError ? (
         <p className="mb-4 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-          {actionError}
+          {actionError || favoriteError}
         </p>
       ) : null}
 
@@ -204,6 +212,13 @@ export function SlaughterhouseSellMeat() {
                   key={offer.offerId}
                   offer={offer}
                   acting={actingId === offer.offerId}
+                  isFavorite={offer.buyerId != null && favoriteBuyerIds.has(offer.buyerId)}
+                  favoriteBlocked={favoriteBlocked}
+                  onFavoriteToggle={() => {
+                    if (!offer.buyerId) return
+                    const was = favoriteBuyerIds.has(offer.buyerId)
+                    void toggleFavorite(offer.buyerId, was).then(() => favBuyersQuery.reload())
+                  }}
                   onAccept={() => void handleOffer(offer.offerId, true)}
                   onReject={() => void handleOffer(offer.offerId, false)}
                 />
@@ -232,11 +247,17 @@ export function SlaughterhouseSellMeat() {
 function MeatOfferRow({
   offer,
   acting,
+  isFavorite,
+  favoriteBlocked,
+  onFavoriteToggle,
   onAccept,
   onReject,
 }: {
   offer: SlaughterhouseMeatOfferDto
   acting: boolean
+  isFavorite: boolean
+  favoriteBlocked: boolean
+  onFavoriteToggle: () => void
   onAccept: () => void
   onReject: () => void
 }) {
@@ -259,9 +280,28 @@ function MeatOfferRow({
           <MessageUserButton
             otherUserId={offer.buyerId}
             contextLabel={[offer.saleRequestTitle, formatTry(offer.pricePerKg)].filter(Boolean).join(' · ')}
+            className="w-full sm:w-auto"
           />
+          {offer.buyerId != null ? (
+            <Button
+              variant="outline"
+              type="button"
+              className="w-full sm:flex-1"
+              disabled={!isFavorite && favoriteBlocked}
+              onClick={onFavoriteToggle}
+            >
+              <Heart className={`size-4 mr-2 ${isFavorite ? 'fill-current text-destructive' : ''}`} />
+              {isFavorite ? 'Favoriden çıkar' : 'Alıcıyı favorile'}
+            </Button>
+          ) : null}
           {offer.status === 'PENDING' ? (
-            <RespondToOfferButtons acting={acting} onAccept={onAccept} onReject={onReject} className="flex-1 min-w-[12rem]" />
+            <RespondToOfferButtons
+              acting={acting}
+              onAccept={onAccept}
+              onReject={onReject}
+              className="w-full sm:flex-1"
+              buttonSize="default"
+            />
           ) : null}
         </div>
       </CardContent>

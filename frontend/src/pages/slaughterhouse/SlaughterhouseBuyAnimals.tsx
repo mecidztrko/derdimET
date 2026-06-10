@@ -1,26 +1,24 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { ListingCard } from '../../components/role-app/ListingCard'
 import { Button } from '../../components/role-app/Button'
 import { PageState } from '../../components/role-app/PageState'
-import { CreateSlaughterhouseAnimalOfferModal } from '../../components/role-app/CreateSlaughterhouseAnimalOfferModal'
-import { AnimalListingDetailModal } from '../../components/role-app/AnimalListingDetailModal'
 import { useApi } from '../../hooks/useApi'
-import { useToggleFavorite } from '../../hooks/useToggleFavorite'
+import { useEmailVerificationGate } from '../../hooks/useEmailVerificationGate'
 import { useSyncedSearchQuery } from '../../hooks/useSyncedSearchQuery'
 import * as shApi from '../../api/slaughterhouse'
 import { sellerListingToListingCard } from '../../api/mappers'
-import type { SellerAnimalListingDto } from '../../api/types'
 import { RoleAppPage } from '../../components/role-app/RoleAppPage'
 
 export function SlaughterhouseBuyAnimals() {
+  const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useSyncedSearchQuery()
-  const [detailId, setDetailId] = useState<number | null>(null)
-  const [offerTarget, setOfferTarget] = useState<SellerAnimalListingDto | null>(null)
   const { data, loading, error, reload } = useApi(
     () => shApi.listAnimalListings({ q: searchQuery }),
     [searchQuery],
   )
-  const { toggle: toggleFavorite, error: favoriteError, blocked: favoriteBlocked } = useToggleFavorite()
+  const { blocked: favoriteBlocked } = useEmailVerificationGate()
+  const [favoriteError, setFavoriteError] = useState<string | null>(null)
 
   const items = data ?? []
 
@@ -61,54 +59,27 @@ export function SlaughterhouseBuyAnimals() {
           {items.map((item) => {
             const card = sellerListingToListingCard(item)
             return (
-              <div key={item.id} className="space-y-2">
-                <ListingCard
-                  {...card}
-                  isFavorite={!!item.isFavoritedByMe}
-                  favoriteUserId={item.sellerId}
-                  favoriteAddBlocked={favoriteBlocked}
-                  onFavoriteToggle={(id, next) => {
-                    void toggleFavorite(id, !next).then(() => reload())
-                  }}
-                  onClick={() => setDetailId(item.id)}
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  disabled={!!item.hasOfferFromMe}
-                  title={item.hasOfferFromMe ? 'Bu ilan için zaten teklif verdiniz' : undefined}
-                  onClick={() => setDetailId(item.id)}
-                >
-                  {item.hasOfferFromMe ? 'Teklif verildi' : 'Teklif ver'}
-                </Button>
-              </div>
+              <ListingCard
+                key={item.id}
+                {...card}
+                isFavorite={!!item.isFavoritedByMe}
+                favoriteUserId={item.id}
+                favoriteAddBlocked={favoriteBlocked}
+                onFavoriteToggle={(id) => {
+                  setFavoriteError(null)
+                  void shApi
+                    .toggleAnimalListingFavorite(id)
+                    .then(() => reload())
+                    .catch((e) =>
+                      setFavoriteError(e instanceof Error ? e.message : 'Favori güncellenemedi'),
+                    )
+                }}
+                onClick={() => navigate(`/slaughterhouse/listings/${item.id}`)}
+              />
             )
           })}
         </div>
       </PageState>
-
-      <AnimalListingDetailModal
-        listingId={detailId}
-        open={detailId != null}
-        onClose={() => setDetailId(null)}
-        onOffer={(item) => {
-          setDetailId(null)
-          setOfferTarget(item)
-        }}
-      />
-
-      <CreateSlaughterhouseAnimalOfferModal
-        open={offerTarget != null}
-        listingId={offerTarget?.id ?? null}
-        listingTitle={
-          offerTarget
-            ? [offerTarget.type, offerTarget.breed].filter(Boolean).join(' · ') || 'Hayvan ilanı'
-            : ''
-        }
-        onClose={() => setOfferTarget(null)}
-        onCreated={reload}
-      />
     </RoleAppPage>
   )
 }

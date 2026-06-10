@@ -6,6 +6,7 @@ import {
   ClipboardList,
   Package,
   TrendingUp,
+  Heart,
   MessageCircle,
   Settings,
 } from 'lucide-react'
@@ -32,6 +33,7 @@ const navigation: NavDef[] = [
     feature: 'purchaseRequests',
   },
   { name: 'Et Sat', href: '/slaughterhouse/sell-meat', icon: Package, feature: 'sellMeat' },
+  { name: 'Favoriler', href: '/slaughterhouse/favorites', icon: Heart, feature: 'favorites' },
   { name: 'Teklifler', href: '/slaughterhouse/offers', icon: TrendingUp, feature: 'offers' },
   { name: 'Mesajlar', href: '/slaughterhouse/messages', icon: MessageCircle, feature: 'messages' },
   { name: 'Profil & Ayarlar', href: '/slaughterhouse/settings', icon: Settings, feature: 'settings' },
@@ -75,6 +77,7 @@ export function SlaughterhouseLayout() {
             { path: '/slaughterhouse/buy-animals', placeholder: 'Satıcı ilanları ara...' },
             { path: '/slaughterhouse/purchase-requests', placeholder: 'Alış taleplerimde ara...' },
             { path: '/slaughterhouse/sell-meat', placeholder: 'Et ilanlarımda ara...' },
+            { path: '/slaughterhouse/favorites', placeholder: 'Favorilerde ara...' },
           ]}
           fallback={{ path: '/slaughterhouse/buy-animals', placeholder: 'Satıcı ilanları ara...' }}
         />

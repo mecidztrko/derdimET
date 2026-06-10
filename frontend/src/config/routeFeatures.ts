@@ -25,6 +25,7 @@ export const routeFeatures = {
     buyAnimals: true,
     purchaseRequests: true,
     sellMeat: true,
+    favorites: true,
     offers: true,
     messages: true,
     settings: true,
@@ -72,6 +73,7 @@ export function defaultSlaughterhousePath(): string {
   if (routeFeatures.slaughterhouse.buyAnimals) return '/slaughterhouse/buy-animals'
   if (routeFeatures.slaughterhouse.purchaseRequests) return '/slaughterhouse/purchase-requests'
   if (routeFeatures.slaughterhouse.sellMeat) return '/slaughterhouse/sell-meat'
+  if (routeFeatures.slaughterhouse.favorites) return '/slaughterhouse/favorites'
   if (routeFeatures.slaughterhouse.offers) return '/slaughterhouse/offers'
   if (routeFeatures.slaughterhouse.messages) return '/slaughterhouse/messages'
   return '/role-selector'

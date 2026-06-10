@@ -9,6 +9,7 @@ type RespondToOfferButtonsProps = {
   acceptLabel?: string
   rejectLabel?: string
   className?: string
+  buttonSize?: 'sm' | 'default'
 }
 
 export function RespondToOfferButtons({
@@ -18,6 +19,7 @@ export function RespondToOfferButtons({
   acceptLabel = 'Kabul et',
   rejectLabel = 'Reddet',
   className = '',
+  buttonSize = 'sm',
 }: RespondToOfferButtonsProps) {
   const { blocked } = useEmailVerificationGate()
 
@@ -25,10 +27,22 @@ export function RespondToOfferButtons({
     <div className={`flex flex-col gap-2 w-full ${className}`}>
       {blocked ? <EmailVerificationNotice /> : null}
       <div className="flex flex-wrap gap-2">
-        <Button variant="outline" size="sm" className="flex-1" disabled={acting || blocked} onClick={onReject}>
+        <Button
+          variant="outline"
+          size={buttonSize}
+          className="flex-1"
+          disabled={acting || blocked}
+          onClick={onReject}
+        >
           {rejectLabel}
         </Button>
-        <Button variant="primary" size="sm" className="flex-1" disabled={acting || blocked} onClick={onAccept}>
+        <Button
+          variant="primary"
+          size={buttonSize}
+          className="flex-1"
+          disabled={acting || blocked}
+          onClick={onAccept}
+        >
           {acceptLabel}
         </Button>
       </div>

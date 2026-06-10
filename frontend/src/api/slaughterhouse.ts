@@ -160,6 +160,29 @@ export function listFavoriteSellers(): Promise<FavoriteSellerDto[]> {
   return apiFetch('/api/slaughterhouse/profile/favorites/sellers')
 }
 
+export function listFavoriteAnimalListings(): Promise<SellerAnimalListingDto[]> {
+  return apiFetch('/api/slaughterhouse/favorite-animal-listings')
+}
+
+export function toggleAnimalListingFavorite(
+  listingId: number,
+): Promise<{ isFavoritedByMe: boolean }> {
+  return apiFetch(`/api/slaughterhouse/animal-listings/${listingId}/favorite/toggle`, {
+    method: 'POST',
+  })
+}
+
+export type FavoriteBuyerDto = {
+  buyerId: number | null
+  buyerName: string | null
+  buyerEmail: string | null
+  createdAt: string
+}
+
+export function listFavoriteBuyers(): Promise<FavoriteBuyerDto[]> {
+  return apiFetch('/api/slaughterhouse/profile/favorites/buyers')
+}
+
 export function listProfilePurchases(
   limit = 20,
 ): Promise<import('./types').SlaughterhousePurchaseDto[]> {

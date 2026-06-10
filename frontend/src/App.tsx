@@ -33,7 +33,9 @@ import { SellerListings } from './pages/seller/SellerListings'
 import { SellerMessages } from './pages/seller/SellerMessages'
 import { SellerOffers } from './pages/seller/SellerOffers'
 import { SellerSettings } from './pages/seller/SellerSettings'
+import { SlaughterhouseAnimalListingDetail } from './pages/slaughterhouse/SlaughterhouseAnimalListingDetail'
 import { SlaughterhouseBuyAnimals } from './pages/slaughterhouse/SlaughterhouseBuyAnimals'
+import { SlaughterhouseFavorites } from './pages/slaughterhouse/SlaughterhouseFavorites'
 import { SlaughterhouseDashboard } from './pages/slaughterhouse/SlaughterhouseDashboard'
 import { SlaughterhouseMessages } from './pages/slaughterhouse/SlaughterhouseMessages'
 import { SlaughterhouseOffers } from './pages/slaughterhouse/SlaughterhouseOffers'
@@ -245,6 +247,18 @@ function AnimatedRoutes() {
                 fallbackTo={defaultSlaughterhousePath()}
               >
                 <SlaughterhouseBuyAnimals />
+              </FeatureRoute>
+            }
+          />
+          <Route path="listings/:id" element={<SlaughterhouseAnimalListingDetail />} />
+          <Route
+            path="favorites"
+            element={
+              <FeatureRoute
+                enabled={isSlaughterhouseRouteEnabled('favorites')}
+                fallbackTo={defaultSlaughterhousePath()}
+              >
+                <SlaughterhouseFavorites />
               </FeatureRoute>
             }
           />
