@@ -2,10 +2,8 @@ import { Heart, MapPin, Factory, Calendar } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toggleFavoriteUser } from '../../api/favorites'
 import { Card } from './Card'
-import { Badge } from './Badge'
 import { Button } from './Button'
 import { cn } from '../../lib/cn'
-import { listingCardStatusLabel } from '../../api/format'
 
 interface PurchaseRequestCardProps {
   id: string
@@ -38,7 +36,7 @@ export function PurchaseRequestCard({
   priceRange,
   description,
   postedDate,
-  status,
+  status: _status,
   offerCount,
   favoriteUserId,
   isFavorite: isFavoriteProp = false,
@@ -59,7 +57,7 @@ export function PurchaseRequestCard({
       padding="md"
       className={cn(
         'group relative cursor-pointer',
-        status === 'open' && 'border-l-[3px] border-l-secondary',
+        _status === 'open' && 'border-l-[3px] border-l-secondary',
         className,
       )}
       onClick={onClick}
@@ -97,7 +95,6 @@ export function PurchaseRequestCard({
                 <span className="ml-1.5 text-secondary font-bold">✓</span>
               )}
             </h4>
-            <Badge variant={status}>{listingCardStatusLabel(status)}</Badge>
           </div>
           <p className="text-caption text-muted-foreground">Kesimhane</p>
         </div>
@@ -147,7 +144,7 @@ export function PurchaseRequestCard({
         <Button
           variant="primary"
           size="sm"
-          disabled={status !== 'open'}
+          disabled={_status !== 'open'}
           onClick={(e) => {
             e.stopPropagation()
             onOffer?.()

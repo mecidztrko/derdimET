@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Package, TrendingUp, Beef, Plus, CircleCheck } from 'lucide-react'
 import { Button } from '../../components/role-app/Button'
 import { Card, CardContent } from '../../components/role-app/Card'
@@ -10,8 +10,6 @@ import { PurchaseRequestCard } from '../../components/role-app/PurchaseRequestCa
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/role-app/Tabs'
 import { PageState } from '../../components/role-app/PageState'
 import { CreateAnimalListingModal } from '../../components/role-app/CreateAnimalListingModal'
-import { CreateAnimalOfferModal } from '../../components/role-app/CreateAnimalOfferModal'
-import { AnimalPurchaseRequestDetailModal } from '../../components/role-app/AnimalPurchaseRequestDetailModal'
 import { useMe } from '../../hooks/useMe'
 import { useEmailVerificationGate } from '../../hooks/useEmailVerificationGate'
 import { useApi } from '../../hooks/useApi'
@@ -20,7 +18,6 @@ import * as sellerApi from '../../api/seller'
 import { purchaseRequestCardProps, sellerListingToListingCard } from '../../api/mappers'
 import { SellerSalesCard } from '../../components/role-app/SellerSalesCard'
 import { offerStatusLabel } from '../../api/format'
-import type { AnimalPurchaseRequestDto } from '../../api/types'
 import { RoleAppPage } from '../../components/role-app/RoleAppPage'
 import { PageHero } from '../../components/role-app/PageHero'
 
@@ -28,12 +25,11 @@ const categories = ['Tümü', 'Küçükbaş', 'Büyükbaş']
 
 export function SellerHome() {
   const { user } = useMe()
+  const navigate = useNavigate()
   const { blocked: favoriteBlocked } = useEmailVerificationGate()
   const [searchQuery, setSearchQuery] = useSyncedSearchQuery()
   const [selectedCategory, setSelectedCategory] = useState('Tümü')
   const [showCreate, setShowCreate] = useState(false)
-  const [detailTarget, setDetailTarget] = useState<AnimalPurchaseRequestDto | null>(null)
-  const [offerTarget, setOfferTarget] = useState<AnimalPurchaseRequestDto | null>(null)
 
   const listingsQuery = useApi(() => sellerApi.listMyAnimalListings(), [])
   const requestsQuery = useApi(
@@ -177,17 +173,13 @@ export function SellerHome() {
           >
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredRequests.map((req) => (
-                <div key={req.id} className="space-y-2">
-                  <PurchaseRequestCard
-                    {...purchaseRequestCardProps(req)}
-                    favoriteAddBlocked={favoriteBlocked}
-                    onClick={() => setDetailTarget(req)}
-                    onOffer={() => setOfferTarget(req)}
-                  />
-                  <Button variant="outline" size="sm" className="w-full" onClick={() => setDetailTarget(req)}>
-                    Detay & teklif
-                  </Button>
-                </div>
+                <PurchaseRequestCard
+                  key={req.id}
+                  {...purchaseRequestCardProps(req)}
+                  favoriteAddBlocked={favoriteBlocked}
+                  onClick={() => navigate(`/seller/requests/${req.id}`)}
+                  onOffer={() => navigate(`/seller/requests/${req.id}`)}
+                />
               ))}
             </div>
           </PageState>
@@ -264,23 +256,6 @@ export function SellerHome() {
         onClose={() => setShowCreate(false)}
         onCreated={reloadAll}
       />
-      <AnimalPurchaseRequestDetailModal
-        request={detailTarget}
-        open={detailTarget != null}
-        onClose={() => setDetailTarget(null)}
-        onOffer={(req) => {
-          setDetailTarget(null)
-          setOfferTarget(req)
-        }}
-      />
-      <CreateAnimalOfferModal
-        open={offerTarget != null}
-        requestId={offerTarget?.id ?? null}
-        requestTitle={offerTarget?.title ?? ''}
-        onClose={() => setOfferTarget(null)}
-        onCreated={reloadAll}
-      />
-
       <SellerSalesCard limit={4} compact />
     </RoleAppPage>
   )

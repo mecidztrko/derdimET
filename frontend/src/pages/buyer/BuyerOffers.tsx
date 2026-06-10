@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useMemo } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Card, CardContent } from '../../components/role-app/Card'
 import { Button } from '../../components/role-app/Button'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/role-app/Tabs'
@@ -26,9 +26,24 @@ function mapStatus(s: string): keyof typeof statusConfig {
   return 'pending'
 }
 
+const OFFER_TABS = ['all', 'pending', 'accepted', 'rejected'] as const
+type OfferTab = (typeof OFFER_TABS)[number]
+
+function parseOfferTab(value: string | null): OfferTab {
+  return OFFER_TABS.includes(value as OfferTab) ? (value as OfferTab) : 'all'
+}
+
 export function BuyerOffers() {
-  const [activeTab, setActiveTab] = useState('all')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const activeTab = parseOfferTab(searchParams.get('tab'))
   const [searchQuery, setSearchQuery] = useSyncedSearchQuery()
+
+  function setActiveTab(tab: OfferTab) {
+    const next = new URLSearchParams(searchParams)
+    if (tab === 'all') next.delete('tab')
+    else next.set('tab', tab)
+    setSearchParams(next, { replace: true })
+  }
   const { data, loading, error, reload } = useApi(
     () => buyerApi.listMyMeatOffers({ q: searchQuery }),
     [searchQuery],
@@ -70,7 +85,7 @@ export function BuyerOffers() {
         <StatMini label="Reddedildi" value={stats.rejected} icon={XCircle} />
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(parseOfferTab(v))}>
         <TabsList className="mb-6">
           <TabsTrigger value="all">Tümü ({stats.all})</TabsTrigger>
           <TabsTrigger value="pending">Beklemede ({stats.pending})</TabsTrigger>

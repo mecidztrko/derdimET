@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { TrendingUp, Package, Building2, ShoppingBag } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Card, CardContent } from '../../components/role-app/Card'
 import { Chip } from '../../components/role-app/Chip'
 import { StatCard } from '../../components/role-app/StatCard'
@@ -15,11 +15,8 @@ import * as buyerApi from '../../api/buyer'
 import { meatSaleToListingCard } from '../../api/mappers'
 import { filterMeatListings } from '../../lib/meatListingFilters'
 import { formatRelativeTr } from '../../api/format'
-import { CreateMeatOfferModal } from '../../components/role-app/CreateMeatOfferModal'
-import { MeatListingDetailModal } from '../../components/role-app/MeatListingDetailModal'
 import { BuyerPurchasesCard } from '../../components/role-app/BuyerPurchasesCard'
 import { useEmailVerificationGate } from '../../hooks/useEmailVerificationGate'
-import type { MeatSaleRequestDto } from '../../api/types'
 import { RoleAppPage } from '../../components/role-app/RoleAppPage'
 import { PageHero } from '../../components/role-app/PageHero'
 
@@ -28,10 +25,9 @@ const animalCategories = ['Tüm Kategoriler', 'Küçükbaş', 'Büyükbaş']
 
 export function BuyerHome() {
   const { user } = useMe()
+  const navigate = useNavigate()
   const [selectedMeatType, setSelectedMeatType] = useState('Tümü')
   const [selectedAnimalCategory, setSelectedAnimalCategory] = useState('Tüm Kategoriler')
-  const [detailId, setDetailId] = useState<number | null>(null)
-  const [offerTarget, setOfferTarget] = useState<MeatSaleRequestDto | null>(null)
   const [favoriteError, setFavoriteError] = useState<string | null>(null)
   const { blocked: favoriteBlocked } = useEmailVerificationGate()
 
@@ -229,7 +225,7 @@ export function BuyerHome() {
                     favoriteUserId={item.id}
                     favoriteAddBlocked={favoriteBlocked}
                     onFavoriteToggle={(id) => void handleFavorite(id)}
-                    onClick={() => setDetailId(item.id)}
+                    onClick={() => navigate(`/buyer/listings/${item.id}`)}
                   />
                 )
               })}
@@ -274,27 +270,6 @@ export function BuyerHome() {
           </PageState>
         </TabsContent>
       </Tabs>
-
-      <MeatListingDetailModal
-        listingId={detailId}
-        open={detailId != null}
-        onClose={() => setDetailId(null)}
-        onOffer={(item) => {
-          setDetailId(null)
-          setOfferTarget(item)
-        }}
-      />
-
-      <CreateMeatOfferModal
-        open={offerTarget != null}
-        saleRequestId={offerTarget?.id ?? null}
-        listingTitle={offerTarget?.title ?? ''}
-        onClose={() => setOfferTarget(null)}
-        onCreated={() => {
-          offersQuery.reload()
-          listingsQuery.reload()
-        }}
-      />
 
       <BuyerPurchasesCard limit={4} compact />
     </RoleAppPage>

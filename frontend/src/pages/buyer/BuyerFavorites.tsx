@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Card, CardContent } from '../../components/role-app/Card'
 import { Button } from '../../components/role-app/Button'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/role-app/Tabs'
@@ -10,15 +10,11 @@ import { useApi } from '../../hooks/useApi'
 import { useToggleFavorite } from '../../hooks/useToggleFavorite'
 import * as buyerApi from '../../api/buyer'
 import { meatSaleToListingCard } from '../../api/mappers'
-import { MeatListingDetailModal } from '../../components/role-app/MeatListingDetailModal'
-import { CreateMeatOfferModal } from '../../components/role-app/CreateMeatOfferModal'
-import type { MeatSaleRequestDto } from '../../api/types'
 import { RoleAppPage } from '../../components/role-app/RoleAppPage'
 
 export function BuyerFavorites() {
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('listings')
-  const [detailId, setDetailId] = useState<number | null>(null)
-  const [offerTarget, setOfferTarget] = useState<MeatSaleRequestDto | null>(null)
   const { toggle: toggleFavorite, error: favoriteError, blocked: favoriteBlocked } = useToggleFavorite()
 
   const listingsQuery = useApi(() => buyerApi.listFavoriteMeatSaleRequests(), [])
@@ -81,7 +77,7 @@ export function BuyerFavorites() {
                     onFavoriteToggle={(id) => {
                       void buyerApi.toggleMeatListingFavorite(id).then(() => listingsQuery.reload())
                     }}
-                    onClick={() => setDetailId(item.id)}
+                    onClick={() => navigate(`/buyer/listings/${item.id}`)}
                   />
                 )
               })}
@@ -144,23 +140,6 @@ export function BuyerFavorites() {
         </TabsContent>
       </Tabs>
 
-      <MeatListingDetailModal
-        listingId={detailId}
-        open={detailId != null}
-        onClose={() => setDetailId(null)}
-        onOffer={(item) => {
-          setDetailId(null)
-          setOfferTarget(item)
-        }}
-      />
-
-      <CreateMeatOfferModal
-        open={offerTarget != null}
-        saleRequestId={offerTarget?.id ?? null}
-        listingTitle={offerTarget?.title ?? ''}
-        onClose={() => setOfferTarget(null)}
-        onCreated={listingsQuery.reload}
-      />
     </RoleAppPage>
   )
 }

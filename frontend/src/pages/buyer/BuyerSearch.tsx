@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent } from '../../components/role-app/Card'
 import { Chip } from '../../components/role-app/Chip'
 import { Input } from '../../components/role-app/Input'
@@ -11,21 +12,17 @@ import { useSyncedSearchQuery } from '../../hooks/useSyncedSearchQuery'
 import * as buyerApi from '../../api/buyer'
 import { meatSaleToListingCard } from '../../api/mappers'
 import { filterMeatListings } from '../../lib/meatListingFilters'
-import { CreateMeatOfferModal } from '../../components/role-app/CreateMeatOfferModal'
-import { MeatListingDetailModal } from '../../components/role-app/MeatListingDetailModal'
 import { useEmailVerificationGate } from '../../hooks/useEmailVerificationGate'
-import type { MeatSaleRequestDto } from '../../api/types'
 import { RoleAppPage } from '../../components/role-app/RoleAppPage'
 
 const meatTypes = ['Tümü', 'Dana', 'Kuzu', 'Kıyma', 'Biftek', 'Pirzola', 'But', 'Antrikot']
 
 export function BuyerSearch() {
+  const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useSyncedSearchQuery()
   const [selectedMeatType, setSelectedMeatType] = useState('Tümü')
   const [selectedCity, setSelectedCity] = useState('Tüm Şehirler')
   const [showFilters, setShowFilters] = useState(true)
-  const [detailId, setDetailId] = useState<number | null>(null)
-  const [offerTarget, setOfferTarget] = useState<MeatSaleRequestDto | null>(null)
   const [favoriteError, setFavoriteError] = useState<string | null>(null)
   const { blocked: favoriteBlocked } = useEmailVerificationGate()
 
@@ -167,30 +164,13 @@ export function BuyerSearch() {
                 favoriteUserId={item.id}
                 favoriteAddBlocked={favoriteBlocked}
                 onFavoriteToggle={(id) => void handleFavorite(id)}
-                onClick={() => setDetailId(item.id)}
+                onClick={() => navigate(`/buyer/listings/${item.id}`)}
               />
             )
           })}
         </div>
       </PageState>
 
-      <MeatListingDetailModal
-        listingId={detailId}
-        open={detailId != null}
-        onClose={() => setDetailId(null)}
-        onOffer={(item) => {
-          setDetailId(null)
-          setOfferTarget(item)
-        }}
-      />
-
-      <CreateMeatOfferModal
-        open={offerTarget != null}
-        saleRequestId={offerTarget?.id ?? null}
-        listingTitle={offerTarget?.title ?? ''}
-        onClose={() => setOfferTarget(null)}
-        onCreated={reload}
-      />
     </RoleAppPage>
   )
 }

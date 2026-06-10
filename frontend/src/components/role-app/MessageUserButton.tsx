@@ -7,12 +7,14 @@ import { useMe } from '../../hooks/useMe'
 import { EMAIL_VERIFICATION_REQUIRED, requiresEmailVerification } from '../../lib/emailVerification'
 import { messagesPathForRole } from '../../lib/messagesPath'
 import { Button } from './Button'
+import { cn } from '../../lib/cn'
 
 type MessageUserButtonProps = {
   otherUserId: number | null | undefined
   contextLabel?: string
   label?: string
-  size?: 'sm' | 'default'
+  size?: 'sm' | 'default' | 'lg'
+  className?: string
 }
 
 export function MessageUserButton({
@@ -20,6 +22,7 @@ export function MessageUserButton({
   contextLabel,
   label = 'Mesaj',
   size = 'sm',
+  className,
 }: MessageUserButtonProps) {
   const navigate = useNavigate()
   const { user } = useMe()
@@ -49,20 +52,29 @@ export function MessageUserButton({
     }
   }
 
+  const fullWidth = className?.includes('w-full')
+
   return (
-    <span className="inline-flex flex-col items-start gap-1">
-    <Button
-      type="button"
-      variant="outline"
-      size={size}
-      disabled={loading || blocked}
-      title={blocked ? EMAIL_VERIFICATION_REQUIRED : undefined}
-      onClick={(e) => void handleClick(e)}
+    <span
+      className={cn('flex flex-col gap-1', fullWidth ? 'w-full' : 'inline-flex items-start')}
     >
-      <MessageCircle className="size-4 mr-1" />
-      {loading ? '…' : label}
-    </Button>
-    {error ? <span className="text-xs text-destructive max-w-[14rem]">{error}</span> : null}
+      <Button
+        type="button"
+        variant="outline"
+        size={size}
+        className={className}
+        disabled={loading || blocked}
+        title={blocked ? EMAIL_VERIFICATION_REQUIRED : undefined}
+        onClick={(e) => void handleClick(e)}
+      >
+        <MessageCircle className="size-4 mr-1" />
+        {loading ? '…' : label}
+      </Button>
+      {error ? (
+        <span className={cn('text-xs text-destructive', fullWidth ? 'w-full' : 'max-w-[14rem]')}>
+          {error}
+        </span>
+      ) : null}
     </span>
   )
 }

@@ -33,7 +33,11 @@ export function NotificationBell() {
     if (isBuyer(user.role)) {
       return [
         { label: 'Okunmamış mesajlar', count: data.unreadMessages, href: '/buyer/messages' },
-        { label: 'Bekleyen et teklifleri', count: data.pendingOffers, href: '/buyer/offers' },
+        {
+          label: 'Bekleyen et teklifleri',
+          count: data.pendingOffers,
+          href: '/buyer/offers?tab=pending',
+        },
       ]
     }
     if (isSeller(user.role)) {
@@ -105,17 +109,6 @@ export function NotificationBell() {
           ) : (
             <p className="px-4 py-3 text-caption text-muted-foreground">Bekleyen teklif yok.</p>
           )}
-          {data?.primaryLink && hasRows ? (
-            <div className="border-t border-border px-4 py-2">
-              <Link
-                to={data.primaryLink}
-                className="text-caption text-primary hover:underline"
-                onClick={() => setOpen(false)}
-              >
-                Öncelikli sayfaya git →
-              </Link>
-            </div>
-          ) : null}
         </div>
       ) : null}
     </div>

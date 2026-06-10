@@ -20,6 +20,7 @@ import RoleSelectorPage from './pages/RoleSelectorPage'
 import VerifyEmailPage from './pages/VerifyEmailPage'
 import { BuyerFavorites } from './pages/buyer/BuyerFavorites'
 import { BuyerHome } from './pages/buyer/BuyerHome'
+import { BuyerMeatListingDetail } from './pages/buyer/BuyerMeatListingDetail'
 import { BuyerMessages } from './pages/buyer/BuyerMessages'
 import { BuyerOffers } from './pages/buyer/BuyerOffers'
 import { BuyerPurchases } from './pages/buyer/BuyerPurchases'
@@ -27,6 +28,7 @@ import { BuyerSearch } from './pages/buyer/BuyerSearch'
 import { BuyerSettings } from './pages/buyer/BuyerSettings'
 import { SellerBrowse } from './pages/seller/SellerBrowse'
 import { SellerHome } from './pages/seller/SellerHome'
+import { SellerPurchaseRequestDetail } from './pages/seller/SellerPurchaseRequestDetail'
 import { SellerListings } from './pages/seller/SellerListings'
 import { SellerMessages } from './pages/seller/SellerMessages'
 import { SellerOffers } from './pages/seller/SellerOffers'
@@ -101,6 +103,7 @@ function AnimatedRoutes() {
               </FeatureRoute>
             }
           />
+          <Route path="listings/:id" element={<BuyerMeatListingDetail />} />
           <Route
             path="offers"
             element={
@@ -194,6 +197,7 @@ function AnimatedRoutes() {
               </FeatureRoute>
             }
           />
+          <Route path="requests/:id" element={<SellerPurchaseRequestDetail />} />
           <Route
             path="messages"
             element={
