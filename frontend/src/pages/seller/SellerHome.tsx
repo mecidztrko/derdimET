@@ -22,6 +22,7 @@ import { SellerSalesCard } from '../../components/role-app/SellerSalesCard'
 import { offerStatusLabel } from '../../api/format'
 import type { AnimalPurchaseRequestDto } from '../../api/types'
 import { RoleAppPage } from '../../components/role-app/RoleAppPage'
+import { PageHero } from '../../components/role-app/PageHero'
 
 const categories = ['Tümü', 'Küçükbaş', 'Büyükbaş']
 
@@ -68,22 +69,39 @@ export function SellerHome() {
 
   return (
     <RoleAppPage>
-      <div className="mb-8">
-        <h1 className="mb-2">Hoş geldiniz{user?.name ? `, ${user.name.split(' ')[0]}` : ''}</h1>
-        <p className="text-muted-foreground">Kesimhane talepleri ve ilanlarınız</p>
-        {searchQuery.trim() ? (
-          <p className="text-small text-muted-foreground mt-2">
-            &ldquo;{searchQuery.trim()}&rdquo; için {filteredRequests.length} açık talep
-          </p>
-        ) : null}
-      </div>
+      <PageHero
+        eyebrow="Satıcı paneli"
+        title={`Hoş geldiniz${user?.name ? `, ${user.name.split(' ')[0]}` : ''}`}
+        description={
+          <>
+            <p>Kesimhane talepleri ve ilanlarınız</p>
+            {searchQuery.trim() ? (
+              <p className="text-small mt-2">
+                &ldquo;{searchQuery.trim()}&rdquo; için {filteredRequests.length} açık talep
+              </p>
+            ) : null}
+          </>
+        }
+        actions={
+          <Button variant="primary" size="sm" onClick={() => setShowCreate(true)}>
+            <Plus className="size-4" />
+            Yeni ilan
+          </Button>
+        }
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <StatCard title="Aktif ilanlarım" value={String(openListings.length)} icon={Package} />
+      <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          title="Aktif ilanlarım"
+          value={String(openListings.length)}
+          icon={Package}
+          accent="primary"
+        />
         <StatCard
           title="Gelen teklifler"
           value={String(incoming.length)}
           icon={TrendingUp}
+          accent="secondary"
           trend={
             pendingIncoming > 0
               ? { value: `${pendingIncoming} beklemede`, positive: true }
@@ -94,6 +112,7 @@ export function SellerHome() {
           title="Verdiğim teklifler"
           value={String(outgoingQuery.data?.length ?? 0)}
           icon={Beef}
+          accent="accent"
           trend={
             pendingOutgoing > 0
               ? { value: `${pendingOutgoing} beklemede`, positive: true }
@@ -104,6 +123,7 @@ export function SellerHome() {
           title="Tamamlanan satışlar"
           value={salesQuery.loading ? '—' : String(completedSales)}
           icon={CircleCheck}
+          accent="success"
         />
       </div>
 
@@ -114,10 +134,6 @@ export function SellerHome() {
             <TabsTrigger value="mylistings">İlanlarım ({openListings.length})</TabsTrigger>
             <TabsTrigger value="offers">Gelen teklifler ({incoming.length})</TabsTrigger>
           </TabsList>
-          <Button variant="primary" size="sm" onClick={() => setShowCreate(true)}>
-            <Plus className="size-4 mr-2" />
-            Yeni ilan
-          </Button>
         </div>
 
         <TabsContent value="requests">

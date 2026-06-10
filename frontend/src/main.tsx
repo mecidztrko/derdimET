@@ -10,7 +10,7 @@ import './styles/auth-bg.css'
   if (q.get('r') === 'dashboard') {
     window.history.replaceState(null, '', `${pathOnly}#/role-selector`)
   }
-  if (q.get('r') === 'login') {
+  if (q.get('r') === 'login' || q.has('logout')) {
     let hash = '#/login'
     if (q.has('error')) {
       const err = q.get('error')

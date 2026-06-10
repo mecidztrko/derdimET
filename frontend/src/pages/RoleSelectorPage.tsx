@@ -13,6 +13,7 @@ import {
 } from '../config/routeFeatures'
 import { isAdmin, isBuyer, isSeller, isSlaughterhouse } from '../types/me'
 import { getRoleHomePath } from '../lib/roleHomePath'
+import { brandLogoUrl } from '../lib/brandAssets'
 
 type PortalOption = {
   id: 'buyer' | 'seller' | 'slaughterhouse'
@@ -99,11 +100,12 @@ export default function RoleSelectorPage() {
     <div className="role-app min-h-screen bg-background flex items-center justify-center p-6">
       <div className="max-w-5xl w-full">
         <div className="text-center mb-12">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="size-12 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-white font-bold text-xl">dE</span>
-            </div>
-            <h1 className="font-heading">derdimET</h1>
+          <div className="mb-4 flex justify-center">
+            <img
+              src={brandLogoUrl('svg')}
+              alt="derdimET"
+              className="h-12 w-auto max-w-[min(100%,18rem)] object-contain"
+            />
           </div>
           <p className="text-muted-foreground">
             Çiftlikten sofraya dürüst bir pazar yeri

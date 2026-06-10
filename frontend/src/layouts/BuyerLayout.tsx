@@ -9,6 +9,7 @@ import { isBuyerRouteEnabled, type BuyerFeature } from '../config/routeFeatures'
 import { useBuyerPendingCounts } from '../hooks/usePendingCounts'
 import { useMessageUnreadCount } from '../hooks/useMessageUnreadCount'
 import { NotificationBell } from '../components/role-app/NotificationBell'
+import { NAV_ACTIVE_PRIMARY } from '../lib/roleAppNav'
 
 type NavDef = SidebarNavItem & { feature: BuyerFeature }
 
@@ -22,8 +23,7 @@ const navigation: NavDef[] = [
   { name: 'Ayarlar', href: '/buyer/settings', icon: Settings, feature: 'settings' },
 ]
 
-const SIDEBAR_ACTIVE =
-  'bg-primary-soft text-foreground before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-primary before:rounded-r'
+const SIDEBAR_ACTIVE = NAV_ACTIVE_PRIMARY
 
 export function BuyerLayout() {
   const [mobileOpen, setMobileOpen] = useState(false)

@@ -208,6 +208,20 @@ export type ChatMessageDto = {
   readAt: string | null
 }
 
+export type ConversationOfferDto = {
+  kind: 'LISTING' | 'ANIMAL' | 'MEAT'
+  offerId: number
+  title: string
+  subtitle: string | null
+  pricePerKg: number | string | null
+  animalCount: number | null
+  quantityKg: number | string | null
+  note: string | null
+  status: OfferStatus
+  createdAt: string
+  incoming: boolean
+}
+
 export type UpdateProfileBody = {
   name?: string
   phone?: string | null

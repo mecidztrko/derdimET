@@ -6,6 +6,7 @@ import com.derdimet.api.UpdateMeatSaleRequest;
 import com.derdimet.api.MeatOfferItemResponse;
 import com.derdimet.api.MeatSaleRequestResponse;
 import com.derdimet.api.SlaughterhouseMeatOfferResponse;
+import com.derdimet.entity.FavoriteMeatSaleRequest;
 import com.derdimet.entity.MeatOffer;
 import com.derdimet.entity.MeatSaleRequest;
 import com.derdimet.entity.OfferStatus;
@@ -13,6 +14,7 @@ import com.derdimet.entity.Order;
 import com.derdimet.entity.OrderStatus;
 import com.derdimet.entity.RequestStatus;
 import com.derdimet.entity.User;
+import com.derdimet.repository.FavoriteMeatSaleRequestRepository;
 import com.derdimet.repository.MeatOfferRepository;
 import com.derdimet.repository.MeatSaleRequestRepository;
 import com.derdimet.repository.OrderRepository;
@@ -32,6 +34,7 @@ public class MeatMarketService {
     private final MeatSaleRequestRepository saleRequestRepository;
     private final MeatOfferRepository meatOfferRepository;
     private final OrderRepository orderRepository;
+    private final FavoriteMeatSaleRequestRepository favoriteMeatSaleRequestRepository;
     private final AccountGuardService accountGuard;
     private final FavoriteService favoriteService;
 
@@ -68,8 +71,8 @@ public class MeatMarketService {
                 .map(
                         m -> {
                             Boolean fav =
-                                    buyer != null && m.getSlaughterhouse() != null
-                                            ? favoriteService.isFavoritedByMe(buyer, m.getSlaughterhouse().getId())
+                                    buyer != null
+                                            ? isListingFavoritedByMe(buyer, m.getId())
                                             : null;
                             return MeatSaleRequestResponse.fromEntity(m, fav);
                         })
@@ -97,6 +100,34 @@ public class MeatMarketService {
         o.setNote(blankToNull(body.note()));
         o.setStatus(OfferStatus.PENDING);
         return MeatOfferItemResponse.fromEntity(meatOfferRepository.save(o));
+    }
+
+    @Transactional
+    public MeatOfferItemResponse withdrawOffer(User buyer, Long offerId) {
+        MeatOffer offer = requireBuyerPendingOffer(buyer, offerId);
+        offer.setStatus(OfferStatus.REJECTED);
+        if (offer.getNote() == null || offer.getNote().isBlank()) {
+            offer.setNote("Alıcı tarafından geri çekildi");
+        }
+        return MeatOfferItemResponse.fromEntity(meatOfferRepository.save(offer));
+    }
+
+    @Transactional
+    public MeatOfferItemResponse acceptMyOffer(User buyer, Long offerId) {
+        MeatOffer offer = requireBuyerPendingOffer(buyer, offerId);
+        offer.setStatus(OfferStatus.ACCEPTED);
+        return MeatOfferItemResponse.fromEntity(meatOfferRepository.save(offer));
+    }
+
+    private MeatOffer requireBuyerPendingOffer(User buyer, Long offerId) {
+        MeatOffer offer =
+                meatOfferRepository
+                        .findByIdAndBuyer_Id(offerId, buyer.getId())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Teklif bulunamadı"));
+        if (offer.getStatus() != OfferStatus.PENDING) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Yalnızca bekleyen teklif işlenebilir");
+        }
+        return offer;
     }
 
     @Transactional(readOnly = true)
@@ -220,6 +251,38 @@ public class MeatMarketService {
             meatOfferRepository.save(offer);
         }
         return SlaughterhouseMeatOfferResponse.fromEntity(offer);
+    }
+
+    @Transactional(readOnly = true)
+    public List<MeatSaleRequestResponse> listFavoriteMeatSaleRequests(User buyer) {
+        return favoriteMeatSaleRequestRepository.findByBuyer_IdOrderByCreatedAtDesc(buyer.getId()).stream()
+                .map(f -> MeatSaleRequestResponse.fromEntity(f.getSaleRequest(), true))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isListingFavoritedByMe(User buyer, Long saleRequestId) {
+        return favoriteMeatSaleRequestRepository.existsByBuyer_IdAndSaleRequest_Id(buyer.getId(), saleRequestId);
+    }
+
+    @Transactional
+    public boolean toggleListingFavorite(User buyer, Long saleRequestId) {
+        accountGuard.requireEmailVerified(buyer);
+        MeatSaleRequest req =
+                saleRequestRepository
+                        .findById(saleRequestId)
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Et ilanı bulunamadı"));
+        var existing =
+                favoriteMeatSaleRequestRepository.findByBuyer_IdAndSaleRequest_Id(buyer.getId(), saleRequestId);
+        if (existing.isPresent()) {
+            favoriteMeatSaleRequestRepository.delete(existing.get());
+            return false;
+        }
+        var fav = new FavoriteMeatSaleRequest();
+        fav.setBuyer(buyer);
+        fav.setSaleRequest(req);
+        favoriteMeatSaleRequestRepository.save(fav);
+        return true;
     }
 
     private static String blankToNull(String s) {

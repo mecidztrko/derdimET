@@ -55,18 +55,26 @@ public class SlaughterhouseAnimalListingController {
         return ResponseEntity.status(HttpStatus.CREATED).body(marketService.createOffer(slaughterhouse, listingId, body));
     }
 
-    /** Satıcı tarafı: ilanlarına gelen teklifleri listeler (role seller). */
-    @GetMapping("/seller/incoming-offers")
-    public List<ListingOfferResponse> incomingOffers(@AuthenticationPrincipal UserDetails principal) {
-        User seller = userRepository.findByEmail(principal.getUsername()).orElseThrow();
-        return marketService.listOffersForSeller(seller);
-    }
-
     /** Kesimhane tarafı: verdiği teklifler. */
     @GetMapping("/offers")
     public List<ListingOfferResponse> myOffers(@AuthenticationPrincipal UserDetails principal) {
         User slaughterhouse = userRepository.findByEmail(principal.getUsername()).orElseThrow();
         return marketService.listMyOffers(slaughterhouse);
+    }
+
+    @GetMapping("/favorite-animal-listings")
+    public List<SellerAnimalListingResponse> listFavoriteAnimalListings(
+            @AuthenticationPrincipal UserDetails principal) {
+        User slaughterhouse = userRepository.findByEmail(principal.getUsername()).orElseThrow();
+        return marketService.listFavoriteAnimalListings(slaughterhouse);
+    }
+
+    @PostMapping("/animal-listings/{listingId}/favorite/toggle")
+    public ResponseEntity<FavoriteToggleController.ToggleResponse> toggleListingFavorite(
+            @AuthenticationPrincipal UserDetails principal, @PathVariable Long listingId) {
+        User slaughterhouse = userRepository.findByEmail(principal.getUsername()).orElseThrow();
+        boolean now = marketService.toggleListingFavorite(slaughterhouse, listingId);
+        return ResponseEntity.ok(new FavoriteToggleController.ToggleResponse(now));
     }
 }
 

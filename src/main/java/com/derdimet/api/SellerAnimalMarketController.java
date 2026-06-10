@@ -79,4 +79,19 @@ public class SellerAnimalMarketController {
         User seller = userRepository.findByEmail(principal.getUsername()).orElseThrow();
         return sellerService.listMyOffers(seller);
     }
+
+    @GetMapping("/favorite-animal-purchase-requests")
+    public List<AnimalPurchaseRequestResponse> listFavoritePurchaseRequests(
+            @AuthenticationPrincipal UserDetails principal) {
+        User seller = userRepository.findByEmail(principal.getUsername()).orElseThrow();
+        return sellerService.listFavoritePurchaseRequests(seller);
+    }
+
+    @PostMapping("/animal-purchase-requests/{requestId}/favorite/toggle")
+    public ResponseEntity<FavoriteToggleController.ToggleResponse> togglePurchaseRequestFavorite(
+            @AuthenticationPrincipal UserDetails principal, @PathVariable Long requestId) {
+        User seller = userRepository.findByEmail(principal.getUsername()).orElseThrow();
+        boolean now = sellerService.togglePurchaseRequestFavorite(seller, requestId);
+        return ResponseEntity.ok(new FavoriteToggleController.ToggleResponse(now));
+    }
 }

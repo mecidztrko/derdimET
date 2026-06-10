@@ -11,6 +11,10 @@ export function listMeatSaleRequests(params?: { q?: string }): Promise<MeatSaleR
   return apiFetch(withSearchQuery('/api/buyer/meat-sale-requests', params?.q))
 }
 
+export function listFavoriteMeatSaleRequests(): Promise<MeatSaleRequestDto[]> {
+  return apiFetch('/api/buyer/favorite-meat-sale-requests')
+}
+
 export function listMyMeatOffers(params?: { q?: string }): Promise<MeatOfferItemDto[]> {
   return apiFetch(withSearchQuery('/api/buyer/meat-offers', params?.q))
 }
@@ -27,6 +31,14 @@ export function createMeatOffer(
 
 export function listFavoriteSlaughterhouses(): Promise<FavoriteSlaughterhouseDto[]> {
   return apiFetch('/api/buyer/favorite-slaughterhouses')
+}
+
+export function toggleMeatListingFavorite(
+  saleRequestId: number,
+): Promise<{ isFavoritedByMe: boolean }> {
+  return apiFetch(`/api/buyer/meat-sale-requests/${saleRequestId}/favorite/toggle`, {
+    method: 'POST',
+  })
 }
 
 export function listPurchases(limit = 20): Promise<BuyerPurchaseDto[]> {

@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface SlaughterhouseListingOfferRepository extends JpaRepository<SlaughterhouseListingOffer, Long> {
 
@@ -30,5 +32,15 @@ public interface SlaughterhouseListingOfferRepository extends JpaRepository<Slau
     @EntityGraph(attributePaths = {"listing", "listing.seller", "slaughterhouse"})
     List<SlaughterhouseListingOffer> findBySlaughterhouseAndStatusOrderByCreatedAtDesc(
             User slaughterhouse, OfferStatus status);
+
+    @EntityGraph(attributePaths = {"listing", "listing.seller", "slaughterhouse"})
+    @Query(
+            """
+            SELECT o FROM SlaughterhouseListingOffer o
+            WHERE (o.listing.seller.id = :userA AND o.slaughterhouse.id = :userB)
+               OR (o.listing.seller.id = :userB AND o.slaughterhouse.id = :userA)
+            ORDER BY o.createdAt DESC
+            """)
+    List<SlaughterhouseListingOffer> findBetweenUsers(@Param("userA") Long userA, @Param("userB") Long userB);
 }
 

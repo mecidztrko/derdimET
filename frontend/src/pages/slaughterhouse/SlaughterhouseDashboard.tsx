@@ -21,6 +21,7 @@ import {
 import { SlaughterhouseRecentTradesCard } from '../../components/role-app/SlaughterhouseRecentTradesCard'
 import { MessageUserButton } from '../../components/role-app/MessageUserButton'
 import { RoleAppPage } from '../../components/role-app/RoleAppPage'
+import { PageHero } from '../../components/role-app/PageHero'
 
 export function SlaughterhouseDashboard() {
   const { user } = useMe()
@@ -40,18 +41,25 @@ export function SlaughterhouseDashboard() {
 
   return (
     <RoleAppPage>
-      <div className="mb-8">
-        <h1 className="mb-2">Kontrol paneli</h1>
-        <p className="text-muted-foreground">
-          Hoş geldiniz{user?.name ? `, ${user.name.split(' ')[0]}` : ''} — alım ve satış özeti
-        </p>
-      </div>
+      <PageHero
+        eyebrow="Kesimhane paneli"
+        title="Kontrol paneli"
+        description={`Hoş geldiniz${user?.name ? `, ${user.name.split(' ')[0]}` : ''} — alım ve satış özeti`}
+        actions={
+          <Link to="/slaughterhouse/buy-animals">
+            <Button variant="primary" size="sm" type="button">
+              Hayvan al
+            </Button>
+          </Link>
+        }
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Hayvan alım tekliflerim"
           value={String(myOffers.data?.length ?? '—')}
           icon={TrendingUp}
+          accent="primary"
           trend={
             pendingBuyOffers.length > 0
               ? { value: `${pendingBuyOffers.length} beklemede`, positive: true }
@@ -62,6 +70,7 @@ export function SlaughterhouseDashboard() {
           title="Açık et satış ilanları"
           value={String(openMeat.length)}
           icon={Package}
+          accent="secondary"
           trend={
             pendingMeatOffers.length > 0
               ? { value: `${pendingMeatOffers.length} alıcı teklifi`, positive: true }
@@ -72,11 +81,13 @@ export function SlaughterhouseDashboard() {
           title="Piyasadaki hayvan ilanları"
           value={String(animalListings.data?.length ?? '—')}
           icon={ListChecks}
+          accent="accent"
         />
         <StatCard
           title="Hayvan alış taleplerim"
           value={String(purchaseReqs.data?.length ?? '—')}
           icon={ListChecks}
+          accent="success"
           trend={
             (purchaseReqs.data ?? []).filter((r) => r.status === 'OPEN').length > 0
               ? {

@@ -57,7 +57,11 @@ export function PurchaseRequestCard({
     <Card
       elevation="hover"
       padding="md"
-      className={cn('cursor-pointer group relative', className)}
+      className={cn(
+        'group relative cursor-pointer',
+        status === 'open' && 'border-l-[3px] border-l-secondary',
+        className,
+      )}
       onClick={onClick}
     >
       {favoriteUserId ? (

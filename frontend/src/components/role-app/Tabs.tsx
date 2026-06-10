@@ -42,7 +42,7 @@ export function TabsList({ className, ...props }: HTMLAttributes<HTMLDivElement>
   return (
     <div
       className={cn(
-        'inline-flex h-12 items-center justify-start gap-2 rounded-lg bg-muted p-1',
+        'inline-flex h-12 items-center justify-start gap-1 rounded-xl border border-border/70 bg-card/80 p-1 shadow-sm backdrop-blur-sm',
         className,
       )}
       {...props}
@@ -64,9 +64,10 @@ export function TabsTrigger({ value, className, children, ...props }: TabsTrigge
   return (
     <button
       className={cn(
-        'inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-small font-medium transition-all',
-        'hover:bg-background/80',
-        isActive && 'bg-background shadow-sm',
+        'inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-small font-medium transition-all',
+        'hover:bg-muted/80 hover:text-foreground',
+        isActive &&
+          'bg-gradient-to-b from-primary to-[rgb(29,78,216)] text-primary-foreground shadow-md shadow-primary/20',
         !isActive && 'text-muted-foreground',
         className,
       )}

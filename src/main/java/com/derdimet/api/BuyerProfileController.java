@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -59,6 +60,7 @@ public class BuyerProfileController {
     }
 
     /** Et alıcısının favorilediği kesimhaneler. */
+    @Transactional(readOnly = true)
     @GetMapping("/favorite-slaughterhouses")
     public List<FavoriteSlaughterhouseResponse> favoriteSlaughterhouses(
             @AuthenticationPrincipal UserDetails principal) {

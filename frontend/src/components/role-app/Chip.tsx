@@ -8,7 +8,7 @@ const chipVariants = cva(
     variants: {
       variant: {
         default: 'bg-muted text-foreground hover:bg-muted/80',
-        selected: 'bg-primary-soft text-foreground',
+        selected: 'bg-primary-soft text-primary font-medium ring-1 ring-primary/20 shadow-sm',
         primary: 'bg-primary text-primary-foreground',
         secondary: 'bg-secondary text-secondary-foreground',
         outline: 'border-[1.5px] border-border bg-transparent hover:bg-muted',

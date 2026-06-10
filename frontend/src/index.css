@@ -8,17 +8,17 @@
 
 @layer base {
   :root {
-    --background: 245 248 250;
-    --foreground: 26 35 50;
+    --background: 241 245 249;
+    --foreground: 15 23 42;
     --card: 255 255 255;
-    --card-foreground: 26 35 50;
-    --card-alt: 239 244 247;
+    --card-foreground: 15 23 42;
+    --card-alt: 248 250 252;
     --popover: 255 255 255;
-    --popover-foreground: 26 35 50;
-    --primary: 37 99 235;
+    --popover-foreground: 15 23 42;
+    --primary: 29 78 216;
     --primary-foreground: 255 255 255;
     --primary-soft: 219 234 254;
-    --secondary: 14 165 233;
+    --secondary: 13 148 136;
     --secondary-foreground: 255 255 255;
     --accent: 59 130 246;
     --accent-foreground: 255 255 255;
@@ -32,15 +32,16 @@
     --warning-foreground: 255 255 255;
     --border: 226 232 240;
     --input-background: 255 255 255;
-    --ring: 37 99 235;
+    --ring: 29 78 216;
 
     --radius-button: 0.875rem;
-    --radius-card: 1.25rem;
+    --radius-card: 1rem;
     --radius-input: 0.75rem;
     --radius-chip: 9999px;
 
-    --shadow-soft: 0 8px 24px rgba(15, 23, 42, 0.06);
-    --shadow-hover: 0 12px 32px rgba(15, 23, 42, 0.1);
+    --shadow-soft: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.06);
+    --shadow-hover: 0 4px 12px rgba(29, 78, 216, 0.12), 0 16px 40px rgba(15, 23, 42, 0.1);
+    --shadow-header: 0 1px 0 rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.04);
   }
 
   html {
@@ -57,7 +58,33 @@
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   color: rgb(var(--foreground));
   background-color: rgb(var(--background));
-  background-image: none;
+  background-image:
+    radial-gradient(ellipse 90% 60% at 100% -10%, rgba(29, 78, 216, 0.09), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 0% 100%, rgba(13, 148, 136, 0.08), transparent 50%),
+    linear-gradient(180deg, rgb(var(--background)) 0%, rgb(248 250 252) 100%);
+}
+
+.role-app .role-app-dot-grid {
+  background-image: radial-gradient(rgba(15, 23, 42, 0.08) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+.role-app .role-app-surface {
+  @apply border border-border/70 bg-card/90 shadow-soft backdrop-blur-sm;
+}
+
+.role-app .role-app-page-title {
+  letter-spacing: -0.03em;
+  background: linear-gradient(120deg, rgb(var(--foreground)) 0%, rgb(51 65 85) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.role-app .role-app-hero-panel {
+  box-shadow:
+    var(--shadow-soft),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
 }
 
 /* Auth sayfaları hero arka planı (role-app sıfırlamasını geçersiz kılar) */
@@ -80,6 +107,7 @@
   font-size: 2.5rem;
   font-weight: 600;
   line-height: 3rem;
+  letter-spacing: -0.025em;
 }
 
 .role-app h2 {

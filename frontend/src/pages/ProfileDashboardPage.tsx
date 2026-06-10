@@ -12,6 +12,7 @@ import { useMe } from '../hooks/useMe'
 import { isAdmin, isBusiness } from '../types/me'
 import { apiUrl } from '../config/apiBase'
 import { RoleAppPage } from '../components/role-app/RoleAppPage'
+import { LogoutButton } from '../components/role-app/LogoutButton'
 
 export default function ProfileDashboardPage() {
   const { user, loading } = useMe()
@@ -100,7 +101,10 @@ export default function ProfileDashboardPage() {
             </div>
             <p className="text-muted-foreground">{displayTitle} · {locationStr}</p>
           </div>
-          <Badge variant="open">ADMIN</Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="open">ADMIN</Badge>
+            <LogoutButton placement="header" />
+          </div>
         </div>
 
         <Tabs value={tab} onValueChange={setTab}>

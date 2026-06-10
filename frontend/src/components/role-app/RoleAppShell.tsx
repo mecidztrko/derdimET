@@ -4,7 +4,6 @@ import { Button } from './Button'
 import { RoleAppSidebar, type SidebarNavItem } from './RoleAppSidebar'
 import { EmailVerificationBanner } from './EmailVerificationBanner'
 import { AppBrandLink } from './AppBrandLink'
-
 type RoleAppShellProps = {
   mobileOpen: boolean
   onMobileOpenChange: (open: boolean) => void
@@ -28,11 +27,15 @@ export function RoleAppShell({
   const closeMobile = () => onMobileOpenChange(false)
 
   return (
-    <div className="role-app flex h-dvh max-h-dvh flex-col overflow-hidden bg-background">
+    <div className="role-app flex h-dvh max-h-dvh flex-col">
       <EmailVerificationBanner />
-      <header className="z-50 shrink-0 border-b border-border bg-card">
-        <div className="flex h-16 w-full items-center justify-between gap-2 px-4 sm:px-6">
-          <div className="flex min-w-0 items-center gap-2">
+      <header className="relative z-50 shrink-0 border-b border-border/80 bg-card/90 shadow-header backdrop-blur-md">
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-primary via-accent to-secondary opacity-90"
+          aria-hidden
+        />
+        <div className="flex h-[4.25rem] w-full min-w-0 items-center gap-2 px-4 sm:px-6">
+          <div className="flex min-w-0 shrink-0 items-center gap-2">
             <Button
               variant="ghost"
               size="icon"
@@ -46,11 +49,11 @@ export function RoleAppShell({
             <AppBrandLink onNavigate={closeMobile} />
           </div>
           {searchBar}
-          <div className="flex shrink-0 items-center gap-2">{userBar}</div>
+          <div className="relative z-[60] ml-auto flex shrink-0 items-center gap-1 sm:gap-2">{userBar}</div>
         </div>
       </header>
 
-      <div className="flex min-h-0 w-full flex-1">
+      <div className="flex min-h-0 w-full flex-1 overflow-hidden">
         <RoleAppSidebar
           items={sidebarItems}
           mobileOpen={mobileOpen}

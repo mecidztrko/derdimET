@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { X, Heart, MapPin, Factory } from 'lucide-react'
 import { getMeatListing } from '../../api/listings'
 import { ApiError } from '../../api/client'
-import { useToggleFavorite } from '../../hooks/useToggleFavorite'
+import { toggleMeatListingFavorite } from '../../api/buyer'
 import { useEmailVerificationGate } from '../../hooks/useEmailVerificationGate'
 import { EMAIL_VERIFICATION_REQUIRED } from '../../lib/emailVerification'
 import type { MeatSaleRequestDto } from '../../api/types'
@@ -25,7 +25,6 @@ export function MeatListingDetailModal({ listingId, open, onClose, onOffer }: Me
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [favoriteError, setFavoriteError] = useState<string | null>(null)
-  const { toggle: toggleFavorite } = useToggleFavorite()
   const { blocked: favoriteBlocked } = useEmailVerificationGate()
 
   useEffect(() => {
@@ -48,7 +47,7 @@ export function MeatListingDetailModal({ listingId, open, onClose, onOffer }: Me
   const isOpen = item?.status === 'OPEN'
 
   async function handleFavorite() {
-    if (!item?.slaughterhouseId) return
+    if (!item) return
     const wasFavorited = !!item.isFavoritedByMe
     if (!wasFavorited && favoriteBlocked) {
       setFavoriteError(EMAIL_VERIFICATION_REQUIRED)
@@ -58,7 +57,7 @@ export function MeatListingDetailModal({ listingId, open, onClose, onOffer }: Me
     const next = !wasFavorited
     setItem({ ...item, isFavoritedByMe: next })
     try {
-      await toggleFavorite(item.slaughterhouseId, wasFavorited)
+      await toggleMeatListingFavorite(item.id)
     } catch {
       setItem({ ...item, isFavoritedByMe: wasFavorited })
     }

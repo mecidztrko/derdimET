@@ -2,6 +2,7 @@ package com.derdimet.api;
 
 import com.derdimet.entity.User;
 import com.derdimet.repository.UserRepository;
+import com.derdimet.service.ConversationOffersService;
 import com.derdimet.service.MessagingService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -24,6 +25,7 @@ public class MessagingController {
 
     private final UserRepository userRepository;
     private final MessagingService messagingService;
+    private final ConversationOffersService conversationOffersService;
 
     @GetMapping("/conversations")
     public List<ConversationItemResponse> listConversations(@AuthenticationPrincipal UserDetails principal) {
@@ -35,6 +37,14 @@ public class MessagingController {
     public ResponseEntity<ConversationItemResponse> getOrCreate(@AuthenticationPrincipal UserDetails principal, @PathVariable Long userId) {
         User current = userRepository.findByEmail(principal.getUsername()).orElseThrow();
         return ResponseEntity.status(HttpStatus.OK).body(messagingService.getOrCreateConversation(current, userId));
+    }
+
+    @GetMapping("/conversations/{conversationId}/offers")
+    public List<ConversationOfferResponse> listConversationOffers(
+            @AuthenticationPrincipal UserDetails principal,
+            @PathVariable Long conversationId) {
+        User current = userRepository.findByEmail(principal.getUsername()).orElseThrow();
+        return conversationOffersService.listForConversation(current, conversationId);
     }
 
     @GetMapping("/conversations/{conversationId}/messages")

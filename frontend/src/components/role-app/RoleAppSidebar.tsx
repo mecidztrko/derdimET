@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import type { LucideIcon } from 'lucide-react'
 import { cn } from '../../lib/cn'
+import { LogoutButton } from './LogoutButton'
 
 export type SidebarNavItem = {
   name: string
@@ -36,13 +37,16 @@ export function RoleAppSidebar({
 
       <aside
         className={cn(
-          'z-40 w-64 shrink-0 border-r border-border bg-card p-4',
-          'fixed left-0 top-16 bottom-0 transition-transform duration-200',
-          'lg:relative lg:top-auto lg:bottom-auto lg:left-auto lg:h-auto lg:max-h-full lg:overflow-y-auto lg:translate-x-0',
+          'z-40 flex w-64 shrink-0 flex-col border-r border-border/80 bg-card/80 p-4 backdrop-blur-md',
+          'fixed left-0 top-[4.25rem] bottom-0 transition-transform duration-200',
+          'lg:relative lg:top-auto lg:bottom-auto lg:left-auto lg:h-auto lg:max-h-full lg:translate-x-0',
           mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
         )}
       >
-        <nav className="space-y-1">
+        <p className="mb-3 px-3 text-caption font-semibold uppercase tracking-wider text-muted-foreground/80">
+          Menü
+        </p>
+        <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto">
           {items.map((item) => (
             <NavLink
               key={item.name}
@@ -51,8 +55,10 @@ export function RoleAppSidebar({
               onClick={onMobileClose}
               className={({ isActive }) =>
                 cn(
-                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-small font-medium transition-colors relative',
-                  isActive ? activeClassName : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                  'flex items-center gap-3 rounded-xl px-3 py-2.5 text-small font-medium transition-all relative',
+                  isActive
+                    ? activeClassName
+                    : 'text-muted-foreground hover:bg-card hover:text-foreground hover:shadow-sm',
                 )
               }
             >
@@ -66,6 +72,9 @@ export function RoleAppSidebar({
             </NavLink>
           ))}
         </nav>
+        <div className="mt-4 shrink-0 border-t border-border pt-4">
+          <LogoutButton placement="sidebar" />
+        </div>
       </aside>
     </>
   )

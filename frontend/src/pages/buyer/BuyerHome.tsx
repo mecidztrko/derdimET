@@ -18,9 +18,10 @@ import { formatRelativeTr } from '../../api/format'
 import { CreateMeatOfferModal } from '../../components/role-app/CreateMeatOfferModal'
 import { MeatListingDetailModal } from '../../components/role-app/MeatListingDetailModal'
 import { BuyerPurchasesCard } from '../../components/role-app/BuyerPurchasesCard'
-import { useToggleFavorite } from '../../hooks/useToggleFavorite'
+import { useEmailVerificationGate } from '../../hooks/useEmailVerificationGate'
 import type { MeatSaleRequestDto } from '../../api/types'
 import { RoleAppPage } from '../../components/role-app/RoleAppPage'
+import { PageHero } from '../../components/role-app/PageHero'
 
 const meatTypes = ['Tümü', 'Dana', 'Kuzu', 'Kıyma', 'Biftek', 'Pirzola', 'But', 'Antrikot']
 const animalCategories = ['Tüm Kategoriler', 'Küçükbaş', 'Büyükbaş']
@@ -31,7 +32,8 @@ export function BuyerHome() {
   const [selectedAnimalCategory, setSelectedAnimalCategory] = useState('Tüm Kategoriler')
   const [detailId, setDetailId] = useState<number | null>(null)
   const [offerTarget, setOfferTarget] = useState<MeatSaleRequestDto | null>(null)
-  const { toggle: toggleFavorite, error: favoriteError, blocked: favoriteBlocked } = useToggleFavorite()
+  const [favoriteError, setFavoriteError] = useState<string | null>(null)
+  const { blocked: favoriteBlocked } = useEmailVerificationGate()
 
   const [searchQuery, setSearchQuery] = useSyncedSearchQuery()
   const listingsQuery = useApi(
@@ -62,33 +64,51 @@ export function BuyerHome() {
       }),
     [listingsQuery.data, selectedMeatType, selectedAnimalCategory, selectedCity],
   )
-  async function handleFavorite(userId: number, isFavorited: boolean) {
-    await toggleFavorite(userId, isFavorited)
-    listingsQuery.reload()
+  async function handleFavorite(listingId: number) {
+    setFavoriteError(null)
+    try {
+      await buyerApi.toggleMeatListingFavorite(listingId)
+      listingsQuery.reload()
+    } catch (e) {
+      setFavoriteError(e instanceof Error ? e.message : 'Favori işlemi başarısız')
+    }
   }
 
   return (
     <RoleAppPage>
-      <div className="mb-8">
-        <h1 className="mb-2">Hoş geldiniz{user?.name ? `, ${user.name.split(' ')[0]}` : ''}</h1>
-        <p className="text-muted-foreground">Kesimhanelerden taze et satış ilanları</p>
-        {searchQuery.trim() ? (
-          <p className="text-small text-muted-foreground mt-2">
-            &ldquo;{searchQuery.trim()}&rdquo; için {filteredWithCity.length} ilan
-          </p>
-        ) : null}
-      </div>
+      <PageHero
+        eyebrow="Alıcı paneli"
+        title={`Hoş geldiniz${user?.name ? `, ${user.name.split(' ')[0]}` : ''}`}
+        description={
+          <>
+            <p>Kesimhanelerden taze et satış ilanları</p>
+            {searchQuery.trim() ? (
+              <p className="text-small mt-2">
+                &ldquo;{searchQuery.trim()}&rdquo; için {filteredWithCity.length} ilan
+              </p>
+            ) : null}
+          </>
+        }
+        actions={
+          <Link to="/buyer/search">
+            <Button variant="secondary" size="sm" type="button">
+              Tüm ilanları gör
+            </Button>
+          </Link>
+        }
+      />
       {favoriteError ? (
         <p className="mb-4 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
           {favoriteError}
         </p>
       ) : null}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Verilen Teklifler"
           value={String(offersQuery.data?.length ?? '—')}
           icon={TrendingUp}
+          accent="primary"
           trend={
             pendingOffers > 0
               ? { value: `${pendingOffers} beklemede`, positive: true }
@@ -99,12 +119,19 @@ export function BuyerHome() {
           title="Tamamlanan siparişler"
           value={purchasesQuery.loading ? '—' : String(purchasesQuery.data?.length ?? 0)}
           icon={ShoppingBag}
+          accent="success"
         />
-        <StatCard title="Favori Kesimhaneler" value={String(favCount)} icon={Building2} />
+        <StatCard
+          title="Favori Kesimhaneler"
+          value={String(favCount)}
+          icon={Building2}
+          accent="secondary"
+        />
         <StatCard
           title="Açık İlanlar"
           value={String(listingsQuery.data?.length ?? '—')}
           icon={Package}
+          accent="accent"
         />
       </div>
 
@@ -199,9 +226,9 @@ export function BuyerHome() {
                     {...listing}
                     showSlaughterhouseLabel
                     isFavorite={!!item.isFavoritedByMe}
-                    favoriteUserId={item.slaughterhouseId}
+                    favoriteUserId={item.id}
                     favoriteAddBlocked={favoriteBlocked}
-                    onFavoriteToggle={(id, next) => void handleFavorite(id, !next)}
+                    onFavoriteToggle={(id) => void handleFavorite(id)}
                     onClick={() => setDetailId(item.id)}
                   />
                 )

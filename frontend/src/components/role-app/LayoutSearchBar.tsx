@@ -77,7 +77,7 @@ export function LayoutSearchBar({ targets, fallback }: LayoutSearchBarProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex-1 min-w-0 max-w-xl mx-2 sm:mx-4 md:mx-8">
+    <form onSubmit={handleSubmit} className="min-w-0 flex-1 max-w-md mx-1 sm:mx-3 lg:max-w-xl lg:mx-6">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-muted-foreground pointer-events-none" />
         <input
@@ -85,7 +85,7 @@ export function LayoutSearchBar({ targets, fallback }: LayoutSearchBarProps) {
           placeholder={placeholder}
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          className="w-full h-10 pl-10 pr-4 bg-muted rounded-lg border-0 outline-none focus:ring-2 focus:ring-primary/20"
+          className="h-10 w-full rounded-input border border-border/80 bg-card pl-10 pr-4 shadow-sm outline-none transition-shadow placeholder:text-muted-foreground/80 focus:border-primary focus:ring-2 focus:ring-primary/15"
         />
       </div>
     </form>

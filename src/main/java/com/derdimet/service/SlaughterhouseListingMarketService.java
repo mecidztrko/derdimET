@@ -12,6 +12,8 @@ import com.derdimet.entity.UserRole;
 import java.math.BigDecimal;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import com.derdimet.entity.FavoriteAnimalListing;
+import com.derdimet.repository.FavoriteAnimalListingRepository;
 import com.derdimet.repository.SellerAnimalListingRepository;
 import com.derdimet.repository.SlaughterhouseListingOfferRepository;
 import com.derdimet.util.ListingSearchSupport;
@@ -31,7 +33,7 @@ public class SlaughterhouseListingMarketService {
     private final SlaughterhouseListingOfferRepository offerRepository;
     private final AnimalDealService animalDealService;
     private final AccountGuardService accountGuard;
-    private final FavoriteService favoriteService;
+    private final FavoriteAnimalListingRepository favoriteAnimalListingRepository;
 
     @Transactional(readOnly = true)
     public List<SellerAnimalListingResponse> searchListings(
@@ -151,10 +153,8 @@ public class SlaughterhouseListingMarketService {
                 .map(
                         l -> {
                             Boolean favorited =
-                                    viewer != null
-                                            && viewerRole == UserRole.SLAUGHTERHOUSE
-                                            && l.getSeller() != null
-                                            ? favoriteService.isFavoritedByMe(viewer, l.getSeller().getId())
+                                    viewer != null && viewerRole == UserRole.SLAUGHTERHOUSE
+                                            ? isListingFavoritedByMe(viewer, l.getId())
                                             : null;
                             Boolean offered =
                                     viewerId != null
@@ -235,6 +235,43 @@ public class SlaughterhouseListingMarketService {
             offerRepository.save(offer);
         }
         return ListingOfferResponse.fromEntity(offer);
+    }
+
+    @Transactional(readOnly = true)
+    public List<SellerAnimalListingResponse> listFavoriteAnimalListings(User slaughterhouse) {
+        return favoriteAnimalListingRepository.findBySlaughterhouse_IdOrderByCreatedAtDesc(slaughterhouse.getId())
+                .stream()
+                .map(FavoriteAnimalListing::getListing)
+                .filter(java.util.Objects::nonNull)
+                .map(l -> SellerAnimalListingResponse.fromEntity(l, true, null))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isListingFavoritedByMe(User slaughterhouse, Long listingId) {
+        return favoriteAnimalListingRepository.existsBySlaughterhouse_IdAndListing_Id(
+                slaughterhouse.getId(), listingId);
+    }
+
+    @Transactional
+    public boolean toggleListingFavorite(User slaughterhouse, Long listingId) {
+        accountGuard.requireEmailVerified(slaughterhouse);
+        SellerAnimalListing listing =
+                listingRepository
+                        .findById(listingId)
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "İlan bulunamadı"));
+        var existing =
+                favoriteAnimalListingRepository.findBySlaughterhouse_IdAndListing_Id(
+                        slaughterhouse.getId(), listingId);
+        if (existing.isPresent()) {
+            favoriteAnimalListingRepository.delete(existing.get());
+            return false;
+        }
+        var fav = new FavoriteAnimalListing();
+        fav.setSlaughterhouse(slaughterhouse);
+        fav.setListing(listing);
+        favoriteAnimalListingRepository.save(fav);
+        return true;
     }
 
     private static String blankToNull(String s) {

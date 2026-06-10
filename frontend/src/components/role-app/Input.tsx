@@ -27,7 +27,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         <input
           type={type}
           className={cn(
-            'w-full h-12 bg-input-background border-[1.5px] border-border rounded-input transition-all outline-none',
+            'h-12 w-full rounded-input border border-border/80 bg-input-background shadow-sm transition-all outline-none',
             Icon ? 'pl-11 pr-4' : 'px-4',
             label ? 'pt-3 pb-1' : '',
             'focus:border-primary focus:ring-2 focus:ring-primary/20',

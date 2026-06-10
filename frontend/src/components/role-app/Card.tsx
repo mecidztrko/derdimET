@@ -2,16 +2,18 @@ import { HTMLAttributes, forwardRef } from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '../../lib/cn'
 
-const cardVariants = cva('rounded-card transition-shadow', {
+const cardVariants = cva(
+  'rounded-card border border-border/70 transition-all duration-200',
+  {
   variants: {
     variant: {
       default: 'bg-card text-card-foreground',
-      alt: 'bg-card-alt text-card-foreground',
+      alt: 'bg-card-alt/80 text-card-foreground',
     },
     elevation: {
       none: '',
-      soft: 'shadow-soft',
-      hover: 'shadow-soft hover:shadow-hover',
+      soft: 'shadow-soft ring-1 ring-black/[0.03]',
+      hover: 'shadow-soft ring-1 ring-black/[0.03] hover:-translate-y-0.5 hover:shadow-hover hover:border-primary/15',
     },
     padding: {
       none: '',

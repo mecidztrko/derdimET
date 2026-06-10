@@ -58,7 +58,7 @@ public class SecurityConfig {
                         .authenticated()
                         .requestMatchers("/api/media/**")
                         .authenticated()
-                        .requestMatchers("/api/users/*/public")
+                        .requestMatchers("/api/users/*/public", "/api/users/*/public/listings")
                         .authenticated()
                         .requestMatchers("/api/listings/**")
                         .authenticated()
@@ -93,7 +93,10 @@ public class SecurityConfig {
                         .loginProcessingUrl("/perform_login")
                         .permitAll()
                         .defaultSuccessUrl("/auth/index.html?r=dashboard", true) // frontend maps r=dashboard → #/role-selector
-                        .failureUrl("/auth/index.html?r=login&error=1"));
+                        .failureUrl("/auth/index.html?r=login&error=1"))
+                .logout(logout -> logout.logoutUrl("/logout")
+                        .logoutSuccessUrl("/auth/index.html?r=login")
+                        .permitAll());
         return http.build();
     }
 

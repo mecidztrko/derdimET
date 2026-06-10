@@ -11,7 +11,8 @@ import { useMe } from '../../hooks/useMe'
 import * as messagingApi from '../../api/messaging'
 import { EMAIL_VERIFICATION_REQUIRED, requiresEmailVerification } from '../../lib/emailVerification'
 import { EmailVerificationNotice } from './EmailVerificationNotice'
-import type { ChatMessageDto } from '../../api/types'
+import type { ChatMessageDto, ConversationOfferDto } from '../../api/types'
+import { ChatConversationOffers } from './ChatConversationOffers'
 import { formatRelativeTr } from '../../api/format'
 import { cn } from '../../lib/cn'
 
@@ -37,6 +38,8 @@ export function MessagesInbox({ className }: MessagesInboxProps) {
   const [contextLabel, setContextLabel] = useState<string | null>(null)
   const [mobileShowChat, setMobileShowChat] = useState(false)
   const [sendError, setSendError] = useState<string | null>(null)
+  const [offers, setOffers] = useState<ConversationOfferDto[]>([])
+  const [offersLoading, setOffersLoading] = useState(false)
   const messagingBlocked = requiresEmailVerification(user)
 
   const convQuery = useApi(() => messagingApi.listConversations(), [])
@@ -95,9 +98,28 @@ export function MessagesInbox({ className }: MessagesInboxProps) {
     [reloadConversations],
   )
 
+  const loadOffers = useCallback(async (conversationId: number) => {
+    setOffersLoading(true)
+    try {
+      setOffers(await messagingApi.listConversationOffers(conversationId))
+    } catch {
+      setOffers([])
+    } finally {
+      setOffersLoading(false)
+    }
+  }, [])
+
+  const reloadChat = useCallback(
+    (conversationId: number) => {
+      void loadMessages(conversationId)
+      void loadOffers(conversationId)
+    },
+    [loadMessages, loadOffers],
+  )
+
   useEffect(() => {
-    if (selected?.conversationId) loadMessages(selected.conversationId)
-  }, [selected?.conversationId, loadMessages])
+    if (selected?.conversationId) reloadChat(selected.conversationId)
+  }, [selected?.conversationId, reloadChat])
 
   async function handleSend() {
     if (!selected?.conversationId || !messageInput.trim()) return
@@ -164,6 +186,7 @@ export function MessagesInbox({ className }: MessagesInboxProps) {
                         type="button"
                         onClick={() => {
                           setSelectedId(c.conversationId)
+                          setContextLabel(null)
                           setMobileShowChat(true)
                         }}
                         className={`w-full p-4 border-b border-border hover:bg-muted/50 text-left ${
@@ -211,6 +234,13 @@ export function MessagesInbox({ className }: MessagesInboxProps) {
                       ) : null}
                     </div>
                   </div>
+                  <ChatConversationOffers
+                    offers={offers}
+                    loading={offersLoading}
+                    onUpdated={() => {
+                      if (selected?.conversationId) reloadChat(selected.conversationId)
+                    }}
+                  />
                   <div className="flex-1 overflow-y-auto p-4 space-y-4">
                     {messagesLoading ? (
                       <p className="text-sm text-muted-foreground">Yükleniyor…</p>

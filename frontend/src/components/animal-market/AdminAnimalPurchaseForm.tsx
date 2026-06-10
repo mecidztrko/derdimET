@@ -1,10 +1,12 @@
-import { useState, type FormEvent } from 'react'
-import { createAnimalPurchaseRequest } from '../../api/animalMarket'
+import { useEffect, useState, type FormEvent } from 'react'
+import { adminCreateAnimalPurchaseRequest, listAdminSlaughterhouses } from '../../api/admin'
 import type { AnimalCategory } from '../../lib/animalCategory'
 import { ANIMAL_CATEGORY_LABELS } from '../../lib/animalCategory'
 import { Card } from '../dashboard/Card'
 
 export function AdminAnimalPurchaseForm() {
+  const [slaughterhouseUserId, setSlaughterhouseUserId] = useState<number | null>(null)
+  const [slaughterhouses, setSlaughterhouses] = useState<{ id: number; name: string; email: string }[]>([])
   const [title, setTitle] = useState('')
   const [animalCategory, setAnimalCategory] = useState<AnimalCategory | null>(null)
   const [quantity, setQuantity] = useState('')
@@ -13,6 +15,15 @@ export function AdminAnimalPurchaseForm() {
   const [submitting, setSubmitting] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    listAdminSlaughterhouses()
+      .then((list) => {
+        setSlaughterhouses(list)
+        if (list.length > 0) setSlaughterhouseUserId(list[0].id)
+      })
+      .catch(() => setError('Kesimhane listesi yüklenemedi'))
+  }, [])
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
@@ -23,6 +34,10 @@ export function AdminAnimalPurchaseForm() {
     }
     if (!animalCategory) {
       setError('Küçükbaş veya büyükbaş seçin')
+      return
+    }
+    if (slaughterhouseUserId == null) {
+      setError('Kesimhane seçin')
       return
     }
     setSubmitting(true)
@@ -44,7 +59,8 @@ export function AdminAnimalPurchaseForm() {
           return
         }
       }
-      await createAnimalPurchaseRequest({
+      await adminCreateAnimalPurchaseRequest({
+        slaughterhouseUserId,
         title: t,
         animalCategory,
         quantity: q,
@@ -77,6 +93,22 @@ export function AdminAnimalPurchaseForm() {
         </p>
       )}
       <form onSubmit={onSubmit} className="mt-4 space-y-4">
+        <div>
+          <label className="text-xs font-semibold text-gray-600">Kesimhane (ilan sahibi) *</label>
+          <select
+            value={slaughterhouseUserId ?? ''}
+            onChange={(e) => setSlaughterhouseUserId(Number(e.target.value))}
+            className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-clinical-500"
+            required
+          >
+            {slaughterhouses.length === 0 && <option value="">Yükleniyor…</option>}
+            {slaughterhouses.map((sh) => (
+              <option key={sh.id} value={sh.id}>
+                {sh.name} ({sh.email})
+              </option>
+            ))}
+          </select>
+        </div>
         <div>
           <label className="text-xs font-semibold text-gray-600">Başlık *</label>
           <input

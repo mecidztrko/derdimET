@@ -75,15 +75,3 @@ export function createAnimalOffer(
   })
 }
 
-export function createAnimalPurchaseRequest(body: {
-  title: string
-  animalCategory: AnimalCategory
-  quantity?: number | null
-  expectedWeight?: number | null
-  description?: string | null
-}): Promise<AnimalPurchaseRequestDto> {
-  return apiFetch<AnimalPurchaseRequestDto>('/api/slaughterhouse/animal-purchase-requests', {
-    method: 'POST',
-    body: JSON.stringify(body),
-  })
-}

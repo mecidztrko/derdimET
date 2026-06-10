@@ -68,10 +68,11 @@ export default {
         chip: 'var(--radius-chip)',
       },
       boxShadow: {
-        card: '0 4px 6px -1px rgba(37, 99, 235, 0.06), 0 20px 40px -12px rgba(15, 23, 42, 0.08)',
-        'card-hover': '0 8px 16px -4px rgba(37, 99, 235, 0.1), 0 24px 48px -16px rgba(15, 23, 42, 0.1)',
+        card: '0 4px 6px -1px rgba(29, 78, 216, 0.06), 0 20px 40px -12px rgba(15, 23, 42, 0.08)',
+        'card-hover': '0 8px 16px -4px rgba(29, 78, 216, 0.1), 0 24px 48px -16px rgba(15, 23, 42, 0.1)',
         soft: 'var(--shadow-soft)',
         hover: 'var(--shadow-hover)',
+        header: 'var(--shadow-header)',
       },
       animation: {
         'fade-in': 'fadeIn 0.35s ease-out forwards',

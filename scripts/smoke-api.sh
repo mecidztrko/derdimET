@@ -53,6 +53,14 @@ get_ok "me" "/api/me"
 get_ok "et ilanları" "/api/buyer/meat-sale-requests"
 get_ok "tekliflerim" "/api/buyer/meat-offers"
 get_ok "teklif arama" "/api/buyer/meat-offers?q=demo"
+# accept/withdraw route'ları kayıtlı mı (404 olmamalı)
+OFFERS=$(curl -sS -H "Authorization: Bearer $TOKEN" "$BASE_URL/api/buyer/meat-offers")
+PENDING_ID=$(echo "$OFFERS" | python3 -c "import sys,json; d=json.load(sys.stdin); print(next((o['offerId'] for o in d if o.get('status')=='PENDING'), ''))" 2>/dev/null || true)
+if [[ -n "$PENDING_ID" ]]; then
+  code=$(curl -sS -o /dev/null -w "%{http_code}" -X POST -H "Authorization: Bearer $TOKEN" "$BASE_URL/api/buyer/meat-offers/$PENDING_ID/accept")
+  if [[ "$code" != "200" ]]; then echo "  ✗ teklif kabul ($PENDING_ID) HTTP $code" >&2; exit 1; fi
+  echo "  ✓ teklif kabul"
+fi
 get_ok "bildirim özeti" "/api/notifications/summary"
 
 echo "Satıcı (seller1@derdimet.local)"
@@ -72,6 +80,11 @@ get_ok "alış talebi arama" "/api/slaughterhouse/animal-purchase-requests?q=dem
 get_ok "et ilanlarım" "/api/slaughterhouse/meat-sale-requests"
 get_ok "et ilanı arama" "/api/slaughterhouse/meat-sale-requests?q=et"
 get_ok "bildirim özeti" "/api/notifications/summary"
+
+echo "Yönetici (admin@derdimet.local)"
+login "admin@derdimet.local"
+get_ok "me" "/api/me"
+get_ok "kesimhane listesi (admin)" "/api/admin/slaughterhouses"
 
 echo ""
 echo "Tüm smoke kontrolleri geçti."

@@ -7,11 +7,13 @@ import com.derdimet.api.SellerAnimalOfferItemResponse;
 import com.derdimet.entity.AnimalOffer;
 import com.derdimet.entity.AnimalCategory;
 import com.derdimet.entity.AnimalPurchaseRequest;
+import com.derdimet.entity.FavoriteAnimalPurchaseRequest;
 import com.derdimet.entity.OfferStatus;
 import com.derdimet.entity.RequestStatus;
 import com.derdimet.entity.User;
 import com.derdimet.repository.AnimalOfferRepository;
 import com.derdimet.repository.AnimalPurchaseRequestRepository;
+import com.derdimet.repository.FavoriteAnimalPurchaseRequestRepository;
 import java.math.BigDecimal;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +30,7 @@ public class AnimalSellerMarketService {
 
     private final AnimalPurchaseRequestRepository requestRepository;
     private final AnimalOfferRepository offerRepository;
-    private final FavoriteService favoriteService;
+    private final FavoriteAnimalPurchaseRequestRepository favoritePurchaseRequestRepository;
     private final AccountGuardService accountGuard;
 
     @Transactional(readOnly = true)
@@ -79,10 +81,7 @@ public class AnimalSellerMarketService {
         return requestRepository.findAll(spec, s).stream()
                 .map(r -> {
                     int offerCount = (int) offerRepository.countByRequest_Id(r.getId());
-                    Boolean fav = null;
-                    if (r.getCreatedBy() != null) {
-                        fav = favoriteService.isFavoritedByMe(seller, r.getCreatedBy().getId());
-                    }
+                    Boolean fav = isPurchaseRequestFavoritedByMe(seller, r.getId());
                     return AnimalPurchaseRequestResponse.fromEntity(r, fav, offerCount, null);
                 })
                 .toList();
@@ -115,6 +114,42 @@ public class AnimalSellerMarketService {
         return offerRepository.findBySellerOrderByCreatedAtDesc(seller).stream()
                 .map(SellerAnimalOfferItemResponse::fromEntity)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<AnimalPurchaseRequestResponse> listFavoritePurchaseRequests(User seller) {
+        return favoritePurchaseRequestRepository.findBySeller_IdOrderByCreatedAtDesc(seller.getId()).stream()
+                .map(FavoriteAnimalPurchaseRequest::getPurchaseRequest)
+                .filter(java.util.Objects::nonNull)
+                .map(r -> AnimalPurchaseRequestResponse.fromEntity(r, true, null, null))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isPurchaseRequestFavoritedByMe(User seller, Long purchaseRequestId) {
+        return favoritePurchaseRequestRepository.existsBySeller_IdAndPurchaseRequest_Id(
+                seller.getId(), purchaseRequestId);
+    }
+
+    @Transactional
+    public boolean togglePurchaseRequestFavorite(User seller, Long purchaseRequestId) {
+        accountGuard.requireEmailVerified(seller);
+        AnimalPurchaseRequest req =
+                requestRepository
+                        .findById(purchaseRequestId)
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "İlan bulunamadı"));
+        var existing =
+                favoritePurchaseRequestRepository.findBySeller_IdAndPurchaseRequest_Id(
+                        seller.getId(), purchaseRequestId);
+        if (existing.isPresent()) {
+            favoritePurchaseRequestRepository.delete(existing.get());
+            return false;
+        }
+        var fav = new FavoriteAnimalPurchaseRequest();
+        fav.setSeller(seller);
+        fav.setPurchaseRequest(req);
+        favoritePurchaseRequestRepository.save(fav);
+        return true;
     }
 
     private static String blankToNull(String s) {

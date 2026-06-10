@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Card, CardContent } from '../../components/role-app/Card'
 import { Button } from '../../components/role-app/Button'
@@ -10,7 +10,6 @@ import { useApi } from '../../hooks/useApi'
 import { useToggleFavorite } from '../../hooks/useToggleFavorite'
 import * as buyerApi from '../../api/buyer'
 import { meatSaleToListingCard } from '../../api/mappers'
-import { filterMeatListings } from '../../lib/meatListingFilters'
 import { MeatListingDetailModal } from '../../components/role-app/MeatListingDetailModal'
 import { CreateMeatOfferModal } from '../../components/role-app/CreateMeatOfferModal'
 import type { MeatSaleRequestDto } from '../../api/types'
@@ -22,13 +21,10 @@ export function BuyerFavorites() {
   const [offerTarget, setOfferTarget] = useState<MeatSaleRequestDto | null>(null)
   const { toggle: toggleFavorite, error: favoriteError, blocked: favoriteBlocked } = useToggleFavorite()
 
-  const listingsQuery = useApi(() => buyerApi.listMeatSaleRequests(), [])
+  const listingsQuery = useApi(() => buyerApi.listFavoriteMeatSaleRequests(), [])
   const favShQuery = useApi(() => buyerApi.listFavoriteSlaughterhouses(), [])
 
-  const favoriteItems = useMemo(
-    () => filterMeatListings(listingsQuery.data ?? [], { favoritedOnly: true }),
-    [listingsQuery.data],
-  )
+  const favoriteItems = listingsQuery.data ?? []
 
   const slaughterhouses = favShQuery.data ?? []
 
@@ -36,7 +32,7 @@ export function BuyerFavorites() {
     <RoleAppPage>
       <div className="mb-8">
         <h1 className="mb-2">Favorilerim</h1>
-        <p className="text-muted-foreground">Favori kesimhaneler ve ilgili ilanlar</p>
+        <p className="text-muted-foreground">Favori et ilanları ve kesimhaneler</p>
         {favoriteError ? (
           <p className="mt-2 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
             {favoriteError}
@@ -48,7 +44,7 @@ export function BuyerFavorites() {
         <TabsList className="mb-6">
           <TabsTrigger value="listings">
             <Heart className="size-4 mr-2" />
-            Favori Kesimhane İlanları ({favoriteItems.length})
+            Favori İlanlar ({favoriteItems.length})
           </TabsTrigger>
           <TabsTrigger value="slaughterhouses">
             <Building2 className="size-4 mr-2" />
@@ -62,7 +58,7 @@ export function BuyerFavorites() {
             error={listingsQuery.error}
             onRetry={listingsQuery.reload}
             empty={favoriteItems.length === 0}
-            emptyMessage="Favori kesimhaneye ait açık ilan bulunamadı. İlan kartından kesimhaneyi favorileyebilirsiniz."
+            emptyMessage="Henüz favori ilanınız yok. Arama ekranından ilanları favorileyebilirsiniz."
             emptyAction={
               <Link to="/buyer/search">
                 <Button variant="primary" type="button">
@@ -80,10 +76,10 @@ export function BuyerFavorites() {
                     {...listing}
                     showSlaughterhouseLabel
                     isFavorite
-                    favoriteUserId={item.slaughterhouseId}
+                    favoriteUserId={item.id}
                     favoriteAddBlocked={favoriteBlocked}
-                    onFavoriteToggle={(id, next) => {
-                      void toggleFavorite(id, !next).then(() => listingsQuery.reload())
+                    onFavoriteToggle={(id) => {
+                      void buyerApi.toggleMeatListingFavorite(id).then(() => listingsQuery.reload())
                     }}
                     onClick={() => setDetailId(item.id)}
                   />

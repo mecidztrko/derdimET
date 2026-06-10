@@ -46,6 +46,9 @@ cd frontend && npm run build
 | Alıcı (doğrulanmamış) | `buyer-unverified@derdimet.local` | `123456` |
 | Satıcı | `seller1@derdimet.local` | `123456` |
 | Kesimhane | `slaughterhouse1@derdimet.local` | `123456` |
+| Yönetici | `admin@derdimet.local` | `123456` |
+
+Yönetici paneli: giriş sonrası rol seçicide **Profil / yönetim** kartı; hayvan alış ilanı oluşturma kesimhane adına yapılır.
 
 ## Test / QA
 

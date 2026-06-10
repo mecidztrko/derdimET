@@ -25,6 +25,13 @@ public class BuyerMeatMarketController {
     private final MeatMarketService meatMarketService;
 
     /** Et alıcılarının gördüğü: kesimhanelerin açtığı açık et ilanları. */
+    @GetMapping("/api/buyer/favorite-meat-sale-requests")
+    public List<MeatSaleRequestResponse> listFavoriteMeatSaleRequests(
+            @AuthenticationPrincipal UserDetails principal) {
+        User buyer = userRepository.findByEmail(principal.getUsername()).orElseThrow();
+        return meatMarketService.listFavoriteMeatSaleRequests(buyer);
+    }
+
     @GetMapping("/api/buyer/meat-sale-requests")
     public List<MeatSaleRequestResponse> listOpenSaleRequests(
             @AuthenticationPrincipal UserDetails principal,
@@ -47,6 +54,31 @@ public class BuyerMeatMarketController {
             @AuthenticationPrincipal UserDetails principal, @RequestParam(required = false) String q) {
         User buyer = userRepository.findByEmail(principal.getUsername()).orElseThrow();
         return meatMarketService.listMyOffers(buyer, q);
+    }
+
+    /** Bekleyen teklifi alıcı geri çeker. */
+    @PostMapping("/api/buyer/meat-offers/{offerId}/withdraw")
+    public ResponseEntity<MeatOfferItemResponse> withdrawOffer(
+            @AuthenticationPrincipal UserDetails principal, @PathVariable Long offerId) {
+        User buyer = userRepository.findByEmail(principal.getUsername()).orElseThrow();
+        return ResponseEntity.ok(meatMarketService.withdrawOffer(buyer, offerId));
+    }
+
+    /** Bekleyen teklifi alıcı kabul eder; tekliflerimde Kabul olarak görünür. */
+    @PostMapping("/api/buyer/meat-offers/{offerId}/accept")
+    public ResponseEntity<MeatOfferItemResponse> acceptOffer(
+            @AuthenticationPrincipal UserDetails principal, @PathVariable Long offerId) {
+        User buyer = userRepository.findByEmail(principal.getUsername()).orElseThrow();
+        return ResponseEntity.ok(meatMarketService.acceptMyOffer(buyer, offerId));
+    }
+
+    /** Tekil et ilanını favorile / favoriden çıkar. */
+    @PostMapping("/api/buyer/meat-sale-requests/{saleRequestId}/favorite/toggle")
+    public ResponseEntity<FavoriteToggleController.ToggleResponse> toggleListingFavorite(
+            @AuthenticationPrincipal UserDetails principal, @PathVariable Long saleRequestId) {
+        User buyer = userRepository.findByEmail(principal.getUsername()).orElseThrow();
+        boolean now = meatMarketService.toggleListingFavorite(buyer, saleRequestId);
+        return ResponseEntity.ok(new FavoriteToggleController.ToggleResponse(now));
     }
 }
 

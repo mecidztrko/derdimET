@@ -9,6 +9,7 @@ import { isSellerRouteEnabled, type SellerFeature } from '../config/routeFeature
 import { useSellerPendingCounts } from '../hooks/usePendingCounts'
 import { useMessageUnreadCount } from '../hooks/useMessageUnreadCount'
 import { NotificationBell } from '../components/role-app/NotificationBell'
+import { NAV_ACTIVE_SECONDARY } from '../lib/roleAppNav'
 
 type NavDef = SidebarNavItem & { feature: SellerFeature }
 
@@ -21,8 +22,7 @@ const navigation: NavDef[] = [
   { name: 'Profil & Ayarlar', href: '/seller/settings', icon: Settings, feature: 'settings' },
 ]
 
-const SIDEBAR_ACTIVE =
-  'bg-secondary/10 text-foreground before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-secondary before:rounded-r'
+const SIDEBAR_ACTIVE = NAV_ACTIVE_SECONDARY
 
 export function SellerLayout() {
   const [mobileOpen, setMobileOpen] = useState(false)

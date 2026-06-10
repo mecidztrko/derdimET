@@ -42,4 +42,30 @@ public record BuyerPurchaseItemResponse(
                 o.getStatus(),
                 o.getCreatedAt());
     }
+
+    /** Sipariş oluşmadan kabul edilmiş et teklifleri. */
+    public static BuyerPurchaseItemResponse fromAcceptedOffer(MeatOffer offer) {
+        MeatSaleRequest sr = offer.getSaleRequest();
+        User sh = sr != null ? sr.getSlaughterhouse() : null;
+        BigDecimal price = offer.getPricePerKg();
+        BigDecimal qty = offer.getQuantity();
+        BigDecimal total = null;
+        if (price != null && qty != null) {
+            total = price.multiply(qty);
+        }
+        return new BuyerPurchaseItemResponse(
+                null,
+                offer.getId(),
+                sr != null ? sr.getId() : null,
+                sr != null ? sr.getTitle() : null,
+                sr != null ? sr.getMeatType() : null,
+                sh != null ? sh.getId() : null,
+                sh != null ? sh.getName() : null,
+                sh != null ? sh.getCompanyName() : null,
+                price,
+                qty,
+                total,
+                OrderStatus.COMPLETED,
+                offer.getCreatedAt());
+    }
 }

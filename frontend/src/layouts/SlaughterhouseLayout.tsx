@@ -18,6 +18,7 @@ import { useSlaughterhousePendingCounts } from '../hooks/usePendingCounts'
 import { useMessageUnreadCount } from '../hooks/useMessageUnreadCount'
 import { NotificationBell } from '../components/role-app/NotificationBell'
 import { useNotificationSummary } from '../hooks/useNotificationSummary'
+import { NAV_ACTIVE_PRIMARY } from '../lib/roleAppNav'
 
 type NavDef = SidebarNavItem & { feature: SlaughterhouseFeature }
 
@@ -36,8 +37,7 @@ const navigation: NavDef[] = [
   { name: 'Profil & Ayarlar', href: '/slaughterhouse/settings', icon: Settings, feature: 'settings' },
 ]
 
-const SIDEBAR_ACTIVE =
-  'bg-primary-soft text-foreground before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-primary before:rounded-r'
+const SIDEBAR_ACTIVE = NAV_ACTIVE_PRIMARY
 
 export function SlaughterhouseLayout() {
   const [mobileOpen, setMobileOpen] = useState(false)

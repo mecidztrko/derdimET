@@ -13,7 +13,7 @@ import { meatSaleToListingCard } from '../../api/mappers'
 import { filterMeatListings } from '../../lib/meatListingFilters'
 import { CreateMeatOfferModal } from '../../components/role-app/CreateMeatOfferModal'
 import { MeatListingDetailModal } from '../../components/role-app/MeatListingDetailModal'
-import { useToggleFavorite } from '../../hooks/useToggleFavorite'
+import { useEmailVerificationGate } from '../../hooks/useEmailVerificationGate'
 import type { MeatSaleRequestDto } from '../../api/types'
 import { RoleAppPage } from '../../components/role-app/RoleAppPage'
 
@@ -26,7 +26,8 @@ export function BuyerSearch() {
   const [showFilters, setShowFilters] = useState(true)
   const [detailId, setDetailId] = useState<number | null>(null)
   const [offerTarget, setOfferTarget] = useState<MeatSaleRequestDto | null>(null)
-  const { toggle: toggleFavorite, error: favoriteError, blocked: favoriteBlocked } = useToggleFavorite()
+  const [favoriteError, setFavoriteError] = useState<string | null>(null)
+  const { blocked: favoriteBlocked } = useEmailVerificationGate()
 
   const { data, loading, error, reload } = useApi(
     () => buyerApi.listMeatSaleRequests({ q: searchQuery }),
@@ -50,9 +51,14 @@ export function BuyerSearch() {
     [data, selectedMeatType, selectedCity],
   )
 
-  async function handleFavorite(userId: number, isFavorited: boolean) {
-    await toggleFavorite(userId, isFavorited)
-    reload()
+  async function handleFavorite(listingId: number) {
+    setFavoriteError(null)
+    try {
+      await buyerApi.toggleMeatListingFavorite(listingId)
+      reload()
+    } catch (e) {
+      setFavoriteError(e instanceof Error ? e.message : 'Favori işlemi başarısız')
+    }
   }
 
   return (
@@ -158,9 +164,9 @@ export function BuyerSearch() {
                 {...listing}
                 showSlaughterhouseLabel
                 isFavorite={!!item.isFavoritedByMe}
-                favoriteUserId={item.slaughterhouseId}
+                favoriteUserId={item.id}
                 favoriteAddBlocked={favoriteBlocked}
-                onFavoriteToggle={(id, next) => void handleFavorite(id, !next)}
+                onFavoriteToggle={(id) => void handleFavorite(id)}
                 onClick={() => setDetailId(item.id)}
               />
             )

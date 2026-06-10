@@ -14,7 +14,7 @@ export function listAnimalListings(params?: { q?: string }): Promise<SellerAnima
 }
 
 export function listAnimalOffers(): Promise<ListingOfferDto[]> {
-  return apiFetch('/api/slaughterhouse/animal-offers')
+  return apiFetch('/api/slaughterhouse/offers')
 }
 
 export function createAnimalListingOffer(

@@ -131,6 +131,16 @@ public class DevSeedRunner implements CommandLineRunner {
                         "Ankara",
                         true);
 
+        ensureUser(
+                "admin@derdimet.local",
+                "Sistem Yöneticisi",
+                UserRole.ADMIN,
+                AccountType.INDIVIDUAL,
+                null,
+                null,
+                "Ankara",
+                true);
+
         // Seller animal listings (SLAUGHTERHOUSE Arama)
         if (sellerAnimalListingRepository.findBySellerOrderByCreatedAtDesc(seller).isEmpty()) {
             SellerAnimalListing l1 = new SellerAnimalListing();
@@ -246,6 +256,7 @@ public class DevSeedRunner implements CommandLineRunner {
 
         seedDemoTransactions(buyer, seller, slaughterhouse);
         seedDemoPendingOffers(buyer, seller, slaughterhouse, seller2);
+        ensureBuyerTestPendingMeatOffer(buyer, slaughterhouse);
         seedDemoMessages(buyer, slaughterhouse);
     }
 
@@ -393,6 +404,56 @@ public class DevSeedRunner implements CommandLineRunner {
                 meatOfferRepository.save(offer);
             }
         });
+    }
+
+    /** Mobil kabul/red testi için her seed'de en az bir bekleyen et teklifi. */
+    private void ensureBuyerTestPendingMeatOffer(User buyer, User slaughterhouse) {
+        final String testTitle = "Demo — Bekleyen Teklif Testi";
+        MeatSaleRequest sale =
+                meatSaleRequestRepository.findBySlaughterhouseOrderByCreatedAtDesc(slaughterhouse).stream()
+                        .filter(s -> testTitle.equals(s.getTitle()))
+                        .findFirst()
+                        .orElseGet(
+                                () -> {
+                                    MeatSaleRequest m = new MeatSaleRequest();
+                                    m.setSlaughterhouse(slaughterhouse);
+                                    m.setTitle(testTitle);
+                                    m.setMeatType("Dana");
+                                    m.setAnimalCategory(AnimalCategory.BUYUKBAS);
+                                    m.setCut("Kontrfile");
+                                    m.setQuantity(new BigDecimal("80"));
+                                    m.setPricePerKg(new BigDecimal("520"));
+                                    m.setPackaging("Vakum");
+                                    m.setLocation("Ankara / Sincan");
+                                    m.setDescription("Mobil kabul/red test ilanı");
+                                    m.setStatus(RequestStatus.OPEN);
+                                    return meatSaleRequestRepository.save(m);
+                                });
+        if (sale.getStatus() != RequestStatus.OPEN) {
+            sale.setStatus(RequestStatus.OPEN);
+            meatSaleRequestRepository.save(sale);
+        }
+
+        MeatOffer offer =
+                meatOfferRepository.findByBuyerOrderByCreatedAtDesc(buyer).stream()
+                        .filter(o -> o.getSaleRequest() != null && sale.getId().equals(o.getSaleRequest().getId()))
+                        .findFirst()
+                        .orElseGet(
+                                () -> {
+                                    MeatOffer o = new MeatOffer();
+                                    o.setSaleRequest(sale);
+                                    o.setBuyer(buyer);
+                                    o.setPricePerKg(new BigDecimal("510"));
+                                    o.setQuantity(new BigDecimal("30"));
+                                    o.setNote("Demo: bekleyen teklif testi");
+                                    o.setStatus(OfferStatus.PENDING);
+                                    return meatOfferRepository.save(o);
+                                });
+        if (offer.getStatus() != OfferStatus.PENDING) {
+            offer.setStatus(OfferStatus.PENDING);
+            offer.setNote("Demo: bekleyen teklif testi");
+            meatOfferRepository.save(offer);
+        }
     }
 
     private User ensureUser(
