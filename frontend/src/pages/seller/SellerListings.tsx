@@ -14,7 +14,15 @@ import { useEmailVerificationGate } from '../../hooks/useEmailVerificationGate'
 import * as sellerApi from '../../api/seller'
 import { EMAIL_VERIFICATION_REQUIRED } from '../../lib/emailVerification'
 import { animalCategoryLabel } from '../../api/mappers'
-import { formatDateTr, formatHeadCount, formatKg, formatTry, requestStatusLabel, resolveMediaUrl } from '../../api/format'
+import {
+  formatDateTr,
+  formatHeadCount,
+  formatKg,
+  formatTry,
+  requestStatusLabel,
+  resolveListingLocation,
+  resolveMediaUrl,
+} from '../../api/format'
 import type { SellerAnimalListingDto } from '../../api/types'
 import { RoleAppPage } from '../../components/role-app/RoleAppPage'
 
@@ -242,7 +250,7 @@ function ListingRow({
                 </div>
                 <p className="text-small text-muted-foreground flex items-center gap-1">
                   <MapPin className="size-3" />
-                  {[listing.sellerCity, listing.location].filter(Boolean).join(', ') || '—'}
+                  {resolveListingLocation(listing.location, listing.sellerCity, '—')}
                 </p>
                 <p className="text-small text-muted-foreground flex items-center gap-1">
                   <Calendar className="size-3" />

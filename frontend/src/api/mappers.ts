@@ -5,7 +5,14 @@ import type {
   MeatSaleRequestDto,
   SellerAnimalListingDto,
 } from './types'
-import { formatDateTr, formatHeadCount, formatKg, formatTry, resolveMediaUrl } from './format'
+import {
+  formatDateTr,
+  formatHeadCount,
+  formatKg,
+  formatTry,
+  resolveListingLocation,
+  resolveMediaUrl,
+} from './format'
 
 export function animalCategoryLabel(category: AnimalCategory | null): string {
   if (category === 'BUYUKBAS') return 'Büyükbaş'
@@ -25,8 +32,7 @@ export type ListingCardModel = {
 }
 
 export function meatSaleToListingCard(item: MeatSaleRequestDto): ListingCardModel {
-  const location =
-    [item.slaughterhouseCity, item.location].filter(Boolean).join(', ') || 'Konum belirtilmedi'
+  const location = resolveListingLocation(item.location, item.slaughterhouseCity)
   return {
     id: String(item.id),
     image: resolveMediaUrl(item.imageUrls?.[0]),
@@ -44,8 +50,7 @@ export function meatSaleToListingCard(item: MeatSaleRequestDto): ListingCardMode
 }
 
 export function sellerListingToListingCard(item: SellerAnimalListingDto): ListingCardModel {
-  const location =
-    [item.sellerCity, item.location].filter(Boolean).join(', ') || 'Konum belirtilmedi'
+  const location = resolveListingLocation(item.location, item.sellerCity)
   const title = [item.type, item.breed].filter(Boolean).join(' · ') || 'Hayvan ilanı'
   return {
     id: String(item.id),

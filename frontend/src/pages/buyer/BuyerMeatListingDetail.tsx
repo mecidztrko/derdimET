@@ -17,7 +17,7 @@ import { getMeatListing } from '../../api/listings'
 import { toggleMeatListingFavorite } from '../../api/buyer'
 import { ApiError } from '../../api/client'
 import { animalCategoryLabel } from '../../api/mappers'
-import { formatDateTr, formatKg, formatTry, resolveMediaUrl } from '../../api/format'
+import { formatDateTr, formatKg, formatTry, resolveListingLocation, resolveMediaUrl } from '../../api/format'
 import { useEmailVerificationGate } from '../../hooks/useEmailVerificationGate'
 import { EMAIL_VERIFICATION_REQUIRED } from '../../lib/emailVerification'
 import type { MeatSaleRequestDto } from '../../api/types'
@@ -86,9 +86,7 @@ export function BuyerMeatListingDetail() {
   const isOpen = item?.status === 'OPEN'
   const slaughterhouse =
     item?.slaughterhouseCompanyName || item?.slaughterhouseName || 'Kesimhane'
-  const location =
-    [item?.slaughterhouseCity, item?.location].filter(Boolean).join(', ') ||
-    'Konum belirtilmedi'
+  const location = resolveListingLocation(item?.location, item?.slaughterhouseCity)
   const totalEstimate =
     item?.pricePerKg != null && item?.quantity != null
       ? formatTry(item.pricePerKg * item.quantity)

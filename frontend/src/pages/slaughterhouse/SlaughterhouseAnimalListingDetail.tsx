@@ -22,6 +22,7 @@ import {
   formatHeadCount,
   formatKg,
   formatTry,
+  resolveListingLocation,
   resolveMediaUrl,
 } from '../../api/format'
 import { useEmailVerificationGate } from '../../hooks/useEmailVerificationGate'
@@ -96,8 +97,7 @@ export function SlaughterhouseAnimalListingDetail() {
   const isOpen = item?.status === 'OPEN'
   const title = item ? listingTitle(item) : ''
   const seller = item?.sellerCompanyName || item?.sellerName || 'Satıcı'
-  const location =
-    [item?.sellerCity, item?.location].filter(Boolean).join(', ') || 'Konum belirtilmedi'
+  const location = resolveListingLocation(item?.location, item?.sellerCity)
 
   async function handleFavorite() {
     if (!item) return

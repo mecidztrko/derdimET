@@ -21,7 +21,7 @@ export function filterMeatListings(
       if (item.animalCategory !== want) return false
     }
     if (opts.city && opts.city !== 'Tüm Şehirler') {
-      const city = item.slaughterhouseCity ?? item.location ?? ''
+      const city = item.location ?? item.slaughterhouseCity ?? ''
       if (!city.includes(opts.city)) return false
     }
     if (opts.search?.trim()) {

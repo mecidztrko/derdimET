@@ -9,6 +9,19 @@ export function resolveMediaUrl(url: string | null | undefined): string {
   return apiUrl(url.startsWith('/') ? url : `/${url}`)
 }
 
+/** İlan konumu önceliklidir; boşsa profil şehri kullanılır. */
+export function resolveListingLocation(
+  listingLocation: string | null | undefined,
+  profileCity: string | null | undefined,
+  fallback = 'Konum belirtilmedi',
+): string {
+  const listing = listingLocation?.trim()
+  if (listing) return listing
+  const city = profileCity?.trim()
+  if (city) return city
+  return fallback
+}
+
 export function formatTry(value: number | string | null | undefined): string {
   if (value == null || value === '') return '—'
   const n = typeof value === 'number' ? value : Number(value)

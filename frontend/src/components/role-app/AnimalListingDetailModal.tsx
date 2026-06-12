@@ -7,7 +7,15 @@ import { useEmailVerificationGate } from '../../hooks/useEmailVerificationGate'
 import { EMAIL_VERIFICATION_REQUIRED } from '../../lib/emailVerification'
 import type { SellerAnimalListingDto } from '../../api/types'
 import { animalCategoryLabel } from '../../api/mappers'
-import { formatDateTr, formatHeadCount, formatKg, formatTry, requestStatusLabel, resolveMediaUrl } from '../../api/format'
+import {
+  formatDateTr,
+  formatHeadCount,
+  formatKg,
+  formatTry,
+  requestStatusLabel,
+  resolveListingLocation,
+  resolveMediaUrl,
+} from '../../api/format'
 import { Button } from './Button'
 import { Badge } from './Badge'
 import { Card, CardContent } from './Card'
@@ -104,7 +112,7 @@ export function AnimalListingDetailModal({
 
               <p className="text-small text-muted-foreground flex items-center gap-1 mb-4">
                 <MapPin className="size-4" />
-                {[item.sellerCity, item.location].filter(Boolean).join(', ') || 'Konum belirtilmedi'}
+                {resolveListingLocation(item.location, item.sellerCity)}
               </p>
 
               <div className="grid grid-cols-2 gap-3 mb-4 text-small">
