@@ -122,3 +122,17 @@ Geliştirme ve test ortamında SpringDoc OpenAPI etkindir:
 Uçlar role göre gruplandırılmıştır: `auth`, `buyer`, `seller`, `slaughterhouse`, `admin`, `shared`, `all`.
 
 Üretimde (`prod` profili) Swagger varsayılan olarak kapalıdır.
+
+## Loglama ve observability
+
+| Ortam | Format | Correlation ID |
+|-------|--------|----------------|
+| `dev` | Düz metin (konsol) | `[corr=...]` log satırında |
+| `prod` | JSON (`logstash-logback-encoder`) | `@timestamp`, `correlationId`, `httpMethod`, `httpPath`, `httpStatus`, `durationMs` |
+| `test` | Düz metin | Aynı MDC alanları |
+
+Her HTTP yanıtında `X-Request-Id` başlığı döner. İstemci gönderirse aynen yansıtılır; göndermezse sunucu UUID üretir.
+
+API hata gövdelerinde `correlationId` alanı bulunur — destek ve hata ayıklama için kullanılır.
+
+`/api/**` istekleri tek satırlık erişim logu üretir: `HTTP GET /api/me -> 401 (3 ms)`.

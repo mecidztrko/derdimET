@@ -23,8 +23,3 @@ derdimet:
     allowed-origin-patterns: ${DERDIMET_CORS_ALLOWED_ORIGIN_PATTERNS:*}
   seed:
     enabled: ${DERDIMET_SEED:false}
-
-logging:
-  level:
-    com.derdimet: DEBUG
-    org.springframework.security: INFO

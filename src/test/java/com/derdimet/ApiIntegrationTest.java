@@ -75,4 +75,21 @@ class ApiIntegrationTest {
         ResponseEntity<String> res = rest.getForEntity("/swagger-ui/index.html", String.class);
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
+
+    @Test
+    void correlationIdEchoedWhenProvided() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Request-Id", "test-corr-fixed-001");
+        ResponseEntity<String> res =
+                rest.exchange("/api/me", HttpMethod.GET, new HttpEntity<>(headers), String.class);
+        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(res.getHeaders().getFirst("X-Request-Id")).isEqualTo("test-corr-fixed-001");
+    }
+
+    @Test
+    void correlationIdGeneratedWhenMissing() {
+        ResponseEntity<String> res = rest.getForEntity("/v3/api-docs", String.class);
+        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(res.getHeaders().getFirst("X-Request-Id")).isNotBlank();
+    }
 }
