@@ -4,6 +4,7 @@ import com.derdimet.api.CreateSlaughterhouseListingOfferRequest;
 import com.derdimet.api.ListingOfferResponse;
 import com.derdimet.api.SellerAnimalListingResponse;
 import com.derdimet.entity.OfferStatus;
+import com.derdimet.entity.AuditAction;
 import com.derdimet.entity.RequestStatus;
 import com.derdimet.entity.SellerAnimalListing;
 import com.derdimet.entity.User;
@@ -35,6 +36,7 @@ public class SlaughterhouseListingMarketService {
     private final AccountGuardService accountGuard;
     private final FavoriteAnimalListingRepository favoriteAnimalListingRepository;
     private final PushNotificationService pushNotificationService;
+    private final AuditService auditService;
 
     @Transactional(readOnly = true)
     public List<SellerAnimalListingResponse> searchListings(
@@ -240,6 +242,12 @@ public class SlaughterhouseListingMarketService {
             offer.setStatus(OfferStatus.REJECTED);
             offerRepository.save(offer);
         }
+        auditService.log(
+                seller,
+                accept ? AuditAction.OFFER_ACCEPTED : AuditAction.OFFER_REJECTED,
+                "LISTING_OFFER",
+                offer.getId(),
+                "slaughterhouse=" + offer.getSlaughterhouse().getEmail() + " listingId=" + offer.getListing().getId());
         return ListingOfferResponse.fromEntity(offer);
     }
 

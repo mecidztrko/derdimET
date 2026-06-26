@@ -7,6 +7,7 @@ import com.derdimet.api.MeatOfferItemResponse;
 import com.derdimet.api.MeatSaleRequestResponse;
 import com.derdimet.api.SlaughterhouseMeatOfferResponse;
 import com.derdimet.entity.FavoriteMeatSaleRequest;
+import com.derdimet.entity.AuditAction;
 import com.derdimet.entity.MeatOffer;
 import com.derdimet.entity.MeatSaleRequest;
 import com.derdimet.entity.OfferStatus;
@@ -40,6 +41,7 @@ public class MeatMarketService {
     private final StockService stockService;
     private final TransactionService transactionService;
     private final PushNotificationService pushNotificationService;
+    private final AuditService auditService;
 
     @Transactional
     public MeatSaleRequestResponse createSaleRequest(User slaughterhouse, CreateMeatSaleRequest body) {
@@ -269,6 +271,12 @@ public class MeatMarketService {
             offer.setStatus(OfferStatus.REJECTED);
             meatOfferRepository.save(offer);
         }
+        auditService.log(
+                slaughterhouse,
+                accept ? AuditAction.OFFER_ACCEPTED : AuditAction.OFFER_REJECTED,
+                "MEAT_OFFER",
+                offer.getId(),
+                "buyer=" + offer.getBuyer().getEmail() + " saleRequestId=" + offer.getSaleRequest().getId());
         return SlaughterhouseMeatOfferResponse.fromEntity(offer);
     }
 

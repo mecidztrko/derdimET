@@ -5,7 +5,7 @@ set -euo pipefail
 BASE_URL="${1:-http://localhost:8081}"
 COOKIE_JAR="$(mktemp)"
 trap 'rm -f "$COOKIE_JAR"' EXIT
-PASS="${SMOKE_PASSWORD:-123456}"
+PASS="${SMOKE_PASSWORD:-DerdimET1!}"
 
 login() {
   curl -sf -c "$COOKIE_JAR" -b "$COOKIE_JAR" \

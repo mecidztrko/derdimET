@@ -1,6 +1,7 @@
 package com.derdimet.service;
 
 import com.derdimet.config.MediaProperties;
+import com.derdimet.security.ImageContentValidator;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,10 +31,24 @@ public class MediaService {
             throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE, "Dosya çok büyük");
         }
         String contentType = file.getContentType() == null ? "" : file.getContentType().toLowerCase(Locale.ROOT);
-        if (Arrays.stream(mediaProperties.getAllowedMimeTypes()).noneMatch(m -> m.equalsIgnoreCase(contentType))) {
+        if (Arrays.stream(mediaProperties.getAllowedMimeTypes())
+                .noneMatch(m -> ImageContentValidator.normalizeMime(m)
+                        .equals(ImageContentValidator.normalizeMime(contentType)))) {
             throw new ResponseStatusException(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Desteklenmeyen dosya türü");
         }
-        String ext = extensionFromContentType(contentType, file.getOriginalFilename());
+
+        byte[] bytes;
+        try {
+            bytes = file.getBytes();
+        } catch (IOException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dosya okunamadı", ex);
+        }
+        if (!ImageContentValidator.matchesDeclaredMime(bytes, contentType)) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Dosya içeriği bildirilen türle eşleşmiyor");
+        }
+
+        String ext = extensionFromContentType(ImageContentValidator.normalizeMime(contentType));
         String filename = UUID.randomUUID().toString().replace("-", "") + ext;
 
         Path baseDir = Paths.get(mediaProperties.getUploadDir()).toAbsolutePath().normalize();
@@ -43,7 +58,7 @@ public class MediaService {
             if (!dest.startsWith(baseDir)) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Geçersiz dosya yolu");
             }
-            Files.copy(file.getInputStream(), dest, StandardCopyOption.REPLACE_EXISTING);
+            Files.write(dest, bytes);
         } catch (IOException ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Yükleme başarısız", ex);
         }
@@ -55,20 +70,12 @@ public class MediaService {
         return prefix + filename;
     }
 
-    private static String extensionFromContentType(String contentType, String originalFilename) {
+    private static String extensionFromContentType(String contentType) {
         return switch (contentType) {
-            case "image/jpeg", "image/jpg" -> ".jpg";
+            case "image/jpeg" -> ".jpg";
             case "image/png" -> ".png";
             case "image/webp" -> ".webp";
-            default -> {
-                if (originalFilename != null) {
-                    int idx = originalFilename.lastIndexOf('.');
-                    if (idx > 0 && idx < originalFilename.length() - 1) {
-                        yield originalFilename.substring(idx).toLowerCase(Locale.ROOT);
-                    }
-                }
-                yield ".bin";
-            }
+            default -> throw new ResponseStatusException(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Desteklenmeyen dosya türü");
         };
     }
 }

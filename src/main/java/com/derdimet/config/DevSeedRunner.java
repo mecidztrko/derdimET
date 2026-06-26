@@ -479,7 +479,7 @@ public class DevSeedRunner implements CommandLineRunner {
                         () -> {
                             User u = new User();
                             u.setEmail(normalized);
-                            u.setPassword(passwordEncoder.encode("123456"));
+                            u.setPassword(passwordEncoder.encode("DerdimET1!"));
                             u.setName(name);
                             u.setRole(role);
                             u.setAccountType(accountType);

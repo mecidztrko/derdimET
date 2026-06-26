@@ -5,6 +5,7 @@ import com.derdimet.api.CreateAnimalPurchaseRequest;
 import com.derdimet.api.PurchaseRequestIncomingOfferResponse;
 import com.derdimet.api.UpdateAnimalPurchaseRequest;
 import com.derdimet.entity.AnimalOffer;
+import com.derdimet.entity.AuditAction;
 import com.derdimet.entity.AnimalPurchaseRequest;
 import com.derdimet.entity.OfferStatus;
 import com.derdimet.entity.RequestStatus;
@@ -28,6 +29,7 @@ public class AnimalPurchaseAdminService {
     private final AnimalOfferRepository offerRepository;
     private final AnimalDealService animalDealService;
     private final AccountGuardService accountGuard;
+    private final AuditService auditService;
 
     @Transactional
     public AnimalPurchaseRequestResponse create(User slaughterhouse, CreateAnimalPurchaseRequest req) {
@@ -162,6 +164,12 @@ public class AnimalPurchaseAdminService {
             offer.setStatus(OfferStatus.REJECTED);
             offerRepository.save(offer);
         }
+        auditService.log(
+                slaughterhouse,
+                accept ? AuditAction.OFFER_ACCEPTED : AuditAction.OFFER_REJECTED,
+                "ANIMAL_OFFER",
+                offer.getId(),
+                "seller=" + offer.getSeller().getEmail() + " requestId=" + req.getId());
         return PurchaseRequestIncomingOfferResponse.fromEntity(offer);
     }
 

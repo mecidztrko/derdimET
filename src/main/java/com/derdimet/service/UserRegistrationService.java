@@ -5,6 +5,7 @@ import com.derdimet.entity.AccountType;
 import com.derdimet.entity.User;
 import com.derdimet.entity.UserRole;
 import com.derdimet.repository.UserRepository;
+import com.derdimet.security.PasswordPolicyService;
 import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,8 +19,10 @@ public class UserRegistrationService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final PasswordPolicyService passwordPolicyService;
 
     public User register(RegisterRequest req) {
+        passwordPolicyService.validate(req.password());
         String email = req.email().trim().toLowerCase(Locale.ROOT);
         if (userRepository.existsByEmailIgnoreCase(email)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Bu e-posta adresi zaten kayıtlı");

@@ -16,8 +16,8 @@ public class JwtService {
     @Value("${derdimet.jwt.secret}")
     private String secret;
 
-    @Value("${derdimet.jwt.expiration-ms:604800000}")
-    private long expirationMs;
+    @Value("${derdimet.jwt.access-expiration-ms:${derdimet.jwt.expiration-ms:3600000}}")
+    private long accessExpirationMs;
 
     private SecretKey signingKey() {
         byte[] bytes = secret.getBytes(StandardCharsets.UTF_8);
@@ -32,7 +32,7 @@ public class JwtService {
         return Jwts.builder()
                 .subject(userDetails.getUsername())
                 .issuedAt(now)
-                .expiration(new Date(now.getTime() + expirationMs))
+                .expiration(new Date(now.getTime() + accessExpirationMs))
                 .signWith(signingKey())
                 .compact();
     }
@@ -56,5 +56,9 @@ public class JwtService {
 
     private Claims parseClaims(String token) {
         return Jwts.parser().verifyWith(signingKey()).build().parseSignedClaims(token).getPayload();
+    }
+
+    public long accessExpirationSeconds() {
+        return accessExpirationMs / 1000;
     }
 }

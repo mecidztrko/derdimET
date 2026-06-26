@@ -1,10 +1,13 @@
 package com.derdimet.service;
 
+import com.derdimet.entity.AuditAction;
 import com.derdimet.entity.AuthActionToken;
 import com.derdimet.entity.AuthTokenPurpose;
 import com.derdimet.entity.User;
 import com.derdimet.repository.AuthActionTokenRepository;
 import com.derdimet.repository.UserRepository;
+import com.derdimet.security.PasswordPolicyService;
+import com.derdimet.security.RefreshTokenService;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Locale;
@@ -27,6 +30,9 @@ public class AuthRecoveryService {
     private final AuthActionTokenRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final PasswordPolicyService passwordPolicyService;
+    private final RefreshTokenService refreshTokenService;
+    private final AuditService auditService;
 
     @Transactional
     public void sendEmailVerificationCode(String rawEmail) {
@@ -79,12 +85,19 @@ public class AuthRecoveryService {
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Mevcut şifre hatalı");
         }
+        if (passwordEncoder.matches(newPassword, user.getPassword())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Yeni şifre mevcut şifreden farklı olmalıdır");
+        }
+        passwordPolicyService.validate(newPassword);
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
+        refreshTokenService.revokeAllForUser(user);
+        auditService.log(user, AuditAction.PASSWORD_CHANGED, "USER", user.getId(), "Şifre değiştirildi");
     }
 
     @Transactional
     public void resetPassword(String rawEmail, String rawCode, String newPassword) {
+        passwordPolicyService.validate(newPassword);
         var email = normalize(rawEmail);
         var code = rawCode.trim();
         var now = LocalDateTime.now();
@@ -100,6 +113,8 @@ public class AuthRecoveryService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Kullanıcı bulunamadı"));
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
+        refreshTokenService.revokeAllForUser(user);
+        auditService.log(user, AuditAction.PASSWORD_RESET, "USER", user.getId(), "Şifre sıfırlandı");
     }
 
     private String createToken(String email, AuthTokenPurpose purpose) {

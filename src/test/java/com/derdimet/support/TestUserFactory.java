@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class TestUserFactory {
 
-    public static final String DEFAULT_PASSWORD = "password123";
+    public static final String DEFAULT_PASSWORD = "Password1!";
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;

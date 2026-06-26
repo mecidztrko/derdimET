@@ -35,6 +35,8 @@ server:
 derdimet:
   jwt:
     expiration-ms: ${DERDIMET_JWT_EXPIRATION_MS:604800000}
+    access-expiration-ms: ${DERDIMET_JWT_ACCESS_EXPIRATION_MS:3600000}
+    refresh-expiration-ms: ${DERDIMET_JWT_REFRESH_EXPIRATION_MS:2592000000}
   media:
     upload-dir: ${DERDIMET_UPLOAD_DIR:uploads}
     public-url-prefix: ${DERDIMET_UPLOAD_PUBLIC_PREFIX:/uploads}
@@ -52,6 +54,11 @@ derdimet:
   push:
     enabled: ${DERDIMET_PUSH_ENABLED:false}
     fcm-server-key: ${DERDIMET_FCM_SERVER_KEY:}
+  rate-limit:
+    enabled: ${DERDIMET_RATE_LIMIT_ENABLED:true}
+    login-max-per-minute: ${DERDIMET_RATE_LIMIT_LOGIN_PER_MINUTE:10}
+    register-max-per-hour: ${DERDIMET_RATE_LIMIT_REGISTER_PER_HOUR:5}
+    password-recovery-max-per-hour: ${DERDIMET_RATE_LIMIT_PASSWORD_PER_HOUR:5}
 
 springdoc:
   api-docs:

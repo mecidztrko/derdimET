@@ -55,11 +55,11 @@ cd frontend && npm run build
 
 | Rol | E-posta | Şifre |
 |-----|---------|--------|
-| Alıcı | `buyer1@derdimet.local` | `123456` |
-| Alıcı (doğrulanmamış) | `buyer-unverified@derdimet.local` | `123456` |
-| Satıcı | `seller1@derdimet.local` | `123456` |
-| Kesimhane | `slaughterhouse1@derdimet.local` | `123456` |
-| Yönetici | `admin@derdimet.local` | `123456` |
+| Alıcı | `buyer1@derdimet.local` | `DerdimET1!` |
+| Alıcı (doğrulanmamış) | `buyer-unverified@derdimet.local` | `DerdimET1!` |
+| Satıcı | `seller1@derdimet.local` | `DerdimET1!` |
+| Kesimhane | `slaughterhouse1@derdimet.local` | `DerdimET1!` |
+| Yönetici | `admin@derdimet.local` | `DerdimET1!` |
 
 Yönetici paneli: giriş sonrası rol seçicide **Profil / yönetim** kartı; hayvan alış ilanı oluşturma kesimhane adına yapılır.
 
@@ -125,6 +125,9 @@ Hassas değerler repoda tutulmaz. Şablon: `.env.example` → kopyalayıp `.env`
 | `SPRING_MAIL_USERNAME` / `SPRING_MAIL_PASSWORD` | Mail açıksa | SMTP kimlik bilgileri |
 | `DERDIMET_PUSH_ENABLED` | Hayır | `true` → FCM push bildirimleri |
 | `DERDIMET_FCM_SERVER_KEY` | Push açıksa | Firebase Cloud Messaging sunucu anahtarı |
+| `DERDIMET_JWT_ACCESS_EXPIRATION_MS` | Hayır | Access token süresi (varsayılan 1 saat) |
+| `DERDIMET_JWT_REFRESH_EXPIRATION_MS` | Hayır | Refresh token süresi (varsayılan 30 gün) |
+| `DERDIMET_RATE_LIMIT_ENABLED` | Hayır | Auth uçlarında IP bazlı rate limiting |
 
 Üretimde eksik veya güvensiz değerler `ProductionEnvironmentValidator` tarafından başlangıçta reddedilir.
 
@@ -142,6 +145,17 @@ Hassas değerler repoda tutulmaz. Şablon: `.env.example` → kopyalayıp `.env`
 | Bildirim | `POST /api/notifications/device-token` | Mobil cihaz FCM token kaydı |
 
 E-posta ve push varsayılan olarak kapalıdır (`DERDIMET_MAIL_ENABLED=false`, `DERDIMET_PUSH_ENABLED=false`); yerel geliştirmede log'a düşer.
+
+## Güvenlik
+
+| Özellik | Açıklama |
+|---------|----------|
+| Rate limiting | `login`, `register`, şifre sıfırlama ve doğrulama kodu uçlarında IP bazlı limit |
+| Şifre politikası | Min 8 karakter; büyük/küçük harf, rakam ve özel karakter zorunlu |
+| JWT + refresh token | Access token (kısa ömür) + refresh token (döndürme); `POST /api/auth/refresh`, `POST /api/auth/logout` |
+| Dosya yükleme | MIME whitelist + magic-byte doğrulama; boyut sınırı |
+| CORS (prod) | `*` yasak; `ProductionEnvironmentValidator` başlangıçta kontrol eder |
+| Audit log | Teklif kabul/red, şifre değişikliği, giriş olayları — `GET /api/admin/audit-events` |
 
 ## API dokümantasyonu (Swagger)
 

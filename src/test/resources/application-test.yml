@@ -17,7 +17,10 @@ spring:
 derdimet:
   jwt:
     secret: test-jwt-secret-at-least-32-characters-long
+    access-expiration-ms: 604800000
   cors:
     allowed-origin-patterns: "*"
   seed:
+    enabled: false
+  rate-limit:
     enabled: false
