@@ -1,20 +1,17 @@
-# Tek kaynak: web (Vite) ve mobil (Expo) aynı Spring Boot + MySQL örneğine bağlanır.
-# Ortam değişkenleri ile üstüne yazılabilir (Docker / sunucu).
+# Ortak ayarlar — hassas değerler yalnızca ortam değişkeni veya profil dosyasında.
+# Yerel geliştirme: SPRING_PROFILES_ACTIVE=dev (varsayılan) + kök .env dosyası
+# Üretim: SPRING_PROFILES_ACTIVE=prod + sunucu ortam değişkenleri
 
 spring:
   application:
     name: derdimet
-  datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/derdimET?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
-    username: ${SPRING_DATASOURCE_USERNAME:root}
-    password: ${SPRING_DATASOURCE_PASSWORD:88888888}
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
   jpa:
-    hibernate:
-      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+    open-in-view: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
-    open-in-view: false
   servlet:
     multipart:
       enabled: true
@@ -23,14 +20,15 @@ spring:
 
 server:
   port: ${SERVER_PORT:8081}
-  # Emülatör / LAN / fiziksel cihazdan erişim (geliştirme)
-  address: ${SERVER_ADDRESS:0.0.0.0}
 
 derdimet:
   jwt:
-    secret: ${DERDIMET_JWT_SECRET:derdimet-dev-jwt-secret-change-in-production-32chars}
     expiration-ms: ${DERDIMET_JWT_EXPIRATION_MS:604800000}
   media:
     upload-dir: ${DERDIMET_UPLOAD_DIR:uploads}
     public-url-prefix: ${DERDIMET_UPLOAD_PUBLIC_PREFIX:/uploads}
     max-file-size: ${DERDIMET_UPLOAD_MAX_FILE_SIZE:8388608}
+  cors:
+    allowed-origin-patterns: ${DERDIMET_CORS_ALLOWED_ORIGIN_PATTERNS:}
+  seed:
+    enabled: ${DERDIMET_SEED:false}

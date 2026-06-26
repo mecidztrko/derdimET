@@ -33,7 +33,8 @@ import java.time.LocalDateTime;
 import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.core.env.Environment;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,14 +45,16 @@ import org.springframework.transaction.annotation.Transactional;
  * <p>Çalıştırmak için:
  *
  * <pre>
- * DERDIMET_SEED=true SERVER_PORT=8081 SPRING_JPA_HIBERNATE_DDL_AUTO=update mvn spring-boot:run
+ * ./scripts/run-dev-seed.sh
+ * # veya: DERDIMET_SEED=true ./scripts/run-dev.sh
  * </pre>
  */
 @Component
+@Profile("dev")
+@ConditionalOnProperty(name = "derdimet.seed.enabled", havingValue = "true")
 @RequiredArgsConstructor
 public class DevSeedRunner implements CommandLineRunner {
 
-    private final Environment env;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final SellerAnimalListingRepository sellerAnimalListingRepository;
@@ -68,10 +71,6 @@ public class DevSeedRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        boolean enabled = Boolean.parseBoolean(env.getProperty("DERDIMET_SEED", "false"));
-        if (!enabled) {
-            return;
-        }
         seed();
     }
 

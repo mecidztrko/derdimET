@@ -1,4 +1,7 @@
-# Yerel gizli / ortam (frontend ortak backend URL)
+# Yerel gizli / ortam
+.env
+.env.local
+.env.*.local
 frontend/.env
 frontend/.env.local
 frontend/.env.*.local

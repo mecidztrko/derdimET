@@ -1,0 +1,32 @@
+# Üretim profili — tüm hassas değerler ortam değişkeni ile sağlanmalıdır.
+# Eksik değişken varsa ProductionEnvironmentValidator başlangıçta hata verir.
+
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+  jpa:
+    hibernate:
+      # Flyway eklendikten sonra şema migration ile yönetilir; ddl-auto değiştirilmemeli.
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:none}
+    show-sql: false
+
+server:
+  address: ${SERVER_ADDRESS:0.0.0.0}
+  # Reverse proxy arkasında doğru URL üretimi için (opsiyonel)
+  forward-headers-strategy: ${SERVER_FORWARD_HEADERS_STRATEGY:framework}
+
+derdimet:
+  jwt:
+    secret: ${DERDIMET_JWT_SECRET}
+  cors:
+    # Virgülle ayrılmış origin listesi, örn: https://app.derdimet.com,https://www.derdimet.com
+    allowed-origin-patterns: ${DERDIMET_CORS_ALLOWED_ORIGIN_PATTERNS}
+  seed:
+    enabled: false
+
+logging:
+  level:
+    root: WARN
+    com.derdimet: INFO

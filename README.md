@@ -10,18 +10,31 @@ Türkiye odaklı çiftlikten sofraya et ve hayvan pazarı — Spring Boot API + 
 
 ## Hızlı başlangıç
 
-### 1. Veritabanı
+### 1. Ortam değişkenleri
 
-MySQL’de `derdimET` veritabanını oluşturun. Bağlantı varsayılanları `src/main/resources/application.yml` içinde (ortam değişkenleriyle değiştirilebilir).
+```bash
+cp .env.example .env
+# .env içinde SPRING_DATASOURCE_PASSWORD ve gerekirse diğer değerleri düzenleyin
+```
+
+MySQL’de `derdimET` veritabanını oluşturun.
 
 ### 2. Backend
 
 ```bash
-DERDIMET_SEED=true mvn spring-boot:run
+./scripts/run-dev.sh              # normal geliştirme
+./scripts/run-dev-seed.sh         # demo kullanıcı + örnek ilanlar
 ```
 
 - API: `http://localhost:8081`
-- `DERDIMET_SEED=true` demo kullanıcı ve örnek ilanları yükler (yalnızca geliştirme).
+- Varsayılan profil: `dev` (`SPRING_PROFILES_ACTIVE`)
+- Demo seed yalnızca `dev` profilinde ve `DERDIMET_SEED=true` iken çalışır
+
+Alternatif (IntelliJ / manuel):
+
+```bash
+DERDIMET_SEED=true mvn spring-boot:run
+```
 
 ### 3. Frontend
 
@@ -63,14 +76,33 @@ mvn test                            # H2 ile integration testler
 | Dizin | Açıklama |
 |-------|----------|
 | `src/main/java` | Spring Boot API |
+| `src/main/resources/application*.yml` | Ortam profilleri (`dev`, `prod`, `test`) |
 | `frontend/src` | React uygulaması |
-| `scripts/` | Smoke ve QA shell scriptleri |
+| `scripts/` | Geliştirme, smoke ve QA scriptleri |
 | `.github/workflows/` | CI |
 
-## Ortam değişkenleri
+## Ortam yönetimi
 
-| Değişken | Açıklama |
-|----------|----------|
-| `SERVER_PORT` | HTTP port (varsayılan `8081`) |
-| `DERDIMET_SEED` | `true` → demo veri |
-| `SPRING_DATASOURCE_*` | MySQL bağlantısı |
+| Profil | Kullanım | Dosya |
+|--------|----------|-------|
+| `dev` | Yerel geliştirme (varsayılan) | `application-dev.yml` |
+| `prod` | Sunucu / üretim | `application-prod.yml` |
+| `test` | `mvn test` (H2) | `application-test.yml` |
+
+Hassas değerler repoda tutulmaz. Şablon: `.env.example` → kopyalayıp `.env` oluşturun.
+
+### Ortam değişkenleri
+
+| Değişken | Zorunlu (prod) | Açıklama |
+|----------|----------------|----------|
+| `SPRING_PROFILES_ACTIVE` | Evet | `dev` veya `prod` |
+| `SPRING_DATASOURCE_URL` | Evet | MySQL JDBC URL |
+| `SPRING_DATASOURCE_USERNAME` | Evet | Veritabanı kullanıcısı |
+| `SPRING_DATASOURCE_PASSWORD` | Evet | Veritabanı şifresi |
+| `DERDIMET_JWT_SECRET` | Evet | En az 32 karakter; üretimde güçlü rastgele değer |
+| `DERDIMET_CORS_ALLOWED_ORIGIN_PATTERNS` | Evet | Virgülle ayrılmış origin listesi (`*` prod'da yasak) |
+| `SERVER_PORT` | Hayır | HTTP port (varsayılan `8081`) |
+| `DERDIMET_SEED` | Hayır | `true` → demo veri (yalnızca `dev`) |
+| `SPRING_JPA_HIBERNATE_DDL_AUTO` | Hayır | Dev: `update`, prod: `none` |
+
+Üretimde eksik veya güvensiz değerler `ProductionEnvironmentValidator` tarafından başlangıçta reddedilir.

@@ -1,0 +1,30 @@
+# Geliştirme profili — yalnızca yerel makine / Docker Compose geliştirme ortamı.
+# Kök dizindeki .env dosyasından değişkenleri yükleyin (bkz. .env.example).
+
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/derdimET?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+    show-sql: false
+
+server:
+  # Emülatör / LAN / fiziksel cihazdan erişim
+  address: ${SERVER_ADDRESS:0.0.0.0}
+
+derdimet:
+  jwt:
+    # Yerel geliştirme yedek değeri — üretimde kullanılmaz; .env ile geçersiz kılın.
+    secret: ${DERDIMET_JWT_SECRET:derdimet-local-dev-only-change-in-env-32ch}
+  cors:
+    allowed-origin-patterns: ${DERDIMET_CORS_ALLOWED_ORIGIN_PATTERNS:*}
+  seed:
+    enabled: ${DERDIMET_SEED:false}
+
+logging:
+  level:
+    com.derdimet: DEBUG
+    org.springframework.security: INFO
