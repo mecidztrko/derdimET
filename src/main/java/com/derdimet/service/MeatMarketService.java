@@ -37,6 +37,9 @@ public class MeatMarketService {
     private final FavoriteMeatSaleRequestRepository favoriteMeatSaleRequestRepository;
     private final AccountGuardService accountGuard;
     private final FavoriteService favoriteService;
+    private final StockService stockService;
+    private final TransactionService transactionService;
+    private final PushNotificationService pushNotificationService;
 
     @Transactional
     public MeatSaleRequestResponse createSaleRequest(User slaughterhouse, CreateMeatSaleRequest body) {
@@ -54,6 +57,13 @@ public class MeatMarketService {
         e.setDescription(blankToNull(body.description()));
         e.setImageUrls(joinImageUrls(body.imageUrls()));
         e.setStatus(RequestStatus.OPEN);
+        if (body.stockId() != null) {
+            var stock = stockService.requireOwnedStock(slaughterhouse, body.stockId());
+            if (stock.getQuantity() == null || stock.getQuantity().compareTo(body.quantity()) < 0) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Stok miktarı yetersiz");
+            }
+            e.setStockId(body.stockId());
+        }
         return MeatSaleRequestResponse.fromEntity(saleRequestRepository.save(e));
     }
 
@@ -99,7 +109,12 @@ public class MeatMarketService {
         o.setQuantity(body.quantity());
         o.setNote(blankToNull(body.note()));
         o.setStatus(OfferStatus.PENDING);
-        return MeatOfferItemResponse.fromEntity(meatOfferRepository.save(o));
+        MeatOffer saved = meatOfferRepository.save(o);
+        pushNotificationService.notifyOfferEvent(
+                req.getSlaughterhouse(),
+                "Yeni et teklifi",
+                buyer.getName() + " ilanınıza teklif verdi.");
+        return MeatOfferItemResponse.fromEntity(saved);
     }
 
     @Transactional
@@ -245,6 +260,10 @@ public class MeatMarketService {
                 order.setTotalPrice(price.multiply(qty));
                 order.setStatus(OrderStatus.COMPLETED);
                 orderRepository.save(order);
+                transactionService.recordCompletedOrder(order);
+            }
+            if (sale.getStockId() != null && offer.getQuantity() != null) {
+                stockService.reserveQuantity(sale.getStockId(), offer.getQuantity());
             }
         } else {
             offer.setStatus(OfferStatus.REJECTED);

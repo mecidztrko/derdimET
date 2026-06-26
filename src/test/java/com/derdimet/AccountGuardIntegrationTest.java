@@ -85,7 +85,8 @@ class AccountGuardIntegrationTest extends AbstractApiIntegrationTest {
                                 "Vakum",
                                 "İstanbul",
                                 "Guard test ilanı",
-                                List.of())),
+                                List.of(),
+                                null)),
                 MeatSaleRequestResponse.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);

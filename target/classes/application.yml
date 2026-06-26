@@ -17,6 +17,17 @@ spring:
       enabled: true
       max-file-size: ${DERDIMET_MAX_FILE_SIZE:10MB}
       max-request-size: ${DERDIMET_MAX_REQUEST_SIZE:60MB}
+  mail:
+    host: ${SPRING_MAIL_HOST:}
+    port: ${SPRING_MAIL_PORT:587}
+    username: ${SPRING_MAIL_USERNAME:}
+    password: ${SPRING_MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${SPRING_MAIL_SMTP_AUTH:true}
+          starttls:
+            enable: ${SPRING_MAIL_SMTP_STARTTLS:true}
 
 server:
   port: ${SERVER_PORT:8081}
@@ -34,6 +45,13 @@ derdimet:
     enabled: ${DERDIMET_SEED:false}
   swagger:
     enabled: ${DERDIMET_SWAGGER_ENABLED:true}
+  mail:
+    enabled: ${DERDIMET_MAIL_ENABLED:false}
+    from: ${DERDIMET_MAIL_FROM:noreply@derdimet.local}
+    from-name: ${DERDIMET_MAIL_FROM_NAME:derdimET}
+  push:
+    enabled: ${DERDIMET_PUSH_ENABLED:false}
+    fcm-server-key: ${DERDIMET_FCM_SERVER_KEY:}
 
 springdoc:
   api-docs:

@@ -120,8 +120,28 @@ Hassas değerler repoda tutulmaz. Şablon: `.env.example` → kopyalayıp `.env`
 | `DERDIMET_SEED` | Hayır | `true` → demo veri (yalnızca `dev`) |
 | `DERDIMET_SWAGGER_ENABLED` | Hayır | `false` → OpenAPI / Swagger UI kapalı (prod varsayılanı) |
 | `SPRING_JPA_HIBERNATE_DDL_AUTO` | Hayır | Dev: `update`, prod: `none` |
+| `DERDIMET_MAIL_ENABLED` | Hayır | `true` → SMTP ile e-posta (şifre sıfırlama, doğrulama) |
+| `SPRING_MAIL_HOST` | Mail açıksa | SMTP sunucusu |
+| `SPRING_MAIL_USERNAME` / `SPRING_MAIL_PASSWORD` | Mail açıksa | SMTP kimlik bilgileri |
+| `DERDIMET_PUSH_ENABLED` | Hayır | `true` → FCM push bildirimleri |
+| `DERDIMET_FCM_SERVER_KEY` | Push açıksa | Firebase Cloud Messaging sunucu anahtarı |
 
 Üretimde eksik veya güvensiz değerler `ProductionEnvironmentValidator` tarafından başlangıçta reddedilir.
+
+## Yeni API uçları (portföy özellikleri)
+
+| Alan | Uç | Açıklama |
+|------|-----|----------|
+| Auth | `POST /api/auth/password/change` | Giriş yapmış kullanıcı şifre değiştirir |
+| İşletme | `POST /api/business-verification` | İşletme doğrulama belgesi gönderir |
+| Admin | `GET /api/admin/business-verification` | Bekleyen doğrulama talepleri |
+| Değerlendirme | `POST /api/reviews` | Kullanıcıya yorum bırakır |
+| Değerlendirme | `GET /api/users/{id}/reviews` | Kullanıcı yorumları |
+| Stok | `GET /api/slaughterhouse/stock` | Kesimhane stok listesi |
+| Bildirim | `PUT /api/notifications/preferences` | Push tercihleri |
+| Bildirim | `POST /api/notifications/device-token` | Mobil cihaz FCM token kaydı |
+
+E-posta ve push varsayılan olarak kapalıdır (`DERDIMET_MAIL_ENABLED=false`, `DERDIMET_PUSH_ENABLED=false`); yerel geliştirmede log'a düşer.
 
 ## API dokümantasyonu (Swagger)
 

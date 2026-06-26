@@ -17,4 +17,5 @@ public record CreateMeatSaleRequest(
         String packaging,
         String location,
         String description,
-        List<String> imageUrls) {}
+        List<String> imageUrls,
+        Long stockId) {}

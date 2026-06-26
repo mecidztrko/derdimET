@@ -66,6 +66,16 @@ public class User extends BaseEntity {
     @Column(name = "business_verified")
     private Boolean businessVerified;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "business_verification_status", length = 32)
+    private BusinessVerificationStatus businessVerificationStatus = BusinessVerificationStatus.NONE;
+
+    @Column(name = "business_document_url", length = 1024)
+    private String businessDocumentUrl;
+
+    @Column(name = "business_verification_note", length = 500)
+    private String businessVerificationNote;
+
     public boolean isEmailVerified() {
         return Boolean.TRUE.equals(emailVerified);
     }

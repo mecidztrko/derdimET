@@ -73,7 +73,8 @@ class MeatMarketFlowIntegrationTest extends AbstractApiIntegrationTest {
                                 "Vakum",
                                 "Ankara",
                                 "Test et ilanı",
-                                List.of())),
+                                List.of(),
+                                null)),
                 MeatSaleRequestResponse.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);

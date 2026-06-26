@@ -22,6 +22,10 @@ public class MeatProduct extends BaseEntity {
     @JoinColumn(name = "animal_id", nullable = false)
     private Animal animal;
 
+    @ManyToOne
+    @JoinColumn(name = "slaughterhouse_id")
+    private User slaughterhouse;
+
     @Column(name = "meat_type", nullable = false)
     private String meatType;
 

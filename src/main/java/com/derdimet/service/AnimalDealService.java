@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AnimalDealService {
 
     private final AnimalDealRepository animalDealRepository;
+    private final StockService stockService;
 
     @Transactional
     public void recordAcceptedAnimalOffer(AnimalOffer offer) {
@@ -40,6 +41,7 @@ public class AnimalDealService {
         deal.setTotalPrice(estimateTotal(offer.getPricePerKg(), offer.getAnimalCount()));
         deal.setStatus(OrderStatus.COMPLETED);
         animalDealRepository.save(deal);
+        stockService.receiveFromAnimalDeal(deal);
     }
 
     @Transactional
@@ -63,6 +65,7 @@ public class AnimalDealService {
         deal.setTotalPrice(estimateTotal(offer.getPricePerKg(), offer.getQuantity()));
         deal.setStatus(OrderStatus.COMPLETED);
         animalDealRepository.save(deal);
+        stockService.receiveFromAnimalDeal(deal);
     }
 
     private static BigDecimal estimateTotal(BigDecimal pricePerKg, Integer quantity) {

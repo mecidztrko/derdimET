@@ -26,6 +26,7 @@ public class AuthRecoveryService {
     private final UserRepository userRepository;
     private final AuthActionTokenRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     @Transactional
     public void sendEmailVerificationCode(String rawEmail) {
@@ -35,7 +36,10 @@ public class AuthRecoveryService {
                 return;
             }
             var code = createToken(email, AuthTokenPurpose.EMAIL_VERIFICATION);
-            log.info("[Auth] Email verification code for {}: {}", email, code);
+            emailService.sendCode(
+                    email,
+                    "derdimET e-posta doğrulama",
+                    "Doğrulama kodunuz: " + code + " (15 dakika geçerlidir)");
         });
     }
 
@@ -63,8 +67,20 @@ public class AuthRecoveryService {
         var email = normalize(rawEmail);
         userRepository.findByEmail(email).ifPresent(user -> {
             var code = createToken(email, AuthTokenPurpose.PASSWORD_RESET);
-            log.info("[Auth] Password reset code for {}: {}", email, code);
+            emailService.sendCode(
+                    email,
+                    "derdimET şifre sıfırlama",
+                    "Şifre sıfırlama kodunuz: " + code + " (15 dakika geçerlidir)");
         });
+    }
+
+    @Transactional
+    public void changePassword(User user, String currentPassword, String newPassword) {
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Mevcut şifre hatalı");
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 
     @Transactional

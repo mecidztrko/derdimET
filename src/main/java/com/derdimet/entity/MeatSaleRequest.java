@@ -61,6 +61,9 @@ public class MeatSaleRequest extends BaseEntity {
     @Column(name = "image_urls", length = 4000)
     private String imageUrls;
 
+    @Column(name = "stock_id")
+    private Long stockId;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private RequestStatus status;

@@ -34,6 +34,7 @@ public class SlaughterhouseListingMarketService {
     private final AnimalDealService animalDealService;
     private final AccountGuardService accountGuard;
     private final FavoriteAnimalListingRepository favoriteAnimalListingRepository;
+    private final PushNotificationService pushNotificationService;
 
     @Transactional(readOnly = true)
     public List<SellerAnimalListingResponse> searchListings(
@@ -186,7 +187,12 @@ public class SlaughterhouseListingMarketService {
         o.setQuantity(body.quantity());
         o.setNote(blankToNull(body.note()));
         o.setStatus(OfferStatus.PENDING);
-        return ListingOfferResponse.fromEntity(offerRepository.save(o));
+        SlaughterhouseListingOffer saved = offerRepository.save(o);
+        pushNotificationService.notifyOfferEvent(
+                listing.getSeller(),
+                "Yeni hayvan teklifi",
+                slaughterhouse.getName() + " ilanınıza teklif verdi.");
+        return ListingOfferResponse.fromEntity(saved);
     }
 
     @Transactional(readOnly = true)

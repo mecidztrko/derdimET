@@ -13,4 +13,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmailIgnoreCase(String email);
 
     List<User> findByRoleOrderByNameAsc(UserRole role);
+
+    List<User> findByBusinessVerificationStatusOrderByCreatedAtDesc(
+            com.derdimet.entity.BusinessVerificationStatus status);
 }

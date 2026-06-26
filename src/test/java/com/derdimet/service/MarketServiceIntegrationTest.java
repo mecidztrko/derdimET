@@ -87,7 +87,8 @@ class MarketServiceIntegrationTest {
                         null,
                         "Ankara",
                         "Servis test",
-                        List.of()));
+                        List.of(),
+                        null));
 
         var offer = meatMarketService.createOffer(
                 buyer.entity(),

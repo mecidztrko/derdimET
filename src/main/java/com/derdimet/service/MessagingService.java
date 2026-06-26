@@ -25,6 +25,7 @@ public class MessagingService {
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
     private final AccountGuardService accountGuard;
+    private final PushNotificationService pushNotificationService;
 
     @Transactional(readOnly = true)
     public List<ConversationItemResponse> listConversations(User current) {
@@ -103,7 +104,20 @@ public class MessagingService {
         c.setLastMessageAt(saved.getCreatedAt() != null ? saved.getCreatedAt() : LocalDateTime.now());
         conversationRepository.save(c);
 
+        User recipient = otherParticipant(current, c);
+        if (recipient != null) {
+            pushNotificationService.notifyMessage(
+                    recipient, "Yeni mesaj", current.getName() + ": " + saved.getText());
+        }
+
         return ChatMessageResponse.fromEntity(saved);
+    }
+
+    private static User otherParticipant(User current, Conversation c) {
+        if (c.getUser1() != null && !c.getUser1().getId().equals(current.getId())) {
+            return c.getUser1();
+        }
+        return c.getUser2();
     }
 
     private static void assertMember(User current, Conversation c) {

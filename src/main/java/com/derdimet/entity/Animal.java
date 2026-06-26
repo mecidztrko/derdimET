@@ -24,6 +24,14 @@ public class Animal extends BaseEntity {
     @JoinColumn(name = "offer_id")
     private AnimalOffer offer;
 
+    @ManyToOne
+    @JoinColumn(name = "animal_deal_id")
+    private AnimalDeal animalDeal;
+
+    @ManyToOne
+    @JoinColumn(name = "slaughterhouse_id")
+    private User slaughterhouse;
+
     @Column(name = "animal_type")
     private String animalType;
 
