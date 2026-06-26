@@ -103,6 +103,22 @@ Hassas değerler repoda tutulmaz. Şablon: `.env.example` → kopyalayıp `.env`
 | `DERDIMET_CORS_ALLOWED_ORIGIN_PATTERNS` | Evet | Virgülle ayrılmış origin listesi (`*` prod'da yasak) |
 | `SERVER_PORT` | Hayır | HTTP port (varsayılan `8081`) |
 | `DERDIMET_SEED` | Hayır | `true` → demo veri (yalnızca `dev`) |
+| `DERDIMET_SWAGGER_ENABLED` | Hayır | `false` → OpenAPI / Swagger UI kapalı (prod varsayılanı) |
 | `SPRING_JPA_HIBERNATE_DDL_AUTO` | Hayır | Dev: `update`, prod: `none` |
 
 Üretimde eksik veya güvensiz değerler `ProductionEnvironmentValidator` tarafından başlangıçta reddedilir.
+
+## API dokümantasyonu (Swagger)
+
+Geliştirme ve test ortamında SpringDoc OpenAPI etkindir:
+
+| URL | Açıklama |
+|-----|----------|
+| `http://localhost:8081/swagger-ui.html` | Swagger UI — uçları deneyebilirsiniz |
+| `http://localhost:8081/v3/api-docs` | OpenAPI 3 JSON |
+
+**JWT ile deneme:** `POST /api/auth/login` → `Authorize` → `Bearer <token>`.
+
+Uçlar role göre gruplandırılmıştır: `auth`, `buyer`, `seller`, `slaughterhouse`, `admin`, `shared`, `all`.
+
+Üretimde (`prod` profili) Swagger varsayılan olarak kapalıdır.

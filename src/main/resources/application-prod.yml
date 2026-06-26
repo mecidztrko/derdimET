@@ -25,6 +25,14 @@ derdimet:
     allowed-origin-patterns: ${DERDIMET_CORS_ALLOWED_ORIGIN_PATTERNS}
   seed:
     enabled: false
+  swagger:
+    enabled: false
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
 
 logging:
   level:

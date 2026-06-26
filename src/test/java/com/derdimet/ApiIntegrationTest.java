@@ -62,4 +62,17 @@ class ApiIntegrationTest {
         ResponseEntity<String> res = rest.exchange("/api/conversations", HttpMethod.GET, null, String.class);
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
+
+    @Test
+    void openApiDocsAvailable() {
+        ResponseEntity<String> res = rest.getForEntity("/v3/api-docs", String.class);
+        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(res.getBody()).contains("derdimET API");
+    }
+
+    @Test
+    void swaggerUiAvailable() {
+        ResponseEntity<String> res = rest.getForEntity("/swagger-ui/index.html", String.class);
+        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
 }

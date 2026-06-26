@@ -32,3 +32,18 @@ derdimet:
     allowed-origin-patterns: ${DERDIMET_CORS_ALLOWED_ORIGIN_PATTERNS:}
   seed:
     enabled: ${DERDIMET_SEED:false}
+  swagger:
+    enabled: ${DERDIMET_SWAGGER_ENABLED:true}
+
+springdoc:
+  api-docs:
+    enabled: ${DERDIMET_SWAGGER_ENABLED:true}
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: ${DERDIMET_SWAGGER_ENABLED:true}
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    try-it-out-enabled: true
+    display-request-duration: true
+    persist-authorization: true
