@@ -68,8 +68,23 @@ Yönetici paneli: giriş sonrası rol seçicide **Profil / yönetim** kartı; ha
 ```bash
 ./scripts/smoke-api.sh              # temel API smoke (3 rol)
 ./scripts/qa-api.sh                 # smoke + doğrulama + mesajlar
-mvn test                            # H2 ile integration testler
+mvn test                            # integration testler (H2)
+mvn verify                          # testler + JaCoCo coverage raporu
 ```
+
+Coverage raporu: `target/site/jacoco/index.html`
+
+### Integration test kapsamı
+
+| Test sınıfı | Kapsam |
+|-------------|--------|
+| `AuthIntegrationTest` | Kayıt, giriş, JWT, yetkisiz erişim, rol engeli |
+| `AnimalMarketFlowIntegrationTest` | Hayvan ilanı → teklif → kabul → `AnimalDeal` |
+| `MeatMarketFlowIntegrationTest` | Et ilanı → teklif → kabul → `Order` |
+| `AccountGuardIntegrationTest` | Doğrulanmamış hesap teklif engeli |
+| `MessagingIntegrationTest` | Sohbet açma, mesaj gönderme |
+| `MarketServiceIntegrationTest` | Servis katmanı iş akışları |
+| `ApiIntegrationTest` | Swagger, correlation ID, altyapı |
 
 ## Proje yapısı
 
