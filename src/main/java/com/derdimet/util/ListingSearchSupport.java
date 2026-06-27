@@ -1,5 +1,6 @@
 package com.derdimet.util;
 
+import com.derdimet.entity.AnimalCategory;
 import com.derdimet.entity.MeatOffer;
 import com.derdimet.entity.MeatSaleRequest;
 import com.derdimet.entity.SellerAnimalListing;
@@ -63,6 +64,37 @@ public final class ListingSearchSupport {
                         sh != null ? sh.getCompanyName() : null,
                         sh != null ? sh.getCity() : null);
         return hay.contains(needle);
+    }
+
+    public static boolean matchesMeatSaleFilters(
+            MeatSaleRequest sale,
+            String city,
+            java.math.BigDecimal priceMin,
+            java.math.BigDecimal priceMax,
+            AnimalCategory animalCategory,
+            java.time.LocalDateTime createdAfter) {
+        if (city != null && !city.isBlank()) {
+            User sh = sale.getSlaughterhouse();
+            String cityNeedle = city.trim().toLowerCase();
+            String listingCity = sale.getLocation() != null ? sale.getLocation().toLowerCase() : "";
+            String profileCity = sh != null && sh.getCity() != null ? sh.getCity().toLowerCase() : "";
+            if (!listingCity.contains(cityNeedle) && !profileCity.contains(cityNeedle)) {
+                return false;
+            }
+        }
+        if (priceMin != null && sale.getPricePerKg() != null && sale.getPricePerKg().compareTo(priceMin) < 0) {
+            return false;
+        }
+        if (priceMax != null && sale.getPricePerKg() != null && sale.getPricePerKg().compareTo(priceMax) > 0) {
+            return false;
+        }
+        if (animalCategory != null && sale.getAnimalCategory() != animalCategory) {
+            return false;
+        }
+        if (createdAfter != null && sale.getCreatedAt() != null && sale.getCreatedAt().isBefore(createdAfter)) {
+            return false;
+        }
+        return true;
     }
 
     private static String join(String... parts) {

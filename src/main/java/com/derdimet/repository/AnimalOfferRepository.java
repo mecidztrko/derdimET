@@ -43,4 +43,6 @@ public interface AnimalOfferRepository extends JpaRepository<AnimalOffer, Long> 
             ORDER BY o.createdAt DESC
             """)
     List<AnimalOffer> findBetweenUsers(@Param("userA") Long userA, @Param("userB") Long userB);
+
+    List<AnimalOffer> findByStatusAndExpiresAtBefore(OfferStatus status, java.time.LocalDateTime before);
 }

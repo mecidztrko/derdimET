@@ -26,6 +26,7 @@ import { BuyerOffers } from './pages/buyer/BuyerOffers'
 import { BuyerPurchases } from './pages/buyer/BuyerPurchases'
 import { BuyerSearch } from './pages/buyer/BuyerSearch'
 import { BuyerSettings } from './pages/buyer/BuyerSettings'
+import { NotificationInboxPage } from './pages/NotificationInboxPage'
 import { SellerBrowse } from './pages/seller/SellerBrowse'
 import { SellerHome } from './pages/seller/SellerHome'
 import { SellerPurchaseRequestDetail } from './pages/seller/SellerPurchaseRequestDetail'
@@ -148,6 +149,14 @@ function AnimatedRoutes() {
             }
           />
           <Route
+            path="notifications"
+            element={
+              <FeatureRoute enabled={isBuyerRouteEnabled('settings')} fallbackTo={defaultBuyerPath()}>
+                <NotificationInboxPage />
+              </FeatureRoute>
+            }
+          />
+          <Route
             path="settings"
             element={
               <FeatureRoute enabled={isBuyerRouteEnabled('settings')} fallbackTo={defaultBuyerPath()}>
@@ -208,6 +217,14 @@ function AnimatedRoutes() {
                 fallbackTo={defaultSellerPath()}
               >
                 <SellerMessages />
+              </FeatureRoute>
+            }
+          />
+          <Route
+            path="notifications"
+            element={
+              <FeatureRoute enabled={isSellerRouteEnabled('settings')} fallbackTo={defaultSellerPath()}>
+                <NotificationInboxPage />
               </FeatureRoute>
             }
           />
@@ -303,6 +320,17 @@ function AnimatedRoutes() {
                 fallbackTo={defaultSlaughterhousePath()}
               >
                 <SlaughterhouseMessages />
+              </FeatureRoute>
+            }
+          />
+          <Route
+            path="notifications"
+            element={
+              <FeatureRoute
+                enabled={isSlaughterhouseRouteEnabled('settings')}
+                fallbackTo={defaultSlaughterhousePath()}
+              >
+                <NotificationInboxPage />
               </FeatureRoute>
             }
           />

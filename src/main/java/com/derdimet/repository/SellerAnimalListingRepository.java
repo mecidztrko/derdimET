@@ -1,7 +1,9 @@
 package com.derdimet.repository;
 
+import com.derdimet.entity.RequestStatus;
 import com.derdimet.entity.SellerAnimalListing;
 import com.derdimet.entity.User;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -10,5 +12,7 @@ public interface SellerAnimalListingRepository extends JpaRepository<SellerAnima
     List<SellerAnimalListing> findBySellerOrderByCreatedAtDesc(User seller);
 
     java.util.Optional<SellerAnimalListing> findByIdAndSeller_Id(Long id, Long sellerId);
+
+    List<SellerAnimalListing> findByStatusAndExpiresAtBefore(RequestStatus status, LocalDateTime before);
 }
 

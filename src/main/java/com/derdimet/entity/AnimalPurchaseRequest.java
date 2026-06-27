@@ -42,6 +42,16 @@ public class AnimalPurchaseRequest extends BaseEntity {
     @Column(name = "status")
     private RequestStatus status;
 
+    @Column(name = "expires_at")
+    private LocalDateTime expiresAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "closed_reason", length = 32)
+    private ListingClosedReason closedReason;
+
+    @Column(name = "closed_at")
+    private LocalDateTime closedAt;
+
     /** İlanı oluşturan yönetici (hayvan alış talebi). */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_user_id")
@@ -52,8 +62,15 @@ public class AnimalPurchaseRequest extends BaseEntity {
 
     @PrePersist
     void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
         if (createdAt == null) {
-            createdAt = LocalDateTime.now();
+            createdAt = now;
+        }
+        if (status == null) {
+            status = RequestStatus.OPEN;
+        }
+        if (expiresAt == null) {
+            expiresAt = now.plusDays(30);
         }
     }
 }

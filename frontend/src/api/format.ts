@@ -74,8 +74,12 @@ export function formatRelativeTr(iso: string | null | undefined): string {
   return formatDateTr(iso)
 }
 
-export function requestStatusLabel(status: string): string {
-  return status === 'OPEN' ? 'Açık' : 'Kapalı'
+export function requestStatusLabel(status: string, closedReason?: string | null): string {
+  if (status === 'OPEN') return 'Açık'
+  if (closedReason === 'SOLD') return 'Satıldı'
+  if (closedReason === 'EXPIRED') return 'Süresi doldu'
+  if (closedReason === 'CANCELLED') return 'İptal edildi'
+  return 'Kapalı'
 }
 
 export function listingCardStatusLabel(status: 'open' | 'closed' | 'pending'): string {
@@ -88,8 +92,11 @@ export function orderStatusLabel(status: string): string {
   switch (status) {
     case 'COMPLETED':
       return 'Tamamlandı'
+    case 'PAYMENT_PENDING':
     case 'PENDING':
-      return 'Beklemede'
+      return 'Ödeme bekleniyor'
+    case 'PAYMENT_CONFIRMED':
+      return 'Ödeme onaylandı'
     case 'CANCELLED':
       return 'İptal edildi'
     default:

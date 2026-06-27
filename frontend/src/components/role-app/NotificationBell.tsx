@@ -109,6 +109,21 @@ export function NotificationBell() {
           ) : (
             <p className="px-4 py-3 text-caption text-muted-foreground">Bekleyen teklif yok.</p>
           )}
+          <div className="border-t border-border px-4 py-2">
+            <Link
+              to={
+                user && isBuyer(user.role)
+                  ? '/buyer/notifications'
+                  : user && isSeller(user.role)
+                    ? '/seller/notifications'
+                    : '/slaughterhouse/notifications'
+              }
+              className="text-small text-primary font-medium"
+              onClick={() => setOpen(false)}
+            >
+              Bildirim merkezine git
+            </Link>
+          </div>
         </div>
       ) : null}
     </div>

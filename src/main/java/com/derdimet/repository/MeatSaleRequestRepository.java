@@ -3,6 +3,7 @@ package com.derdimet.repository;
 import com.derdimet.entity.MeatSaleRequest;
 import com.derdimet.entity.RequestStatus;
 import com.derdimet.entity.User;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -15,5 +16,7 @@ public interface MeatSaleRequestRepository extends JpaRepository<MeatSaleRequest
     List<MeatSaleRequest> findBySlaughterhouseOrderByCreatedAtDesc(User slaughterhouse);
 
     java.util.Optional<MeatSaleRequest> findByIdAndSlaughterhouse_Id(Long id, Long slaughterhouseId);
+
+    List<MeatSaleRequest> findByStatusAndExpiresAtBefore(RequestStatus status, LocalDateTime before);
 }
 

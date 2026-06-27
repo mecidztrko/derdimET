@@ -42,5 +42,7 @@ public interface SlaughterhouseListingOfferRepository extends JpaRepository<Slau
             ORDER BY o.createdAt DESC
             """)
     List<SlaughterhouseListingOffer> findBetweenUsers(@Param("userA") Long userA, @Param("userB") Long userB);
+
+    List<SlaughterhouseListingOffer> findByStatusAndExpiresAtBefore(OfferStatus status, java.time.LocalDateTime before);
 }
 

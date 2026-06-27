@@ -193,6 +193,21 @@ export function listProfileSales(limit = 20): Promise<import('./types').Slaughte
   return apiFetch(`/api/slaughterhouse/profile/sales?limit=${limit}`)
 }
 
+export type SlaughterhouseDashboardStatsDto = {
+  month: string
+  monthlyMeatSales: number
+  monthlyMeatRevenue: number | string
+  monthlyAnimalPurchases: number
+  monthlyAnimalSpend: number | string
+  pendingMeatOffers: number
+  pendingListingOffers: number
+  pendingPurchaseOffers: number
+}
+
+export function getDashboardStats(): Promise<SlaughterhouseDashboardStatsDto> {
+  return apiFetch('/api/slaughterhouse/profile/dashboard-stats')
+}
+
 export function createAnimalPurchaseRequest(body: {
   title: string
   animalCategory: AnimalCategory

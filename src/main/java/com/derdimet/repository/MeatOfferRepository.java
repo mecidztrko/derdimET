@@ -1,7 +1,9 @@
 package com.derdimet.repository;
 
 import com.derdimet.entity.MeatOffer;
+import com.derdimet.entity.OfferStatus;
 import com.derdimet.entity.User;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -36,5 +38,7 @@ public interface MeatOfferRepository extends JpaRepository<MeatOffer, Long> {
             ORDER BY o.createdAt DESC
             """)
     List<MeatOffer> findBetweenUsers(@Param("userA") Long userA, @Param("userB") Long userB);
+
+    List<MeatOffer> findByStatusAndExpiresAtBefore(OfferStatus status, LocalDateTime before);
 }
 

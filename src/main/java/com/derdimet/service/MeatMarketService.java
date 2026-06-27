@@ -5,11 +5,16 @@ import com.derdimet.api.CreateMeatSaleRequest;
 import com.derdimet.api.UpdateMeatSaleRequest;
 import com.derdimet.api.MeatOfferItemResponse;
 import com.derdimet.api.MeatSaleRequestResponse;
+import com.derdimet.api.OfferEventResponse;
+import com.derdimet.api.ReviseMeatOfferRequest;
 import com.derdimet.api.SlaughterhouseMeatOfferResponse;
 import com.derdimet.entity.FavoriteMeatSaleRequest;
+import com.derdimet.entity.AnimalCategory;
 import com.derdimet.entity.AuditAction;
+import com.derdimet.entity.ListingClosedReason;
 import com.derdimet.entity.MeatOffer;
 import com.derdimet.entity.MeatSaleRequest;
+import com.derdimet.entity.NotificationType;
 import com.derdimet.entity.OfferStatus;
 import com.derdimet.entity.Order;
 import com.derdimet.entity.OrderStatus;
@@ -18,9 +23,12 @@ import com.derdimet.entity.User;
 import com.derdimet.repository.FavoriteMeatSaleRequestRepository;
 import com.derdimet.repository.MeatOfferRepository;
 import com.derdimet.repository.MeatSaleRequestRepository;
+import com.derdimet.repository.OfferEventRepository;
 import com.derdimet.repository.OrderRepository;
+import com.derdimet.util.ListingLifecycle;
 import com.derdimet.util.ListingSearchSupport;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -35,6 +43,7 @@ public class MeatMarketService {
     private final MeatSaleRequestRepository saleRequestRepository;
     private final MeatOfferRepository meatOfferRepository;
     private final OrderRepository orderRepository;
+    private final OfferEventRepository offerEventRepository;
     private final FavoriteMeatSaleRequestRepository favoriteMeatSaleRequestRepository;
     private final AccountGuardService accountGuard;
     private final FavoriteService favoriteService;
@@ -42,6 +51,8 @@ public class MeatMarketService {
     private final TransactionService transactionService;
     private final PushNotificationService pushNotificationService;
     private final AuditService auditService;
+    private final OfferEventService offerEventService;
+    private final InboxNotificationService inboxNotificationService;
 
     @Transactional
     public MeatSaleRequestResponse createSaleRequest(User slaughterhouse, CreateMeatSaleRequest body) {
@@ -77,9 +88,19 @@ public class MeatMarketService {
     }
 
     @Transactional(readOnly = true)
-    public List<MeatSaleRequestResponse> listOpenSaleRequests(User buyer, String q) {
+    public List<MeatSaleRequestResponse> listOpenSaleRequests(
+            User buyer,
+            String q,
+            String city,
+            BigDecimal priceMin,
+            BigDecimal priceMax,
+            AnimalCategory animalCategory,
+            LocalDateTime createdAfter) {
+        LocalDateTime now = LocalDateTime.now();
         return saleRequestRepository.findByStatusOrderByCreatedAtDesc(RequestStatus.OPEN).stream()
+                .filter(m -> m.getExpiresAt() == null || m.getExpiresAt().isAfter(now))
                 .filter(m -> ListingSearchSupport.matchesMeatSale(m, q))
+                .filter(m -> ListingSearchSupport.matchesMeatSaleFilters(m, city, priceMin, priceMax, animalCategory, createdAfter))
                 .map(
                         m -> {
                             Boolean fav =
@@ -101,6 +122,9 @@ public class MeatMarketService {
         if (req.getStatus() != RequestStatus.OPEN) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Bu ilan kapalı veya teklif almıyor");
         }
+        if (req.getExpiresAt() != null && req.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Bu ilanın süresi dolmuş");
+        }
         if (meatOfferRepository.existsBySaleRequest_IdAndBuyer_Id(saleRequestId, buyer.getId())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Bu ilan için zaten teklif verdiniz");
         }
@@ -112,11 +136,43 @@ public class MeatMarketService {
         o.setNote(blankToNull(body.note()));
         o.setStatus(OfferStatus.PENDING);
         MeatOffer saved = meatOfferRepository.save(o);
+        offerEventService.recordCreated(saved);
         pushNotificationService.notifyOfferEvent(
                 req.getSlaughterhouse(),
                 "Yeni et teklifi",
                 buyer.getName() + " ilanınıza teklif verdi.");
         return MeatOfferItemResponse.fromEntity(saved);
+    }
+
+    @Transactional
+    public MeatOfferItemResponse reviseOffer(User buyer, Long offerId, ReviseMeatOfferRequest body) {
+        MeatOffer offer = requireBuyerPendingOffer(buyer, offerId);
+        offer.setPricePerKg(body.pricePerKg());
+        if (body.quantity() != null) {
+            offer.setQuantity(body.quantity());
+        }
+        if (body.note() != null) {
+            offer.setNote(blankToNull(body.note()));
+        }
+        offer.setRevisionNumber((offer.getRevisionNumber() != null ? offer.getRevisionNumber() : 1) + 1);
+        offer.setExpiresAt(LocalDateTime.now().plusHours(ListingLifecycle.DEFAULT_OFFER_HOURS));
+        MeatOffer saved = meatOfferRepository.save(offer);
+        offerEventService.recordRevised(saved);
+        return MeatOfferItemResponse.fromEntity(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public List<OfferEventResponse> listOfferHistory(User buyer, Long offerId) {
+        MeatOffer offer =
+                meatOfferRepository
+                        .findByIdAndBuyer_Id(offerId, buyer.getId())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Teklif bulunamadı"));
+        return offerEventRepository
+                .findByOfferKindAndOfferIdOrderByCreatedAtAsc(
+                        com.derdimet.entity.OfferKind.MEAT, offer.getId())
+                .stream()
+                .map(OfferEventResponse::fromEntity)
+                .toList();
     }
 
     @Transactional
@@ -143,6 +199,9 @@ public class MeatMarketService {
                         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Teklif bulunamadı"));
         if (offer.getStatus() != OfferStatus.PENDING) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Yalnızca bekleyen teklif işlenebilir");
+        }
+        if (offer.getExpiresAt() != null && offer.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Teklif süresi dolmuş");
         }
         return offer;
     }
@@ -195,7 +254,7 @@ public class MeatMarketService {
         if (req.getStatus() == RequestStatus.CLOSED) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "İlan zaten kapalı");
         }
-        req.setStatus(RequestStatus.CLOSED);
+        ListingLifecycle.close(req, ListingClosedReason.MANUAL);
         return MeatSaleRequestResponse.fromEntity(saleRequestRepository.save(req));
     }
 
@@ -218,6 +277,8 @@ public class MeatMarketService {
                     HttpStatus.CONFLICT, "Kabul edilmiş teklifi olan ilan yeniden açılamaz");
         }
         req.setStatus(RequestStatus.OPEN);
+        req.setClosedReason(null);
+        req.setClosedAt(null);
         return MeatSaleRequestResponse.fromEntity(saleRequestRepository.save(req));
     }
 
@@ -238,6 +299,9 @@ public class MeatMarketService {
         if (offer.getStatus() != OfferStatus.PENDING) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Teklif zaten işlenmiş");
         }
+        if (offer.getExpiresAt() != null && offer.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Teklif süresi dolmuş");
+        }
         if (accept) {
             offer.setStatus(OfferStatus.ACCEPTED);
             meatOfferRepository.save(offer);
@@ -250,7 +314,7 @@ public class MeatMarketService {
             }
             MeatSaleRequest sale = offer.getSaleRequest();
             if (sale.getStatus() == RequestStatus.OPEN) {
-                sale.setStatus(RequestStatus.CLOSED);
+                ListingLifecycle.close(sale, ListingClosedReason.SOLD);
                 saleRequestRepository.save(sale);
             }
             if (!orderRepository.existsByMeatOffer_Id(offerId)) {
@@ -260,9 +324,14 @@ public class MeatMarketService {
                 BigDecimal qty = offer.getQuantity() != null ? offer.getQuantity() : BigDecimal.ZERO;
                 BigDecimal price = offer.getPricePerKg() != null ? offer.getPricePerKg() : BigDecimal.ZERO;
                 order.setTotalPrice(price.multiply(qty));
-                order.setStatus(OrderStatus.COMPLETED);
+                order.setStatus(OrderStatus.PAYMENT_PENDING);
                 orderRepository.save(order);
-                transactionService.recordCompletedOrder(order);
+                inboxNotificationService.create(
+                        offer.getBuyer(),
+                        NotificationType.PAYMENT,
+                        "Teklifiniz kabul edildi",
+                        "Ödeme adımını tamamlayarak siparişi ilerletebilirsiniz.",
+                        "/buyer/purchases");
             }
             if (sale.getStockId() != null && offer.getQuantity() != null) {
                 stockService.reserveQuantity(sale.getStockId(), offer.getQuantity());

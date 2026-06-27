@@ -16,6 +16,8 @@ public record SlaughterhouseMeatOfferResponse(
         BigDecimal quantity,
         String note,
         OfferStatus status,
+        Integer revisionNumber,
+        LocalDateTime expiresAt,
         LocalDateTime createdAt) {
 
     public static SlaughterhouseMeatOfferResponse fromEntity(MeatOffer o) {
@@ -31,6 +33,8 @@ public record SlaughterhouseMeatOfferResponse(
                 o.getQuantity(),
                 o.getNote(),
                 o.getStatus(),
+                o.getRevisionNumber(),
+                o.getExpiresAt(),
                 o.getCreatedAt());
     }
 }

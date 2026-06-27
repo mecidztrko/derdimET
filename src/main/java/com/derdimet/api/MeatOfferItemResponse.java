@@ -17,6 +17,8 @@ public record MeatOfferItemResponse(
         BigDecimal quantity,
         String note,
         OfferStatus status,
+        Integer revisionNumber,
+        LocalDateTime expiresAt,
         LocalDateTime createdAt) {
 
     public static MeatOfferItemResponse fromEntity(MeatOffer o) {
@@ -34,7 +36,8 @@ public record MeatOfferItemResponse(
                 o.getQuantity(),
                 o.getNote(),
                 o.getStatus(),
+                o.getRevisionNumber(),
+                o.getExpiresAt(),
                 o.getCreatedAt());
     }
 }
-

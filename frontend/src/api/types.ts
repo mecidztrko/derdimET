@@ -1,5 +1,12 @@
 export type RequestStatus = 'OPEN' | 'CLOSED'
+export type ListingClosedReason = 'MANUAL' | 'SOLD' | 'EXPIRED' | 'CANCELLED'
 export type OfferStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED'
+export type OrderStatus =
+  | 'PENDING'
+  | 'PAYMENT_PENDING'
+  | 'PAYMENT_CONFIRMED'
+  | 'COMPLETED'
+  | 'CANCELLED'
 export type AnimalCategory = 'KUCUKBAS' | 'BUYUKBAS'
 
 export type MeatSaleRequestDto = {
@@ -19,6 +26,9 @@ export type MeatSaleRequestDto = {
   description: string | null
   imageUrls: string[] | null
   status: RequestStatus
+  closedReason?: ListingClosedReason | null
+  expiresAt?: string | null
+  closedAt?: string | null
   createdAt: string
   isFavoritedByMe: boolean | null
 }
@@ -35,6 +45,8 @@ export type MeatOfferItemDto = {
   quantity: number | string | null
   note: string | null
   status: OfferStatus
+  revisionNumber?: number | null
+  expiresAt?: string | null
   createdAt: string
 }
 
@@ -129,7 +141,7 @@ export type BuyerPurchaseDto = {
   pricePerKg: number | string | null
   quantity: number | string | null
   totalPrice: number | string | null
-  status: string
+  status: OrderStatus | string
   createdAt: string
 }
 

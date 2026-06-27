@@ -5,7 +5,8 @@ export function orderStatusBadgeVariant(
   status: string,
 ): 'success' | 'pending' | 'destructive' | 'default' {
   if (status === 'COMPLETED') return 'success'
-  if (status === 'PENDING') return 'pending'
+  if (status === 'PAYMENT_PENDING' || status === 'PENDING') return 'pending'
+  if (status === 'PAYMENT_CONFIRMED') return 'default'
   if (status === 'CANCELLED') return 'destructive'
   return 'default'
 }

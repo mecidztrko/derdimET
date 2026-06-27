@@ -3,6 +3,7 @@ package com.derdimet.service;
 import com.derdimet.config.PushProperties;
 import com.derdimet.entity.DeviceToken;
 import com.derdimet.entity.NotificationPreferences;
+import com.derdimet.entity.NotificationType;
 import com.derdimet.entity.User;
 import com.derdimet.repository.DeviceTokenRepository;
 import com.derdimet.repository.NotificationPreferencesRepository;
@@ -26,20 +27,23 @@ public class PushNotificationService {
     private final PushProperties pushProperties;
     private final DeviceTokenRepository deviceTokenRepository;
     private final NotificationPreferencesRepository preferencesRepository;
+    private final InboxNotificationService inboxNotificationService;
     private final RestTemplate restTemplate = new RestTemplate();
 
-    @Transactional(readOnly = true)
+    @Transactional
     public void notifyOfferEvent(User user, String title, String body) {
         NotificationPreferences prefs = preferences(user);
+        inboxNotificationService.create(user, NotificationType.OFFER, title, body, null);
         if (!prefs.isPushOffersEnabled()) {
             return;
         }
         dispatch(user, title, body, Map.of("type", "offer"));
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public void notifyMessage(User user, String title, String body) {
         NotificationPreferences prefs = preferences(user);
+        inboxNotificationService.create(user, NotificationType.MESSAGE, title, body, null);
         if (!prefs.isPushMessagesEnabled()) {
             return;
         }

@@ -22,9 +22,11 @@ import { SlaughterhouseRecentTradesCard } from '../../components/role-app/Slaugh
 import { MessageUserButton } from '../../components/role-app/MessageUserButton'
 import { RoleAppPage } from '../../components/role-app/RoleAppPage'
 import { PageHero } from '../../components/role-app/PageHero'
+import { formatTry } from '../../api/format'
 
 export function SlaughterhouseDashboard() {
   const { user } = useMe()
+  const dashboardStats = useApi(() => shApi.getDashboardStats(), [])
   const animalListings = useApi(() => shApi.listAnimalListings(), [])
   const myOffers = useApi(() => shApi.listAnimalOffers(), [])
   const meatListings = useApi(() => shApi.listMyMeatSaleRequests(), [])
@@ -53,6 +55,39 @@ export function SlaughterhouseDashboard() {
           </Link>
         }
       />
+
+      {dashboardStats.data ? (
+        <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+          <StatCard
+            title={`${dashboardStats.data.month} et satışı`}
+            value={String(dashboardStats.data.monthlyMeatSales)}
+            icon={Package}
+            accent="secondary"
+            trend={{ value: formatTry(dashboardStats.data.monthlyMeatRevenue), positive: true }}
+          />
+          <StatCard
+            title={`${dashboardStats.data.month} hayvan alımı`}
+            value={String(dashboardStats.data.monthlyAnimalPurchases)}
+            icon={TrendingUp}
+            accent="primary"
+            trend={{ value: formatTry(dashboardStats.data.monthlyAnimalSpend), positive: true }}
+          />
+          <StatCard
+            title="Bekleyen teklifler"
+            value={String(
+              dashboardStats.data.pendingMeatOffers +
+                dashboardStats.data.pendingListingOffers +
+                dashboardStats.data.pendingPurchaseOffers,
+            )}
+            icon={ListChecks}
+            accent="accent"
+            trend={{
+              value: `${dashboardStats.data.pendingMeatOffers} et · ${dashboardStats.data.pendingListingOffers} ilan · ${dashboardStats.data.pendingPurchaseOffers} talep`,
+              positive: false,
+            }}
+          />
+        </div>
+      ) : null}
 
       <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard

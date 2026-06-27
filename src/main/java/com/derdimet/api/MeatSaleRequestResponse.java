@@ -1,6 +1,7 @@
 package com.derdimet.api;
 
 import com.derdimet.entity.AnimalCategory;
+import com.derdimet.entity.ListingClosedReason;
 import com.derdimet.entity.MeatSaleRequest;
 import com.derdimet.entity.RequestStatus;
 import java.math.BigDecimal;
@@ -24,6 +25,9 @@ public record MeatSaleRequestResponse(
         String description,
         List<String> imageUrls,
         RequestStatus status,
+        ListingClosedReason closedReason,
+        LocalDateTime expiresAt,
+        LocalDateTime closedAt,
         LocalDateTime createdAt,
         Boolean isFavoritedByMe) {
 
@@ -50,6 +54,9 @@ public record MeatSaleRequestResponse(
                 e.getDescription(),
                 SellerAnimalListingResponse.splitImageUrls(e.getImageUrls()),
                 e.getStatus(),
+                e.getClosedReason(),
+                e.getExpiresAt(),
+                e.getClosedAt(),
                 e.getCreatedAt(),
                 isFavoritedByMe);
     }

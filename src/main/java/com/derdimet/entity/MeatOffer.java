@@ -42,16 +42,29 @@ public class MeatOffer extends BaseEntity {
     @Column(name = "status")
     private OfferStatus status;
 
+    @Column(name = "expires_at")
+    private LocalDateTime expiresAt;
+
+    @Column(name = "revision_number")
+    private Integer revisionNumber;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @PrePersist
     void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
         if (createdAt == null) {
-            createdAt = LocalDateTime.now();
+            createdAt = now;
         }
         if (status == null) {
             status = OfferStatus.PENDING;
+        }
+        if (expiresAt == null) {
+            expiresAt = now.plusHours(48);
+        }
+        if (revisionNumber == null) {
+            revisionNumber = 1;
         }
     }
 }

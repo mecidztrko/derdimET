@@ -1,7 +1,10 @@
 package com.derdimet.entity;
 
 public enum OrderStatus {
-    PENDING,
-    COMPLETED,
-    CANCELLED
+  /** @deprecated Eski kayıtlar; yeni akışta PAYMENT_PENDING kullanılır. */
+  PENDING,
+  PAYMENT_PENDING,
+  PAYMENT_CONFIRMED,
+  COMPLETED,
+  CANCELLED
 }

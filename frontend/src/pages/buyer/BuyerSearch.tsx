@@ -23,13 +23,23 @@ export function BuyerSearch() {
   const [searchQuery, setSearchQuery] = useSyncedSearchQuery()
   const [selectedMeatType, setSelectedMeatType] = useState('Tümü')
   const [selectedCity, setSelectedCity] = useState('Tüm Şehirler')
+  const [priceMin, setPriceMin] = useState('')
+  const [priceMax, setPriceMax] = useState('')
+  const [createdAfter, setCreatedAfter] = useState('')
   const [showFilters, setShowFilters] = useState(true)
   const [favoriteError, setFavoriteError] = useState<string | null>(null)
   const { blocked: favoriteBlocked } = useEmailVerificationGate()
 
   const { data, loading, error, reload } = useApi(
-    () => buyerApi.listMeatSaleRequests({ q: searchQuery }),
-    [searchQuery],
+    () =>
+      buyerApi.listMeatSaleRequests({
+        q: searchQuery,
+        city: selectedCity !== 'Tüm Şehirler' ? selectedCity : undefined,
+        priceMin: priceMin ? Number(priceMin) : undefined,
+        priceMax: priceMax ? Number(priceMax) : undefined,
+        createdAfter: createdAfter || undefined,
+      }),
+    [searchQuery, selectedCity, priceMin, priceMax, createdAfter],
   )
 
   const cities = useMemo(() => {
@@ -44,9 +54,9 @@ export function BuyerSearch() {
     () =>
       filterMeatListings(data ?? [], {
         meatType: selectedMeatType,
-        city: selectedCity,
+        city: 'Tüm Şehirler',
       }),
-    [data, selectedMeatType, selectedCity],
+    [data, selectedMeatType],
   )
 
   async function handleFavorite(listingId: number) {
@@ -132,6 +142,25 @@ export function BuyerSearch() {
                   </div>
                 </div>
               )}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <Input
+                  type="number"
+                  placeholder="Min fiyat (₺/kg)"
+                  value={priceMin}
+                  onChange={(e) => setPriceMin(e.target.value)}
+                />
+                <Input
+                  type="number"
+                  placeholder="Max fiyat (₺/kg)"
+                  value={priceMax}
+                  onChange={(e) => setPriceMax(e.target.value)}
+                />
+                <Input
+                  type="date"
+                  value={createdAfter}
+                  onChange={(e) => setCreatedAfter(e.target.value)}
+                />
+              </div>
             </div>
           </CardContent>
         </Card>

@@ -3,6 +3,7 @@ package com.derdimet.api;
 import com.derdimet.entity.User;
 import com.derdimet.repository.UserRepository;
 import com.derdimet.service.BuyerProfileService;
+import com.derdimet.service.SlaughterhouseDashboardStatsService;
 import com.derdimet.service.SlaughterhouseProfileService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class SlaughterhouseProfileController {
     private final UserRepository userRepository;
     private final BuyerProfileService buyerProfileService;
     private final SlaughterhouseProfileService slaughterhouseProfileService;
+    private final SlaughterhouseDashboardStatsService dashboardStatsService;
 
     /** Kesimhane profilinde favori satıcıları listeler. */
     @GetMapping("/favorites/sellers")
@@ -96,6 +98,12 @@ public class SlaughterhouseProfileController {
             @RequestParam(defaultValue = "10") int limit) {
         User slaughterhouse = userRepository.findByEmail(principal.getUsername()).orElseThrow();
         return slaughterhouseProfileService.listSales(slaughterhouse, limit);
+    }
+
+    @GetMapping("/dashboard-stats")
+    public SlaughterhouseDashboardStatsResponse dashboardStats(@AuthenticationPrincipal UserDetails principal) {
+        User slaughterhouse = userRepository.findByEmail(principal.getUsername()).orElseThrow();
+        return dashboardStatsService.stats(slaughterhouse);
     }
 }
 

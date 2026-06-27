@@ -9,6 +9,7 @@ import com.derdimet.api.MeatSaleRequestResponse;
 import com.derdimet.api.SlaughterhouseMeatOfferResponse;
 import com.derdimet.entity.AnimalCategory;
 import com.derdimet.entity.OfferStatus;
+import com.derdimet.entity.OrderStatus;
 import com.derdimet.entity.UserRole;
 import com.derdimet.repository.OrderRepository;
 import com.derdimet.support.AbstractApiIntegrationTest;
@@ -40,6 +41,12 @@ class MeatMarketFlowIntegrationTest extends AbstractApiIntegrationTest {
 
         assertThat(accepted.status()).isEqualTo(OfferStatus.ACCEPTED);
         assertThat(orderRepository.existsByMeatOffer_Id(offer.offerId())).isTrue();
+        assertThat(orderRepository.findAll().stream()
+                        .filter(o -> o.getMeatOffer().getId().equals(offer.offerId()))
+                        .findFirst()
+                        .orElseThrow()
+                        .getStatus())
+                .isEqualTo(OrderStatus.PAYMENT_PENDING);
     }
 
     @Test
