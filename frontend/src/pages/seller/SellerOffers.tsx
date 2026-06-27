@@ -13,6 +13,7 @@ import { RespondToOfferButtons } from '../../components/role-app/RespondToOfferB
 import { ApiError } from '../../api/client'
 import type { ListingOfferDto, SellerAnimalOfferItemDto } from '../../api/types'
 import { RoleAppPage } from '../../components/role-app/RoleAppPage'
+import { PageHeader } from '../../components/role-app/PageHeader'
 
 export function SellerOffers() {
   const [tab, setTab] = useState('incoming')
@@ -39,10 +40,7 @@ export function SellerOffers() {
 
   return (
     <RoleAppPage>
-      <div className="mb-8">
-        <h1 className="mb-2">Teklifler</h1>
-        <p className="text-muted-foreground">Gelen ve verdiğiniz teklifler</p>
-      </div>
+      <PageHeader title="Teklifler" description="Gelen ve giden teklifleriniz" />
       {actionError ? (
         <p className="mb-4 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
           {actionError}

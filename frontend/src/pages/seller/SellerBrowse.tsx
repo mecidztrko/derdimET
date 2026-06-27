@@ -12,6 +12,7 @@ import { sellerListingToListingCard } from '../../api/mappers'
 import { AnimalListingDetailModal } from '../../components/role-app/AnimalListingDetailModal'
 import type { AnimalCategory } from '../../api/types'
 import { RoleAppPage } from '../../components/role-app/RoleAppPage'
+import { PageHeader } from '../../components/role-app/PageHeader'
 
 const categories = [
   { label: 'Tümü', value: null as AnimalCategory | null },
@@ -46,17 +47,12 @@ export function SellerBrowse() {
 
   return (
     <RoleAppPage>
-      <div className="mb-8">
-        <h1 className="mb-2">Pazar durumu</h1>
-        <p className="text-muted-foreground">
-          Diğer satıcıların ilanlarını inceleyerek pazar fiyatlarını takip edin
-        </p>
+      <PageHeader title="Pazar durumu" description="Güncel talep ve teklif özeti" />
         {searchQuery.trim() ? (
           <p className="text-small text-muted-foreground mt-2">
             &ldquo;{searchQuery.trim()}&rdquo; için {filteredItems.length} ilan
           </p>
         ) : null}
-      </div>
 
       <Card variant="alt" elevation="none" className="mb-6">
         <CardContent className="py-4">

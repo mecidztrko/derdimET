@@ -1,0 +1,21 @@
+# Yerel geliştirme için MySQL. Backend: cp .env.example .env && ./scripts/run-dev.sh
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: derdimet-mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-derdimet}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-derdimET}
+    volumes:
+      - derdimet_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p${MYSQL_ROOT_PASSWORD:-derdimet}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  derdimet_mysql_data:

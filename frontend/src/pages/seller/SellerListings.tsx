@@ -25,6 +25,7 @@ import {
 } from '../../api/format'
 import type { SellerAnimalListingDto } from '../../api/types'
 import { RoleAppPage } from '../../components/role-app/RoleAppPage'
+import { PageHeader } from '../../components/role-app/PageHeader'
 
 export function SellerListings() {
   const [activeTab, setActiveTab] = useState<'all' | 'open' | 'closed'>('all')
@@ -100,21 +101,21 @@ export function SellerListings() {
 
   return (
     <RoleAppPage>
-      <div className="mb-8 flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="mb-2">Hayvan ilanlarım</h1>
-          <p className="text-muted-foreground">İlanlarınızı oluşturun ve yönetin</p>
-          {searchQuery.trim() ? (
-            <p className="text-small text-muted-foreground mt-2">
-              &ldquo;{searchQuery.trim()}&rdquo; için {filteredListings.length} ilan
-            </p>
-          ) : null}
-        </div>
-        <Button variant="primary" type="button" onClick={() => setShowCreateModal(true)}>
-          <Plus className="size-4 mr-2" />
-          Yeni ilan
-        </Button>
-      </div>
+      <PageHeader
+        title="Hayvan ilanlarım"
+        description="İlanlarınızı oluşturun ve yönetin"
+        actions={
+          <Button variant="primary" type="button" onClick={() => setShowCreateModal(true)}>
+            <Plus className="size-4 mr-2" />
+            Yeni ilan
+          </Button>
+        }
+      />
+      {searchQuery.trim() ? (
+        <p className="text-small text-muted-foreground -mt-4 mb-6">
+          &ldquo;{searchQuery.trim()}&rdquo; için {filteredListings.length} ilan
+        </p>
+      ) : null}
       {actionError ? (
         <p className="mb-4 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
           {actionError}

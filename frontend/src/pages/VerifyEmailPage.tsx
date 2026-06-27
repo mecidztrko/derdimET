@@ -6,6 +6,7 @@ import { useMe } from '../hooks/useMe'
 import { apiUrl } from '../config/apiBase'
 import { AuthShell } from '../components/role-app/AuthShell'
 import { Button } from '../components/role-app/Button'
+import { FormAlert } from '../components/role-app/FormAlert'
 import { authInputClass, authLabelClass } from '../lib/authStyles'
 import { getRoleHomePath } from '../lib/roleHomePath'
 
@@ -102,12 +103,8 @@ export default function VerifyEmailPage() {
           : 'Hesabınızı aktifleştirmek için kodu girin'
       }
     >
-        {error ? (
-          <p className="mb-4 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">{error}</p>
-        ) : null}
-        {message ? (
-          <p className="mb-4 rounded-lg border border-success/20 bg-success/10 px-3 py-2 text-sm text-success">{message}</p>
-        ) : null}
+        {error ? <FormAlert variant="error" message={error} /> : null}
+        {message ? <FormAlert variant="success" message={message} /> : null}
 
         <form onSubmit={onSubmit} className="space-y-4">
           <div>

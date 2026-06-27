@@ -26,6 +26,7 @@ import { Card, CardContent } from '../../components/role-app/Card'
 import { PageState } from '../../components/role-app/PageState'
 import { CreateAnimalOfferModal } from '../../components/role-app/CreateAnimalOfferModal'
 import { MessageUserButton } from '../../components/role-app/MessageUserButton'
+import { UserReviewsSection } from '../../components/role-app/UserReviewsSection'
 import { cn } from '../../lib/cn'
 
 function SpecTile({
@@ -286,6 +287,7 @@ export function SellerPurchaseRequestDetail() {
                       </div>
                     </CardContent>
                   </Card>
+                  <UserReviewsSection userId={item.slaughterhouseId} allowCreate />
                 </div>
               </div>
             </div>

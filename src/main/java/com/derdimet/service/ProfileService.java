@@ -63,7 +63,9 @@ public class ProfileService {
                 u.getContactSecondaryPhone(),
                 u.getProfileImageUrl(),
                 u.isEmailVerified(),
-                u.isBusinessVerified());
+                u.isBusinessVerified(),
+                u.getBusinessVerificationStatus() != null ? u.getBusinessVerificationStatus().name() : "NONE",
+                u.getBusinessVerificationNote());
     }
 
     private static String blankToNull(String s) {

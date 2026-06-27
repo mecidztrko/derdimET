@@ -13,6 +13,7 @@ import * as buyerApi from '../../api/buyer'
 import { meatSaleToListingCard } from '../../api/mappers'
 import { filterMeatListings } from '../../lib/meatListingFilters'
 import { useEmailVerificationGate } from '../../hooks/useEmailVerificationGate'
+import { PageHeader } from '../../components/role-app/PageHeader'
 import { RoleAppPage } from '../../components/role-app/RoleAppPage'
 
 const meatTypes = ['Tümü', 'Dana', 'Kuzu', 'Kıyma', 'Biftek', 'Pirzola', 'But', 'Antrikot']
@@ -60,20 +61,20 @@ export function BuyerSearch() {
 
   return (
     <RoleAppPage>
-      <div className="mb-8">
-        <h1 className="mb-2">Et Ürünleri Ara</h1>
-        <p className="text-muted-foreground">Kesimhanelerden taze et ilanlarını keşfedin</p>
-        {favoriteError ? (
-          <p className="mt-2 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-            {favoriteError}
-          </p>
-        ) : null}
-        {searchQuery.trim() ? (
-          <p className="text-small text-muted-foreground mt-2">
-            &ldquo;{searchQuery.trim()}&rdquo; için {filtered.length} ilan
-          </p>
-        ) : null}
-      </div>
+      <PageHeader
+        title="Et Ürünleri Ara"
+        description="Kesimhanelerden taze et ilanlarını keşfedin"
+      />
+      {favoriteError ? (
+        <p className="mb-4 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+          {favoriteError}
+        </p>
+      ) : null}
+      {searchQuery.trim() ? (
+        <p className="text-small text-muted-foreground -mt-4 mb-6">
+          &ldquo;{searchQuery.trim()}&rdquo; için {filtered.length} ilan
+        </p>
+      ) : null}
 
       <div className="mb-6 flex gap-3">
         <div className="flex-1">

@@ -1,16 +1,18 @@
 import { ProfileSettingsForm } from '../../components/role-app/ProfileSettingsForm'
+import { ChangePasswordCard } from '../../components/role-app/ChangePasswordCard'
+import { BusinessVerificationCard } from '../../components/role-app/BusinessVerificationCard'
 import { SellerFavoriteSlaughterhouses } from '../../components/role-app/SellerFavoriteSlaughterhouses'
 import { SellerSalesCard } from '../../components/role-app/SellerSalesCard'
 import { RoleAppPage } from '../../components/role-app/RoleAppPage'
+import { PageHeader } from '../../components/role-app/PageHeader'
 
 export function SellerSettings() {
   return (
     <RoleAppPage>
-      <div className="mb-8">
-        <h1 className="mb-2">Ayarlar</h1>
-        <p className="text-muted-foreground">Profil ve hesap bilgilerinizi güncelleyin</p>
-      </div>
+      <PageHeader title="Ayarlar" description="Hesap ve bildirim tercihleri" />
       <ProfileSettingsForm />
+      <ChangePasswordCard />
+      <BusinessVerificationCard />
       <SellerFavoriteSlaughterhouses />
       <SellerSalesCard />
     </RoleAppPage>

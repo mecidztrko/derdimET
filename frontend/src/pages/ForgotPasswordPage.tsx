@@ -3,7 +3,9 @@ import { Link, useNavigate } from 'react-router-dom'
 import { apiUrl } from '../config/apiBase'
 import { AuthShell } from '../components/role-app/AuthShell'
 import { Button } from '../components/role-app/Button'
+import { FormAlert } from '../components/role-app/FormAlert'
 import { authInputClass, authLabelClass } from '../lib/authStyles'
+import { validatePassword } from '../lib/formUtils'
 
 async function parseErrorMessage(res: Response): Promise<string> {
   try {
@@ -47,6 +49,12 @@ export default function ForgotPasswordPage() {
     setSubmitting(true)
     setError(null)
     setMessage(null)
+    const passwordError = validatePassword(newPassword)
+    if (passwordError) {
+      setError(passwordError)
+      setSubmitting(false)
+      return
+    }
     try {
       const res = await fetch(apiUrl('/api/auth/password/reset'), {
         method: 'POST',
@@ -67,12 +75,8 @@ export default function ForgotPasswordPage() {
 
   return (
     <AuthShell title="Şifremi unuttum" subtitle="E-posta ile doğrulayıp yeni şifre belirleyin">
-        {error ? (
-          <p className="mb-4 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">{error}</p>
-        ) : null}
-        {message ? (
-          <p className="mb-4 rounded-lg border border-success/20 bg-success/10 px-3 py-2 text-sm text-success">{message}</p>
-        ) : null}
+        {error ? <FormAlert variant="error" message={error} /> : null}
+        {message ? <FormAlert variant="success" message={message} /> : null}
 
         <form onSubmit={onSubmit} className="space-y-4">
           <div>

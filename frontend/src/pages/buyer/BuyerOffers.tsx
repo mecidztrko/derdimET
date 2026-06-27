@@ -13,6 +13,7 @@ import { formatDateTr, formatKg, formatTry, resolveMediaUrl } from '../../api/fo
 import { MessageUserButton } from '../../components/role-app/MessageUserButton'
 import type { MeatOfferItemDto } from '../../api/types'
 import { RoleAppPage } from '../../components/role-app/RoleAppPage'
+import { PageHeader } from '../../components/role-app/PageHeader'
 
 const statusConfig = {
   pending: { label: 'Beklemede', icon: Clock, color: 'warning' as const },
@@ -68,15 +69,12 @@ export function BuyerOffers() {
 
   return (
     <RoleAppPage>
-      <div className="mb-8">
-        <h1 className="mb-2">Tekliflerim</h1>
-        <p className="text-muted-foreground">Verdiğiniz tekliflerin durumunu takip edin</p>
+      <PageHeader title="Tekliflerim" description="Verdiğiniz tekliflerin durumunu takip edin" />
         {searchQuery.trim() ? (
           <p className="text-small text-muted-foreground mt-2">
             &ldquo;{searchQuery.trim()}&rdquo; için {filteredOffers.length} teklif
           </p>
         ) : null}
-      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <StatMini label="Toplam Teklif" value={stats.all} icon={TrendingUp} />

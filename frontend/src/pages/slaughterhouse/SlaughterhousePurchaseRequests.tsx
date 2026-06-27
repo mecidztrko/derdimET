@@ -17,6 +17,7 @@ import { animalCategoryLabel } from '../../api/mappers'
 import { formatDateTr, formatHeadCount, formatKg, requestStatusLabel } from '../../api/format'
 import type { AnimalPurchaseRequestDto } from '../../api/types'
 import { RoleAppPage } from '../../components/role-app/RoleAppPage'
+import { PageHeader } from '../../components/role-app/PageHeader'
 
 export function SlaughterhousePurchaseRequests() {
   const [tab, setTab] = useState<'open' | 'closed' | 'all'>('open')
@@ -79,23 +80,21 @@ export function SlaughterhousePurchaseRequests() {
 
   return (
     <RoleAppPage>
-      <div className="mb-8 flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="mb-2">Hayvan alış taleplerim</h1>
-          <p className="text-muted-foreground">
-            Satıcıların teklif verebileceği alım taleplerinizi yönetin
-          </p>
-          {searchQuery.trim() ? (
-            <p className="text-small text-muted-foreground mt-2 w-full">
-              &ldquo;{searchQuery.trim()}&rdquo; için {filtered.length} talep
-            </p>
-          ) : null}
-        </div>
-        <Button variant="primary" type="button" onClick={() => setShowCreate(true)}>
-          <Plus className="size-4 mr-2" />
-          Yeni talep
-        </Button>
-      </div>
+      <PageHeader
+        title="Hayvan alış taleplerim"
+        description="Satıcıların teklif verebileceği alım taleplerinizi yönetin"
+        actions={
+          <Button variant="primary" type="button" onClick={() => setShowCreate(true)}>
+            <Plus className="size-4 mr-2" />
+            Yeni talep
+          </Button>
+        }
+      />
+      {searchQuery.trim() ? (
+        <p className="text-small text-muted-foreground -mt-4 mb-6 w-full">
+          &ldquo;{searchQuery.trim()}&rdquo; için {filtered.length} talep
+        </p>
+      ) : null}
       {actionError ? (
         <p className="mb-4 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
           {actionError}

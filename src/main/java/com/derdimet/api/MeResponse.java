@@ -15,4 +15,6 @@ public record MeResponse(
         String contactSecondaryPhone,
         String profileImageUrl,
         boolean emailVerified,
-        boolean businessVerified) {}
+        boolean businessVerified,
+        String businessVerificationStatus,
+        String businessVerificationNote) {}

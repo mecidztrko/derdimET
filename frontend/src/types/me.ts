@@ -17,6 +17,8 @@ export type MeUser = {
   profileImageUrl: string | null
   emailVerified: boolean
   businessVerified: boolean
+  businessVerificationStatus?: string | null
+  businessVerificationNote?: string | null
 }
 
 export function isBuyer(role: string) {

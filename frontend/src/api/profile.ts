@@ -15,6 +15,9 @@ export type MeResponse = {
   contactSecondaryPhone?: string | null
   profileImageUrl?: string | null
   emailVerified?: boolean
+  businessVerified?: boolean
+  businessVerificationStatus?: string | null
+  businessVerificationNote?: string | null
 }
 
 export function getMe(): Promise<MeResponse> {
@@ -25,5 +28,12 @@ export function updateProfile(body: UpdateProfileBody): Promise<MeResponse> {
   return apiFetch('/api/me', {
     method: 'PATCH',
     body: JSON.stringify(body),
+  })
+}
+
+export function changePassword(currentPassword: string, newPassword: string): Promise<{ message: string }> {
+  return apiFetch('/api/auth/password/change', {
+    method: 'POST',
+    body: JSON.stringify({ currentPassword, newPassword }),
   })
 }

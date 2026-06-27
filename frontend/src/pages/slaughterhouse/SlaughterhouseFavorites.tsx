@@ -13,6 +13,7 @@ import * as shApi from '../../api/slaughterhouse'
 import { sellerListingToListingCard } from '../../api/mappers'
 import { formatDateTr } from '../../api/format'
 import { RoleAppPage } from '../../components/role-app/RoleAppPage'
+import { PageHeader } from '../../components/role-app/PageHeader'
 
 export function SlaughterhouseFavorites() {
   const navigate = useNavigate()
@@ -39,17 +40,12 @@ export function SlaughterhouseFavorites() {
 
   return (
     <RoleAppPage>
-      <div className="mb-8">
-        <h1 className="mb-2">Favorilerim</h1>
-        <p className="text-muted-foreground">
-          Hayvan al ve et sat panellerinde favorilediğiniz ilanlar ve alıcılar
+      <PageHeader title="Favorilerim" description="Beğendiğiniz hayvan ilanları" />
+      {listingError || buyerFavoriteError ? (
+        <p className="mb-4 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+          {listingError || buyerFavoriteError}
         </p>
-        {listingError || buyerFavoriteError ? (
-          <p className="mt-2 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-            {listingError || buyerFavoriteError}
-          </p>
-        ) : null}
-      </div>
+      ) : null}
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-6">

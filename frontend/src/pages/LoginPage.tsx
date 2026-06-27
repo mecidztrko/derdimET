@@ -5,6 +5,7 @@ import { ApiError } from '../api/client'
 import { getMe } from '../api/profile'
 import { AuthShell } from '../components/role-app/AuthShell'
 import { Button } from '../components/role-app/Button'
+import { FormAlert } from '../components/role-app/FormAlert'
 import { authInputClass, authLabelClass } from '../lib/authStyles'
 import { getRoleHomePath } from '../lib/roleHomePath'
 
@@ -50,11 +51,7 @@ export default function LoginPage() {
 
   return (
     <AuthShell title="Giriş" subtitle="DerdimEt'e hoş geldiniz">
-      {formError ? (
-        <p className="mb-4 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive" role="alert">
-          {formError}
-        </p>
-      ) : null}
+      {formError ? <FormAlert variant="error" message={formError} /> : null}
       {verifyAccessError ? (
         <p className="mb-4 rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-sm" role="alert">
           {verifyAccessError}

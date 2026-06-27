@@ -22,6 +22,7 @@ import { ApiError } from '../../api/client'
 import type { SlaughterhouseMeatOfferDto } from '../../api/slaughterhouse'
 import type { MeatSaleRequestDto } from '../../api/types'
 import { RoleAppPage } from '../../components/role-app/RoleAppPage'
+import { PageHeader } from '../../components/role-app/PageHeader'
 
 export function SlaughterhouseSellMeat() {
   const [tab, setTab] = useState('listings')
@@ -98,21 +99,21 @@ export function SlaughterhouseSellMeat() {
 
   return (
     <RoleAppPage>
-      <div className="mb-8 flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="mb-2">Et satış</h1>
-          <p className="text-muted-foreground">İlanlarınız ve alıcı teklifleri</p>
-          {searchQuery.trim() ? (
-            <p className="text-small text-muted-foreground mt-2">
-              &ldquo;{searchQuery.trim()}&rdquo; için {cards.length} ilan
-            </p>
-          ) : null}
-        </div>
-        <Button variant="primary" type="button" onClick={() => setShowCreate(true)}>
-          <Plus className="size-4 mr-2" />
-          Yeni et ilanı
-        </Button>
-      </div>
+      <PageHeader
+        title="Et satış"
+        description="İlanlarınız ve alıcı teklifleri"
+        actions={
+          <Button variant="primary" type="button" onClick={() => setShowCreate(true)}>
+            <Plus className="size-4 mr-2" />
+            Yeni et ilanı
+          </Button>
+        }
+      />
+      {searchQuery.trim() ? (
+        <p className="text-small text-muted-foreground -mt-4 mb-6">
+          &ldquo;{searchQuery.trim()}&rdquo; için {cards.length} ilan
+        </p>
+      ) : null}
       {actionError || favoriteError ? (
         <p className="mb-4 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
           {actionError || favoriteError}

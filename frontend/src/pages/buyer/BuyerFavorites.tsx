@@ -11,6 +11,7 @@ import { useToggleFavorite } from '../../hooks/useToggleFavorite'
 import * as buyerApi from '../../api/buyer'
 import { meatSaleToListingCard } from '../../api/mappers'
 import { RoleAppPage } from '../../components/role-app/RoleAppPage'
+import { PageHeader } from '../../components/role-app/PageHeader'
 
 export function BuyerFavorites() {
   const navigate = useNavigate()
@@ -26,15 +27,12 @@ export function BuyerFavorites() {
 
   return (
     <RoleAppPage>
-      <div className="mb-8">
-        <h1 className="mb-2">Favorilerim</h1>
-        <p className="text-muted-foreground">Favori et ilanları ve kesimhaneler</p>
-        {favoriteError ? (
-          <p className="mt-2 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-            {favoriteError}
-          </p>
-        ) : null}
-      </div>
+      <PageHeader title="Favorilerim" description="Beğendiğiniz et ilanları" />
+      {favoriteError ? (
+        <p className="mb-4 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+          {favoriteError}
+        </p>
+      ) : null}
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-6">

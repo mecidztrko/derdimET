@@ -24,3 +24,33 @@ export function adminCreateAnimalPurchaseRequest(body: {
     body: JSON.stringify(body),
   })
 }
+
+export type AdminBusinessVerificationDto = {
+  userId: number
+  name: string
+  email: string
+  role: string
+  companyName: string | null
+  taxNumber: string | null
+  documentUrl: string | null
+  status: 'NONE' | 'PENDING' | 'APPROVED' | 'REJECTED'
+  note: string | null
+}
+
+export function listPendingBusinessVerifications(): Promise<AdminBusinessVerificationDto[]> {
+  return apiFetch('/api/admin/business-verifications')
+}
+
+export function approveBusinessVerification(userId: number): Promise<AdminBusinessVerificationDto> {
+  return apiFetch(`/api/admin/business-verifications/${userId}/approve`, { method: 'POST' })
+}
+
+export function rejectBusinessVerification(
+  userId: number,
+  note?: string,
+): Promise<AdminBusinessVerificationDto> {
+  return apiFetch(`/api/admin/business-verifications/${userId}/reject`, {
+    method: 'POST',
+    body: JSON.stringify(note ? { note } : {}),
+  })
+}

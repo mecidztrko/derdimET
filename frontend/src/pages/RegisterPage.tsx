@@ -4,7 +4,9 @@ import { apiUrl } from '../config/apiBase'
 import type { AccountType, UserRole } from '../types/me'
 import { AuthShell } from '../components/role-app/AuthShell'
 import { Button } from '../components/role-app/Button'
+import { FormAlert } from '../components/role-app/FormAlert'
 import { authInputClass, authLabelClass } from '../lib/authStyles'
+import { parseErrorMessage, validatePassword } from '../lib/formUtils'
 
 type RegisterPayload = {
   email: string
@@ -17,15 +19,6 @@ type RegisterPayload = {
   taxNumber: string | null
   addressLine: string | null
   city: string | null
-}
-
-async function parseErrorMessage(res: Response): Promise<string> {
-  try {
-    const data = (await res.json()) as { message?: string; detail?: string }
-    return data.message || data.detail || `Hata (${res.status})`
-  } catch {
-    return res.statusText || 'İstek başarısız'
-  }
 }
 
 export default function RegisterPage() {
@@ -48,6 +41,11 @@ export default function RegisterPage() {
 
     if (password !== password2) {
       setError('Şifreler eşleşmiyor')
+      return
+    }
+    const passwordError = validatePassword(password)
+    if (passwordError) {
+      setError(passwordError)
       return
     }
 
@@ -87,11 +85,7 @@ export default function RegisterPage() {
 
   return (
     <AuthShell title="Kayıt" subtitle="derdimET hesabı oluşturun">
-        {error ? (
-          <p className="mb-4 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive" role="alert">
-            {error}
-          </p>
-        ) : null}
+        {error ? <FormAlert variant="error" message={error} /> : null}
 
         <form onSubmit={onSubmit} className="space-y-4">
           <div>

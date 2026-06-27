@@ -9,6 +9,7 @@ import { useSyncedSearchQuery } from '../../hooks/useSyncedSearchQuery'
 import * as shApi from '../../api/slaughterhouse'
 import { sellerListingToListingCard } from '../../api/mappers'
 import { RoleAppPage } from '../../components/role-app/RoleAppPage'
+import { PageHeader } from '../../components/role-app/PageHeader'
 
 export function SlaughterhouseBuyAnimals() {
   const navigate = useNavigate()
@@ -24,9 +25,7 @@ export function SlaughterhouseBuyAnimals() {
 
   return (
     <RoleAppPage>
-      <div className="mb-8">
-        <h1 className="mb-2">Hayvan al</h1>
-        <p className="text-muted-foreground">Satıcıların açık hayvan ilanları</p>
+      <PageHeader title="Hayvan al" description="Satıcılardan hayvan ilanlarını inceleyin" />
         {favoriteError ? (
           <p className="mt-2 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
             {favoriteError}
@@ -35,7 +34,6 @@ export function SlaughterhouseBuyAnimals() {
         {searchQuery.trim() ? (
           <p className="text-small text-muted-foreground mt-2">{items.length} ilan bulundu</p>
         ) : null}
-      </div>
 
       <PageState
         loading={loading}

@@ -11,6 +11,7 @@ import { formatDateTr, formatHeadCount, formatTry } from '../../api/format'
 import { MessageUserButton } from '../../components/role-app/MessageUserButton'
 import type { ListingOfferDto } from '../../api/types'
 import { RoleAppPage } from '../../components/role-app/RoleAppPage'
+import { PageHeader } from '../../components/role-app/PageHeader'
 
 export function SlaughterhouseOffers() {
   const [tab, setTab] = useState<'all' | 'pending'>('all')
@@ -21,10 +22,7 @@ export function SlaughterhouseOffers() {
 
   return (
     <RoleAppPage>
-      <div className="mb-8">
-        <h1 className="mb-2">Tekliflerim</h1>
-        <p className="text-muted-foreground">Satıcı ilanlarına verdiğiniz teklifler</p>
-      </div>
+      <PageHeader title="Tekliflerim" description="Verdiğiniz ve aldığınız teklifler" />
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
         <TabsList className="mb-6">

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { ArrowLeft, Shield } from 'lucide-react'
 import { AdminAnimalPurchaseForm } from '../components/animal-market/AdminAnimalPurchaseForm'
+import { AdminBusinessVerificationPanel } from '../components/animal-market/AdminBusinessVerificationPanel'
 import { ProfileSettingsForm } from '../components/role-app/ProfileSettingsForm'
 import { MessagesInbox } from '../components/role-app/MessagesInbox'
 import { Button } from '../components/role-app/Button'
@@ -116,6 +117,11 @@ export default function ProfileDashboardPage() {
           </TabsList>
 
           <TabsContent value="admin">
+            <Card className="mb-6">
+              <CardContent className="p-6">
+                <AdminBusinessVerificationPanel />
+              </CardContent>
+            </Card>
             <Card className="mb-6">
               <CardContent className="p-6">
                 <h2 className="font-medium mb-2">Hayvan alış talebi oluştur</h2>
