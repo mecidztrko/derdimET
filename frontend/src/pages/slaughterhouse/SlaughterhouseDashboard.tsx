@@ -22,7 +22,6 @@ import { SlaughterhouseRecentTradesCard } from '../../components/role-app/Slaugh
 import { MessageUserButton } from '../../components/role-app/MessageUserButton'
 import { RoleAppPage } from '../../components/role-app/RoleAppPage'
 import { PageHero } from '../../components/role-app/PageHero'
-import { formatTry } from '../../api/format'
 
 export function SlaughterhouseDashboard() {
   const { user } = useMe()

@@ -469,11 +469,15 @@ public class DevSeedRunner implements CommandLineRunner {
                 .findByEmail(normalized)
                 .map(
                         existing -> {
+                            boolean changed = false;
                             if (existing.isEmailVerified() != emailVerified) {
                                 existing.setEmailVerified(emailVerified);
-                                return userRepository.save(existing);
+                                changed = true;
                             }
-                            return existing;
+                            // Dev seed: demo hesap şifresini her seed'de sıfırla (yanlış şifreyle takılmayı önler).
+                            existing.setPassword(passwordEncoder.encode("DerdimET1!"));
+                            changed = true;
+                            return changed ? userRepository.save(existing) : existing;
                         })
                 .orElseGet(
                         () -> {
