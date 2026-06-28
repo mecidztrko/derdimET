@@ -18,6 +18,8 @@ public record ListingOfferResponse(
         Integer quantity,
         String note,
         OfferStatus status,
+        Integer revisionNumber,
+        LocalDateTime expiresAt,
         LocalDateTime createdAt) {
 
     public static ListingOfferResponse fromEntity(SlaughterhouseListingOffer o) {
@@ -37,6 +39,8 @@ public record ListingOfferResponse(
                 o.getQuantity(),
                 o.getNote(),
                 o.getStatus(),
+                o.getRevisionNumber(),
+                o.getExpiresAt(),
                 o.getCreatedAt());
     }
 }

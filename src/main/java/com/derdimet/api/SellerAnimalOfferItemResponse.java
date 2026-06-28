@@ -12,6 +12,8 @@ public record SellerAnimalOfferItemResponse(
         Integer animalCount,
         String note,
         OfferStatus status,
+        Integer revisionNumber,
+        LocalDateTime expiresAt,
         LocalDateTime createdAt) {
 
     public static SellerAnimalOfferItemResponse fromEntity(AnimalOffer o) {
@@ -22,6 +24,8 @@ public record SellerAnimalOfferItemResponse(
                 o.getAnimalCount(),
                 o.getNote(),
                 o.getStatus(),
+                o.getRevisionNumber(),
+                o.getExpiresAt(),
                 o.getCreatedAt());
     }
 }

@@ -3,18 +3,24 @@ package com.derdimet.service;
 import com.derdimet.api.AnimalOfferResponse;
 import com.derdimet.api.AnimalPurchaseRequestResponse;
 import com.derdimet.api.CreateAnimalOfferRequest;
+import com.derdimet.api.OfferEventResponse;
+import com.derdimet.api.ReviseMeatOfferRequest;
 import com.derdimet.api.SellerAnimalOfferItemResponse;
 import com.derdimet.entity.AnimalOffer;
 import com.derdimet.entity.AnimalCategory;
 import com.derdimet.entity.AnimalPurchaseRequest;
 import com.derdimet.entity.FavoriteAnimalPurchaseRequest;
+import com.derdimet.entity.OfferKind;
 import com.derdimet.entity.OfferStatus;
 import com.derdimet.entity.RequestStatus;
 import com.derdimet.entity.User;
 import com.derdimet.repository.AnimalOfferRepository;
 import com.derdimet.repository.AnimalPurchaseRequestRepository;
 import com.derdimet.repository.FavoriteAnimalPurchaseRequestRepository;
+import com.derdimet.repository.OfferEventRepository;
+import com.derdimet.util.ListingLifecycle;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
@@ -32,6 +38,8 @@ public class AnimalSellerMarketService {
     private final AnimalOfferRepository offerRepository;
     private final FavoriteAnimalPurchaseRequestRepository favoritePurchaseRequestRepository;
     private final AccountGuardService accountGuard;
+    private final OfferEventService offerEventService;
+    private final OfferEventRepository offerEventRepository;
 
     @Transactional(readOnly = true)
     public List<AnimalPurchaseRequestResponse> listOpenPurchaseRequests(
@@ -106,7 +114,53 @@ public class AnimalSellerMarketService {
         o.setAnimalCount(body.animalCount());
         o.setNote(blankToNull(body.note()));
         o.setStatus(OfferStatus.PENDING);
-        return AnimalOfferResponse.fromEntity(offerRepository.save(o));
+        AnimalOffer saved = offerRepository.save(o);
+        offerEventService.recordCreated(saved);
+        return AnimalOfferResponse.fromEntity(saved);
+    }
+
+    @Transactional
+    public SellerAnimalOfferItemResponse reviseOffer(User seller, Long offerId, ReviseMeatOfferRequest body) {
+        AnimalOffer offer = requireSellerPendingOffer(seller, offerId);
+        offer.setPricePerKg(body.pricePerKg());
+        if (body.quantity() != null) {
+            offer.setAnimalCount(body.quantity().intValue());
+        }
+        if (body.note() != null) {
+            offer.setNote(blankToNull(body.note()));
+        }
+        offer.setRevisionNumber((offer.getRevisionNumber() != null ? offer.getRevisionNumber() : 1) + 1);
+        offer.setExpiresAt(LocalDateTime.now().plusHours(ListingLifecycle.DEFAULT_OFFER_HOURS));
+        AnimalOffer saved = offerRepository.save(offer);
+        offerEventService.recordRevised(saved);
+        return SellerAnimalOfferItemResponse.fromEntity(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public List<OfferEventResponse> listOfferHistory(User seller, Long offerId) {
+        AnimalOffer offer =
+                offerRepository
+                        .findByIdAndSeller_Id(offerId, seller.getId())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Teklif bulunamadı"));
+        return offerEventRepository
+                .findByOfferKindAndOfferIdOrderByCreatedAtAsc(OfferKind.ANIMAL, offer.getId())
+                .stream()
+                .map(OfferEventResponse::fromEntity)
+                .toList();
+    }
+
+    private AnimalOffer requireSellerPendingOffer(User seller, Long offerId) {
+        AnimalOffer offer =
+                offerRepository
+                        .findByIdAndSeller_Id(offerId, seller.getId())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Teklif bulunamadı"));
+        if (offer.getStatus() != OfferStatus.PENDING) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Yalnızca bekleyen teklif işlenebilir");
+        }
+        if (offer.getExpiresAt() != null && offer.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Teklif süresi dolmuş");
+        }
+        return offer;
     }
 
     @Transactional(readOnly = true)

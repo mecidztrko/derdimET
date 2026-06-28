@@ -23,6 +23,9 @@ public interface SlaughterhouseListingOfferRepository extends JpaRepository<Slau
     @EntityGraph(attributePaths = {"listing", "listing.seller", "slaughterhouse"})
     Optional<SlaughterhouseListingOffer> findByIdAndListing_Seller_Id(Long offerId, Long sellerId);
 
+    @EntityGraph(attributePaths = {"listing", "listing.seller", "slaughterhouse"})
+    Optional<SlaughterhouseListingOffer> findByIdAndSlaughterhouse_Id(Long offerId, Long slaughterhouseId);
+
     List<SlaughterhouseListingOffer> findByListing_IdAndStatus(Long listingId, OfferStatus status);
 
     @EntityGraph(attributePaths = {"listing", "listing.seller", "slaughterhouse"})

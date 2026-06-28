@@ -62,11 +62,11 @@ export function NotificationInboxPage() {
 
       <div className="mb-4 flex flex-wrap gap-2">
         {FILTERS.map((f) => (
-          <Chip key={f.key} active={filter === f.key} onClick={() => setFilter(f.key)}>
+          <Chip key={f.key} selected={filter === f.key} onClick={() => setFilter(f.key)}>
             {f.label}
           </Chip>
         ))}
-        <Chip active={unreadOnly} onClick={() => setUnreadOnly((v) => !v)}>
+        <Chip selected={unreadOnly} onClick={() => setUnreadOnly((v) => !v)}>
           Okunmamış
         </Chip>
       </div>

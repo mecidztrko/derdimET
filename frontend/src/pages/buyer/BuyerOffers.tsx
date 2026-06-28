@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Card, CardContent } from '../../components/role-app/Card'
 import { Button } from '../../components/role-app/Button'
@@ -11,6 +11,10 @@ import { useSyncedSearchQuery } from '../../hooks/useSyncedSearchQuery'
 import * as buyerApi from '../../api/buyer'
 import { formatDateTr, formatKg, formatTry, resolveMediaUrl } from '../../api/format'
 import { MessageUserButton } from '../../components/role-app/MessageUserButton'
+import { OfferHistoryModal } from '../../components/role-app/OfferHistoryModal'
+import { OfferRevisionActions } from '../../components/role-app/OfferRevisionActions'
+import { OfferRevisionMeta } from '../../components/role-app/OfferRevisionMeta'
+import { OfferReviseModal } from '../../components/role-app/OfferReviseModal'
 import type { MeatOfferItemDto } from '../../api/types'
 import { RoleAppPage } from '../../components/role-app/RoleAppPage'
 import { PageHeader } from '../../components/role-app/PageHeader'
@@ -49,6 +53,9 @@ export function BuyerOffers() {
     () => buyerApi.listMyMeatOffers({ q: searchQuery }),
     [searchQuery],
   )
+
+  const [reviseOffer, setReviseOffer] = useState<MeatOfferItemDto | null>(null)
+  const [historyOfferId, setHistoryOfferId] = useState<number | null>(null)
 
   const offers = data ?? []
 
@@ -118,12 +125,39 @@ export function BuyerOffers() {
           >
             <div className="space-y-4">
               {filteredOffers.map((offer) => (
-                <OfferRow key={offer.offerId} offer={offer} />
+                <OfferRow
+                  key={offer.offerId}
+                  offer={offer}
+                  onRevise={() => setReviseOffer(offer)}
+                  onHistory={() => setHistoryOfferId(offer.offerId)}
+                />
               ))}
             </div>
           </PageState>
         </TabsContent>
       </Tabs>
+
+      <OfferReviseModal
+        open={reviseOffer != null}
+        title={reviseOffer?.title || reviseOffer?.meatType || 'Et ilanı'}
+        quantityLabel="Teklif miktarı (kg)"
+        initialPrice={reviseOffer?.pricePerKg}
+        initialQuantity={reviseOffer?.quantity}
+        initialNote={reviseOffer?.note}
+        onClose={() => setReviseOffer(null)}
+        onSubmit={async (body) => {
+          if (!reviseOffer) return
+          await buyerApi.reviseMeatOffer(reviseOffer.offerId, body)
+          setReviseOffer(null)
+          reload()
+        }}
+      />
+      <OfferHistoryModal
+        open={historyOfferId != null}
+        offerId={historyOfferId}
+        onClose={() => setHistoryOfferId(null)}
+        loadHistory={buyerApi.listMeatOfferHistory}
+      />
     </RoleAppPage>
   )
 }
@@ -152,7 +186,15 @@ function StatMini({
   )
 }
 
-function OfferRow({ offer }: { offer: MeatOfferItemDto }) {
+function OfferRow({
+  offer,
+  onRevise,
+  onHistory,
+}: {
+  offer: MeatOfferItemDto
+  onRevise: () => void
+  onHistory: () => void
+}) {
   const statusKey = mapStatus(offer.status)
   const status = statusConfig[statusKey]
   const StatusIcon = status.icon
@@ -200,8 +242,14 @@ function OfferRow({ offer }: { offer: MeatOfferItemDto }) {
             {offer.note ? (
               <p className="text-small text-muted-foreground mb-2">{offer.note}</p>
             ) : null}
-            <p className="text-caption text-muted-foreground">{formatDateTr(offer.createdAt)}</p>
-            <div className="mt-3">
+            <OfferRevisionMeta revisionNumber={offer.revisionNumber} expiresAt={offer.expiresAt} />
+            <p className="text-caption text-muted-foreground mt-1">{formatDateTr(offer.createdAt)}</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <OfferRevisionActions
+                pending={offer.status === 'PENDING'}
+                onRevise={onRevise}
+                onHistory={onHistory}
+              />
               <MessageUserButton
                 otherUserId={offer.slaughterhouseId}
                 contextLabel={title}

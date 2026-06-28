@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -60,6 +61,22 @@ public class SlaughterhouseAnimalListingController {
     public List<ListingOfferResponse> myOffers(@AuthenticationPrincipal UserDetails principal) {
         User slaughterhouse = userRepository.findByEmail(principal.getUsername()).orElseThrow();
         return marketService.listMyOffers(slaughterhouse);
+    }
+
+    @PatchMapping("/offers/{offerId}/revise")
+    public ListingOfferResponse reviseOffer(
+            @AuthenticationPrincipal UserDetails principal,
+            @PathVariable Long offerId,
+            @Valid @RequestBody ReviseMeatOfferRequest body) {
+        User slaughterhouse = userRepository.findByEmail(principal.getUsername()).orElseThrow();
+        return marketService.reviseOffer(slaughterhouse, offerId, body);
+    }
+
+    @GetMapping("/offers/{offerId}/history")
+    public List<OfferEventResponse> offerHistory(
+            @AuthenticationPrincipal UserDetails principal, @PathVariable Long offerId) {
+        User slaughterhouse = userRepository.findByEmail(principal.getUsername()).orElseThrow();
+        return marketService.listOfferHistory(slaughterhouse, offerId);
     }
 
     @GetMapping("/favorite-animal-listings")

@@ -42,4 +42,11 @@ public class SellerListingOfferController {
         User seller = userRepository.findByEmail(principal.getUsername()).orElseThrow();
         return ResponseEntity.ok(listingMarketService.respondToListingOffer(seller, offerId, false));
     }
+
+    @GetMapping("/listing-offers/{offerId}/history")
+    public List<OfferEventResponse> incomingOfferHistory(
+            @AuthenticationPrincipal UserDetails principal, @PathVariable Long offerId) {
+        User seller = userRepository.findByEmail(principal.getUsername()).orElseThrow();
+        return listingMarketService.listIncomingOfferHistoryForSeller(seller, offerId);
+    }
 }

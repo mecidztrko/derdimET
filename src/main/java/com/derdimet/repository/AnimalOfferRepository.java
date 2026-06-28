@@ -25,6 +25,9 @@ public interface AnimalOfferRepository extends JpaRepository<AnimalOffer, Long> 
 
     Optional<AnimalOffer> findByIdAndRequest_CreatedBy_Id(Long offerId, Long slaughterhouseId);
 
+    @EntityGraph(attributePaths = {"request", "seller"})
+    Optional<AnimalOffer> findByIdAndSeller_Id(Long offerId, Long sellerId);
+
     @EntityGraph(attributePaths = {"request"})
     List<AnimalOffer> findBySellerOrderByCreatedAtDesc(User seller);
 

@@ -27,14 +27,27 @@ export function listMyAnimalListings(params?: { q?: string }): Promise<SellerAni
   return apiFetch(withSearchQuery('/api/seller/animal-listings', params?.q))
 }
 
-/** Diğer satıcıların açık ilanları (kendi ilanları hariç). */
 export function listMarketListings(params?: {
   category?: AnimalCategory
+  type?: string
+  ageMin?: number
+  ageMax?: number
+  quantityMin?: number
+  quantityMax?: number
+  priceMin?: number
+  priceMax?: number
   sort?: 'newest' | 'priceAsc' | 'priceDesc'
   q?: string
 }): Promise<SellerAnimalListingDto[]> {
   const search = new URLSearchParams()
   if (params?.category) search.set('category', params.category)
+  if (params?.type?.trim()) search.set('type', params.type.trim())
+  if (params?.ageMin != null) search.set('ageMin', String(params.ageMin))
+  if (params?.ageMax != null) search.set('ageMax', String(params.ageMax))
+  if (params?.quantityMin != null) search.set('quantityMin', String(params.quantityMin))
+  if (params?.quantityMax != null) search.set('quantityMax', String(params.quantityMax))
+  if (params?.priceMin != null) search.set('priceMin', String(params.priceMin))
+  if (params?.priceMax != null) search.set('priceMax', String(params.priceMax))
   if (params?.sort === 'priceAsc') search.set('sort', 'priceasc')
   if (params?.sort === 'priceDesc') search.set('sort', 'pricedesc')
   if (params?.sort === 'newest') search.set('sort', 'newest')
@@ -89,8 +102,28 @@ export function createAnimalListing(body: {
   })
 }
 
-export function listAnimalPurchaseRequests(params?: { q?: string }): Promise<AnimalPurchaseRequestDto[]> {
-  return apiFetch(withSearchQuery('/api/seller/animal-purchase-requests', params?.q))
+export function listAnimalPurchaseRequests(params?: {
+  q?: string
+  category?: AnimalCategory
+  quantityMin?: number
+  quantityMax?: number
+  expectedWeightMin?: number
+  expectedWeightMax?: number
+  sort?: 'newest' | 'quantityAsc' | 'quantityDesc' | 'weightAsc' | 'weightDesc'
+}): Promise<AnimalPurchaseRequestDto[]> {
+  const search = new URLSearchParams()
+  if (params?.category) search.set('category', params.category)
+  if (params?.quantityMin != null) search.set('quantityMin', String(params.quantityMin))
+  if (params?.quantityMax != null) search.set('quantityMax', String(params.quantityMax))
+  if (params?.expectedWeightMin != null) search.set('expectedWeightMin', String(params.expectedWeightMin))
+  if (params?.expectedWeightMax != null) search.set('expectedWeightMax', String(params.expectedWeightMax))
+  if (params?.sort === 'quantityAsc') search.set('sort', 'quantityasc')
+  if (params?.sort === 'quantityDesc') search.set('sort', 'quantitydesc')
+  if (params?.sort === 'weightAsc') search.set('sort', 'weightasc')
+  if (params?.sort === 'weightDesc') search.set('sort', 'weightdesc')
+  if (params?.sort === 'newest') search.set('sort', 'newest')
+  const base = search.toString() ? `/api/seller/animal-purchase-requests?${search}` : '/api/seller/animal-purchase-requests'
+  return apiFetch(withSearchQuery(base, params?.q))
 }
 
 export function listMyAnimalOffers(): Promise<SellerAnimalOfferItemDto[]> {
@@ -110,6 +143,10 @@ export function rejectListingOffer(offerId: number): Promise<ListingOfferDto> {
   return apiFetch(`/api/seller/listing-offers/${offerId}/reject`, { method: 'POST' })
 }
 
+export function listIncomingListingOfferHistory(offerId: number): Promise<import('./types').OfferEventDto[]> {
+  return apiFetch(`/api/seller/listing-offers/${offerId}/history`)
+}
+
 export function createAnimalOffer(
   requestId: number,
   body: { pricePerKg: number; animalCount?: number; note?: string },
@@ -118,4 +155,18 @@ export function createAnimalOffer(
     method: 'POST',
     body: JSON.stringify(body),
   })
+}
+
+export function reviseAnimalOffer(
+  offerId: number,
+  body: { pricePerKg: number; quantity?: number; note?: string },
+): Promise<SellerAnimalOfferItemDto> {
+  return apiFetch(`/api/seller/animal-offers/${offerId}/revise`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  })
+}
+
+export function listAnimalOfferHistory(offerId: number): Promise<import('./types').OfferEventDto[]> {
+  return apiFetch(`/api/seller/animal-offers/${offerId}/history`)
 }

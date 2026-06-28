@@ -85,4 +85,28 @@ public class OfferEventService {
                 offer.getNote(),
                 offer.getRevisionNumber());
     }
+
+    @Transactional
+    public void recordRevised(SlaughterhouseListingOffer offer) {
+        record(
+                OfferKind.LISTING,
+                offer.getId(),
+                OfferEventType.REVISED,
+                offer.getPricePerKg(),
+                offer.getQuantity() != null ? BigDecimal.valueOf(offer.getQuantity()) : null,
+                offer.getNote(),
+                offer.getRevisionNumber());
+    }
+
+    @Transactional
+    public void recordRevised(AnimalOffer offer) {
+        record(
+                OfferKind.ANIMAL,
+                offer.getId(),
+                OfferEventType.REVISED,
+                offer.getPricePerKg(),
+                offer.getAnimalCount() != null ? BigDecimal.valueOf(offer.getAnimalCount()) : null,
+                offer.getNote(),
+                offer.getRevisionNumber());
+    }
 }

@@ -84,3 +84,7 @@ export function confirmOrderPayment(orderId: number): Promise<BuyerPurchaseDto> 
 export function completeOrder(orderId: number): Promise<BuyerPurchaseDto> {
   return apiFetch(`/api/buyer/orders/${orderId}/complete`, { method: 'POST' })
 }
+
+export function listMeatOfferHistory(offerId: number): Promise<import('./types').OfferEventDto[]> {
+  return apiFetch(`/api/buyer/meat-offers/${offerId}/history`)
+}

@@ -2,6 +2,8 @@ package com.derdimet.service;
 
 import com.derdimet.api.CreateSlaughterhouseListingOfferRequest;
 import com.derdimet.api.ListingOfferResponse;
+import com.derdimet.api.OfferEventResponse;
+import com.derdimet.api.ReviseMeatOfferRequest;
 import com.derdimet.api.SellerAnimalListingResponse;
 import com.derdimet.entity.OfferStatus;
 import com.derdimet.entity.AuditAction;
@@ -16,9 +18,13 @@ import org.springframework.data.jpa.domain.Specification;
 import com.derdimet.entity.FavoriteAnimalListing;
 import com.derdimet.repository.FavoriteAnimalListingRepository;
 import com.derdimet.repository.SellerAnimalListingRepository;
+import com.derdimet.entity.OfferKind;
+import com.derdimet.repository.OfferEventRepository;
 import com.derdimet.repository.SlaughterhouseListingOfferRepository;
+import com.derdimet.util.ListingLifecycle;
 import com.derdimet.util.ListingSearchSupport;
 import com.derdimet.entity.SlaughterhouseListingOffer;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -37,6 +43,8 @@ public class SlaughterhouseListingMarketService {
     private final FavoriteAnimalListingRepository favoriteAnimalListingRepository;
     private final PushNotificationService pushNotificationService;
     private final AuditService auditService;
+    private final OfferEventService offerEventService;
+    private final OfferEventRepository offerEventRepository;
 
     @Transactional(readOnly = true)
     public List<SellerAnimalListingResponse> searchListings(
@@ -190,11 +198,69 @@ public class SlaughterhouseListingMarketService {
         o.setNote(blankToNull(body.note()));
         o.setStatus(OfferStatus.PENDING);
         SlaughterhouseListingOffer saved = offerRepository.save(o);
+        offerEventService.recordCreated(saved);
         pushNotificationService.notifyOfferEvent(
                 listing.getSeller(),
                 "Yeni hayvan teklifi",
                 slaughterhouse.getName() + " ilanınıza teklif verdi.");
         return ListingOfferResponse.fromEntity(saved);
+    }
+
+    @Transactional
+    public ListingOfferResponse reviseOffer(User slaughterhouse, Long offerId, ReviseMeatOfferRequest body) {
+        SlaughterhouseListingOffer offer = requireSlaughterhousePendingOffer(slaughterhouse, offerId);
+        offer.setPricePerKg(body.pricePerKg());
+        if (body.quantity() != null) {
+            offer.setQuantity(body.quantity().intValue());
+        }
+        if (body.note() != null) {
+            offer.setNote(blankToNull(body.note()));
+        }
+        offer.setRevisionNumber((offer.getRevisionNumber() != null ? offer.getRevisionNumber() : 1) + 1);
+        offer.setExpiresAt(LocalDateTime.now().plusHours(ListingLifecycle.DEFAULT_OFFER_HOURS));
+        SlaughterhouseListingOffer saved = offerRepository.save(offer);
+        offerEventService.recordRevised(saved);
+        return ListingOfferResponse.fromEntity(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public List<OfferEventResponse> listOfferHistory(User slaughterhouse, Long offerId) {
+        SlaughterhouseListingOffer offer =
+                offerRepository
+                        .findByIdAndSlaughterhouse_Id(offerId, slaughterhouse.getId())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Teklif bulunamadı"));
+        return listOfferEvents(offer.getId());
+    }
+
+    @Transactional(readOnly = true)
+    public List<OfferEventResponse> listIncomingOfferHistoryForSeller(User seller, Long offerId) {
+        SlaughterhouseListingOffer offer =
+                offerRepository
+                        .findByIdAndListing_Seller_Id(offerId, seller.getId())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Teklif bulunamadı"));
+        return listOfferEvents(offer.getId());
+    }
+
+    private List<OfferEventResponse> listOfferEvents(Long offerId) {
+        return offerEventRepository
+                .findByOfferKindAndOfferIdOrderByCreatedAtAsc(OfferKind.LISTING, offerId)
+                .stream()
+                .map(OfferEventResponse::fromEntity)
+                .toList();
+    }
+
+    private SlaughterhouseListingOffer requireSlaughterhousePendingOffer(User slaughterhouse, Long offerId) {
+        SlaughterhouseListingOffer offer =
+                offerRepository
+                        .findByIdAndSlaughterhouse_Id(offerId, slaughterhouse.getId())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Teklif bulunamadı"));
+        if (offer.getStatus() != OfferStatus.PENDING) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Yalnızca bekleyen teklif işlenebilir");
+        }
+        if (offer.getExpiresAt() != null && offer.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Teklif süresi dolmuş");
+        }
+        return offer;
     }
 
     @Transactional(readOnly = true)

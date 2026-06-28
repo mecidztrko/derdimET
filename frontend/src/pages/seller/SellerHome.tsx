@@ -16,25 +16,53 @@ import { useApi } from '../../hooks/useApi'
 import { useSyncedSearchQuery } from '../../hooks/useSyncedSearchQuery'
 import * as sellerApi from '../../api/seller'
 import { purchaseRequestCardProps, sellerListingToListingCard } from '../../api/mappers'
+import type { AnimalCategory } from '../../api/types'
 import { SellerSalesCard } from '../../components/role-app/SellerSalesCard'
 import { offerStatusLabel } from '../../api/format'
 import { RoleAppPage } from '../../components/role-app/RoleAppPage'
+import { Input } from '../../components/role-app/Input'
 import { PageHero } from '../../components/role-app/PageHero'
 
-const categories = ['Tümü', 'Küçükbaş', 'Büyükbaş']
+const categories = [
+  { label: 'Tümü', value: null as AnimalCategory | null },
+  { label: 'Küçükbaş', value: 'KUCUKBAS' as AnimalCategory },
+  { label: 'Büyükbaş', value: 'BUYUKBAS' as AnimalCategory },
+]
+
+const requestSortOptions = [
+  { label: 'En yeni', value: 'newest' as const },
+  { label: 'Adet ↑', value: 'quantityAsc' as const },
+  { label: 'Adet ↓', value: 'quantityDesc' as const },
+  { label: 'Ağırlık ↑', value: 'weightAsc' as const },
+  { label: 'Ağırlık ↓', value: 'weightDesc' as const },
+]
 
 export function SellerHome() {
   const { user } = useMe()
   const navigate = useNavigate()
   const { blocked: favoriteBlocked } = useEmailVerificationGate()
   const [searchQuery, setSearchQuery] = useSyncedSearchQuery()
-  const [selectedCategory, setSelectedCategory] = useState('Tümü')
+  const [selectedCategory, setSelectedCategory] = useState<AnimalCategory | null>(null)
+  const [requestSort, setRequestSort] = useState<'newest' | 'quantityAsc' | 'quantityDesc' | 'weightAsc' | 'weightDesc'>('newest')
+  const [quantityMin, setQuantityMin] = useState('')
+  const [quantityMax, setQuantityMax] = useState('')
+  const [weightMin, setWeightMin] = useState('')
+  const [weightMax, setWeightMax] = useState('')
   const [showCreate, setShowCreate] = useState(false)
 
   const listingsQuery = useApi(() => sellerApi.listMyAnimalListings(), [])
   const requestsQuery = useApi(
-    () => sellerApi.listAnimalPurchaseRequests({ q: searchQuery }),
-    [searchQuery],
+    () =>
+      sellerApi.listAnimalPurchaseRequests({
+        q: searchQuery,
+        category: selectedCategory ?? undefined,
+        quantityMin: quantityMin ? Number(quantityMin) : undefined,
+        quantityMax: quantityMax ? Number(quantityMax) : undefined,
+        expectedWeightMin: weightMin ? Number(weightMin) : undefined,
+        expectedWeightMax: weightMax ? Number(weightMax) : undefined,
+        sort: requestSort,
+      }),
+    [searchQuery, selectedCategory, requestSort, quantityMin, quantityMax, weightMin, weightMax],
   )
   const incomingQuery = useApi(() => sellerApi.listIncomingListingOffers(), [])
   const outgoingQuery = useApi(() => sellerApi.listMyAnimalOffers(), [])
@@ -47,12 +75,10 @@ export function SellerHome() {
   const pendingOutgoing = (outgoingQuery.data ?? []).filter((o) => o.status === 'PENDING').length
   const completedSales = salesQuery.data?.length ?? 0
 
-  const filteredRequests = useMemo(() => {
-    const items = (requestsQuery.data ?? []).filter((r) => r.status === 'OPEN')
-    if (selectedCategory === 'Tümü') return items
-    const want = selectedCategory === 'Küçükbaş' ? 'KUCUKBAS' : 'BUYUKBAS'
-    return items.filter((r) => r.animalCategory === want)
-  }, [requestsQuery.data, selectedCategory])
+  const filteredRequests = useMemo(
+    () => (requestsQuery.data ?? []).filter((r) => r.status === 'OPEN'),
+    [requestsQuery.data],
+  )
 
   const myCards = openListings.map(sellerListingToListingCard)
 
@@ -134,18 +160,36 @@ export function SellerHome() {
 
         <TabsContent value="requests">
           <Card className="mb-6" elevation="soft">
-            <CardContent className="py-5">
-              <p className="text-small font-medium mb-3">Hayvan kategorisi</p>
-              <div className="flex flex-wrap gap-2">
-                {categories.map((category) => (
-                  <Chip
-                    key={category}
-                    selected={selectedCategory === category}
-                    onClick={() => setSelectedCategory(category)}
-                  >
-                    {category}
-                  </Chip>
-                ))}
+            <CardContent className="py-5 space-y-4">
+              <div>
+                <p className="text-small font-medium mb-3">Hayvan kategorisi</p>
+                <div className="flex flex-wrap gap-2">
+                  {categories.map((category) => (
+                    <Chip
+                      key={category.label}
+                      selected={selectedCategory === category.value}
+                      onClick={() => setSelectedCategory(category.value)}
+                    >
+                      {category.label}
+                    </Chip>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-small font-medium mb-3">Sıralama</p>
+                <div className="flex flex-wrap gap-2">
+                  {requestSortOptions.map((o) => (
+                    <Chip key={o.value} selected={requestSort === o.value} onClick={() => setRequestSort(o.value)}>
+                      {o.label}
+                    </Chip>
+                  ))}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                <Input label="Adet min" type="number" value={quantityMin} onChange={(e) => setQuantityMin(e.target.value)} />
+                <Input label="Adet max" type="number" value={quantityMax} onChange={(e) => setQuantityMax(e.target.value)} />
+                <Input label="Ağırlık min (kg)" type="number" value={weightMin} onChange={(e) => setWeightMin(e.target.value)} />
+                <Input label="Ağırlık max (kg)" type="number" value={weightMax} onChange={(e) => setWeightMax(e.target.value)} />
               </div>
             </CardContent>
           </Card>
@@ -165,7 +209,14 @@ export function SellerHome() {
                   Aramayı temizle
                 </Button>
               ) : (
-                <Button variant="secondary" type="button" onClick={() => setSelectedCategory('Tümü')}>
+                <Button variant="secondary" type="button" onClick={() => {
+                  setSearchQuery('')
+                  setSelectedCategory(null)
+                  setQuantityMin('')
+                  setQuantityMax('')
+                  setWeightMin('')
+                  setWeightMax('')
+                }}>
                   Filtreleri sıfırla
                 </Button>
               )

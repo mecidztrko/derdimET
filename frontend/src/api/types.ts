@@ -33,6 +33,21 @@ export type MeatSaleRequestDto = {
   isFavoritedByMe: boolean | null
 }
 
+export type OfferEventType = 'CREATED' | 'REVISED'
+export type OfferKind = 'MEAT' | 'LISTING' | 'ANIMAL'
+
+export type OfferEventDto = {
+  id: number
+  offerKind: OfferKind
+  offerId: number
+  eventType: OfferEventType
+  pricePerKg: number | string | null
+  quantity: number | string | null
+  note: string | null
+  revisionNumber: number | null
+  createdAt: string
+}
+
 export type MeatOfferItemDto = {
   offerId: number
   saleRequestId: number | null
@@ -67,6 +82,8 @@ export type SellerAnimalListingDto = {
   description: string | null
   imageUrls: string[] | null
   status: RequestStatus
+  closedReason?: ListingClosedReason | null
+  expiresAt?: string | null
   createdAt: string
   isFavoritedByMe: boolean | null
   hasOfferFromMe?: boolean | null
@@ -110,6 +127,8 @@ export type SellerAnimalOfferItemDto = {
   animalCount: number | null
   note: string | null
   status: OfferStatus
+  revisionNumber?: number | null
+  expiresAt?: string | null
   createdAt: string
 }
 
@@ -126,6 +145,8 @@ export type ListingOfferDto = {
   quantity: number | null
   note: string | null
   status: OfferStatus
+  revisionNumber?: number | null
+  expiresAt?: string | null
   createdAt: string
 }
 

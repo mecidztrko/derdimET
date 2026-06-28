@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -78,6 +79,22 @@ public class SellerAnimalMarketController {
     public List<SellerAnimalOfferItemResponse> listMyOffers(@AuthenticationPrincipal UserDetails principal) {
         User seller = userRepository.findByEmail(principal.getUsername()).orElseThrow();
         return sellerService.listMyOffers(seller);
+    }
+
+    @PatchMapping("/animal-offers/{offerId}/revise")
+    public SellerAnimalOfferItemResponse reviseAnimalOffer(
+            @AuthenticationPrincipal UserDetails principal,
+            @PathVariable Long offerId,
+            @Valid @RequestBody ReviseMeatOfferRequest body) {
+        User seller = userRepository.findByEmail(principal.getUsername()).orElseThrow();
+        return sellerService.reviseOffer(seller, offerId, body);
+    }
+
+    @GetMapping("/animal-offers/{offerId}/history")
+    public List<OfferEventResponse> animalOfferHistory(
+            @AuthenticationPrincipal UserDetails principal, @PathVariable Long offerId) {
+        User seller = userRepository.findByEmail(principal.getUsername()).orElseThrow();
+        return sellerService.listOfferHistory(seller, offerId);
     }
 
     @GetMapping("/favorite-animal-purchase-requests")

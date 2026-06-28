@@ -2,6 +2,10 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Card, CardContent } from '../../components/role-app/Card'
 import { OfferStatusBadge } from '../../components/role-app/OfferStatusBadge'
+import { OfferHistoryModal } from '../../components/role-app/OfferHistoryModal'
+import { OfferRevisionActions } from '../../components/role-app/OfferRevisionActions'
+import { OfferRevisionMeta } from '../../components/role-app/OfferRevisionMeta'
+import { OfferReviseModal } from '../../components/role-app/OfferReviseModal'
 import { Button } from '../../components/role-app/Button'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/role-app/Tabs'
 import { PageState } from '../../components/role-app/PageState'
@@ -22,6 +26,9 @@ export function SellerOffers() {
   const incoming = useApi(() => sellerApi.listIncomingListingOffers(), [])
   const outgoing = useApi(() => sellerApi.listMyAnimalOffers(), [])
   const listings = useApi(() => sellerApi.listMyAnimalListings(), [])
+  const [reviseOffer, setReviseOffer] = useState<SellerAnimalOfferItemDto | null>(null)
+  const [historyOfferId, setHistoryOfferId] = useState<number | null>(null)
+  const [historySource, setHistorySource] = useState<'incoming' | 'outgoing'>('outgoing')
 
   async function handleListingOffer(offerId: number, accept: boolean) {
     setActingId(offerId)
@@ -75,6 +82,10 @@ export function SellerOffers() {
                 acting={actingId === o.offerId}
                 onAccept={() => void handleListingOffer(o.offerId, true)}
                 onReject={() => void handleListingOffer(o.offerId, false)}
+                onHistory={() => {
+                  setHistorySource('incoming')
+                  setHistoryOfferId(o.offerId)
+                }}
               />
             ))}
           </OffersList>
@@ -96,11 +107,45 @@ export function SellerOffers() {
             }
           >
             {(outgoing.data ?? []).map((o) => (
-              <OutgoingOfferCard key={o.offerId} offer={o} />
+              <OutgoingOfferCard
+                key={o.offerId}
+                offer={o}
+                onRevise={() => setReviseOffer(o)}
+                onHistory={() => {
+                  setHistorySource('outgoing')
+                  setHistoryOfferId(o.offerId)
+                }}
+              />
             ))}
           </OffersList>
         </TabsContent>
       </Tabs>
+
+      <OfferReviseModal
+        open={reviseOffer != null}
+        title={reviseOffer?.request.title ?? 'Alış talebi'}
+        quantityLabel="Adet"
+        initialPrice={reviseOffer?.pricePerKg}
+        initialQuantity={reviseOffer?.animalCount}
+        initialNote={reviseOffer?.note}
+        onClose={() => setReviseOffer(null)}
+        onSubmit={async (body) => {
+          if (!reviseOffer) return
+          await sellerApi.reviseAnimalOffer(reviseOffer.offerId, body)
+          setReviseOffer(null)
+          outgoing.reload()
+        }}
+      />
+      <OfferHistoryModal
+        open={historyOfferId != null}
+        offerId={historyOfferId}
+        onClose={() => setHistoryOfferId(null)}
+        loadHistory={(id) =>
+          historySource === 'incoming'
+            ? sellerApi.listIncomingListingOfferHistory(id)
+            : sellerApi.listAnimalOfferHistory(id)
+        }
+      />
     </RoleAppPage>
   )
 }
@@ -141,11 +186,13 @@ function IncomingOfferCard({
   acting,
   onAccept,
   onReject,
+  onHistory,
 }: {
   offer: ListingOfferDto
   acting: boolean
   onAccept: () => void
   onReject: () => void
+  onHistory: () => void
 }) {
   return (
     <Card>
@@ -162,11 +209,13 @@ function IncomingOfferCard({
               {offer.quantity != null ? ` · ${formatHeadCount(offer.quantity)}` : ''}
             </p>
             {offer.note ? <p className="text-caption text-muted-foreground mt-2">{offer.note}</p> : null}
-            <p className="text-caption text-muted-foreground mt-2">{formatDateTr(offer.createdAt)}</p>
+            <OfferRevisionMeta revisionNumber={offer.revisionNumber} expiresAt={offer.expiresAt} />
+            <p className="text-caption text-muted-foreground mt-1">{formatDateTr(offer.createdAt)}</p>
           </div>
           <OfferStatusBadge status={offer.status} />
         </div>
         <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-border">
+          <OfferRevisionActions pending={false} onHistory={onHistory} />
           <MessageUserButton
             otherUserId={offer.slaughterhouseId}
             contextLabel={[offer.listingType, offer.listingCategory].filter(Boolean).join(' · ')}
@@ -180,7 +229,15 @@ function IncomingOfferCard({
   )
 }
 
-function OutgoingOfferCard({ offer }: { offer: SellerAnimalOfferItemDto }) {
+function OutgoingOfferCard({
+  offer,
+  onRevise,
+  onHistory,
+}: {
+  offer: SellerAnimalOfferItemDto
+  onRevise: () => void
+  onHistory: () => void
+}) {
   return (
     <Card>
       <CardContent className="p-5 flex justify-between gap-4">
@@ -189,11 +246,17 @@ function OutgoingOfferCard({ offer }: { offer: SellerAnimalOfferItemDto }) {
           <p className="text-small text-muted-foreground">
             {offer.request.slaughterhouseName || 'Kesimhane'} · {formatTry(offer.pricePerKg)} / kg
           </p>
-          <p className="text-caption text-muted-foreground mt-2">{formatDateTr(offer.createdAt)}</p>
+          <OfferRevisionMeta revisionNumber={offer.revisionNumber} expiresAt={offer.expiresAt} />
+          <p className="text-caption text-muted-foreground mt-1">{formatDateTr(offer.createdAt)}</p>
         </div>
         <OfferStatusBadge status={offer.status} />
       </CardContent>
-      <div className="px-5 pb-5">
+      <div className="px-5 pb-5 flex flex-wrap gap-2">
+        <OfferRevisionActions
+          pending={offer.status === 'PENDING'}
+          onRevise={onRevise}
+          onHistory={onHistory}
+        />
         <MessageUserButton
           otherUserId={offer.request.slaughterhouseId}
           contextLabel={offer.request.title}
